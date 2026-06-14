@@ -33,7 +33,7 @@ export default function HomePage() {
             Thinking | Willing | Feeling = Being
           </p>
           <h1 className="font-serif text-7xl font-semibold leading-[0.88] text-foreground sm:text-8xl lg:text-9xl">
-            AWRE
+            ClearPth
           </h1>
           <div className="aura-luxury-line mt-7 max-w-lg" />
           <p className="mt-7 max-w-2xl text-xl leading-8 text-foreground/86 sm:text-2xl">

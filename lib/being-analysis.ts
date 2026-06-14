@@ -191,7 +191,7 @@ function buildLocalAnalysis({
     return {
       archetype: "Unmeasured State",
       summary:
-        "AWRE needs at least one check-in to begin reading the shape of your Being.",
+        "ClearPth needs at least one check-in to begin reading the shape of your Being.",
       rootCause:
         "The root cause is not yet visible because no check-in pattern has been recorded.",
       hiddenDebt:

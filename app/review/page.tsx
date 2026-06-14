@@ -41,8 +41,8 @@ export default function ReviewPage() {
   return (
     <main className="container py-8 md:py-12">
       <section className="mx-auto max-w-5xl">
-        <p className="awre-page-kicker">Weekly Review</p>
-        <h1 className="awre-page-title">
+        <p className="clearpth-page-kicker">Weekly Review</p>
+        <h1 className="clearpth-page-title">
           This Week In Being
         </h1>
         <p className="mt-4 text-muted-foreground">

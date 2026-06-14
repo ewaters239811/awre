@@ -97,10 +97,10 @@ body {
   background: linear-gradient(90deg, transparent, rgba(222, 192, 126, 0.55), transparent);
 }
 
-.awre-page-kicker {
+.clearpth-page-kicker {
   @apply text-sm uppercase tracking-[0.28em] text-primary;
 }
 
-.awre-page-title {
+.clearpth-page-title {
   @apply mt-3 font-serif text-4xl font-semibold leading-tight sm:text-5xl;
 }

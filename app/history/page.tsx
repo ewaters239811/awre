@@ -24,10 +24,10 @@ export default function HistoryPage() {
     <main className="container py-8 md:py-12">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <p className="awre-page-kicker">
+          <p className="clearpth-page-kicker">
             Local History
           </p>
-          <h1 className="awre-page-title">
+          <h1 className="clearpth-page-title">
             Previous Check-Ins
           </h1>
         </div>

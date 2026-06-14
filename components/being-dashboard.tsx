@@ -74,8 +74,8 @@ export function BeingDashboard() {
   return (
     <main className="container py-8 md:py-12">
       <section className="mx-auto max-w-6xl">
-        <p className="awre-page-kicker">Integration Analysis</p>
-        <h1 className="awre-page-title">Where you are Gathering or Leaking Power</h1>
+        <p className="clearpth-page-kicker">Integration Analysis</p>
+        <h1 className="clearpth-page-title">Where you are Gathering or Leaking Power</h1>
         <p className="mt-4 max-w-3xl text-muted-foreground">
           A living read of your current score, pillar balance, ritual rhythm,
           integration debt, and the pattern shaping your state over time.

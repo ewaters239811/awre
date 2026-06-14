@@ -62,8 +62,8 @@ export default function CheckInPage() {
   return (
     <main className="container py-8 md:py-12">
       <div className="mx-auto max-w-5xl">
-        <p className="awre-page-kicker">Daily Alignment</p>
-        <h1 className="awre-page-title">
+        <p className="clearpth-page-kicker">Daily Alignment</p>
+        <h1 className="clearpth-page-title">
           Move Through The Four Gates
         </h1>
         <p className="mt-4 max-w-2xl text-muted-foreground">
@@ -145,7 +145,7 @@ export default function CheckInPage() {
               <div className="flex items-start gap-3">
                 <AlertTriangle className="mt-1 h-5 w-5 shrink-0 text-primary" />
                 <p>
-                  AWRE is a self-reflection tool, not crisis support. If you may
+                  ClearPth is a self-reflection tool, not crisis support. If you may
                   hurt yourself or feel in immediate danger, please call
                   emergency services now, contact a trusted person, or in the
                   U.S. call or text 988 for the Suicide & Crisis Lifeline.

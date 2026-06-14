@@ -21,12 +21,12 @@ export default function AboutPage() {
   return (
     <main className="container py-8 md:py-12">
       <section className="mx-auto max-w-4xl">
-        <p className="awre-page-kicker">The AWRE Model</p>
-        <h1 className="awre-page-title">
+        <p className="clearpth-page-kicker">The ClearPth Model</p>
+        <h1 className="clearpth-page-title">
           Thinking | Willing | Feeling = Being
         </h1>
         <p className="mt-6 text-lg leading-8 text-muted-foreground">
-          AWRE is a self-reflection and personal growth app. It helps you look
+          ClearPth is a self-reflection and personal growth app. It helps you look
           at the relationship between what you think, what you do, what you
           feel, and the integrated state others experience from you. It is not a
           medical, therapy, or diagnostic tool.

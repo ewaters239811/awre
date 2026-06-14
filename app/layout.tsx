@@ -12,7 +12,7 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "AWRE | Alignment Check-In",
+  title: "ClearPth | Alignment Check-In",
   description:
     "A self-reflection app for inner order, clear action, and embodied presence.",
 };

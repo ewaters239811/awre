@@ -63,8 +63,8 @@ export default function RitualPage() {
   return (
     <main className="container py-8 md:py-12">
       <section className="mx-auto max-w-5xl">
-        <p className="awre-page-kicker">Daily Ritual</p>
-        <h1 className="awre-page-title">
+        <p className="clearpth-page-kicker">Daily Ritual</p>
+        <h1 className="clearpth-page-title">
           Morning Intention. Evening Review.
         </h1>
         <p className="mt-4 max-w-2xl text-muted-foreground">

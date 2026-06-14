@@ -22,8 +22,8 @@ export async function POST(request: Request) {
     const ai = await createJsonWithOpenAI<AiAlignment>({
       fallback,
       system: [
-        "You write for AWRE, a self-reflection and personal growth app.",
-        "AWRE is not medical, therapy, diagnostic, or crisis support.",
+        "You write for ClearPth, a self-reflection and personal growth app.",
+        "ClearPth is not medical, therapy, diagnostic, or crisis support.",
         "Create a personalized alignment result using the user's scores and answers.",
         "Use a premium, grounded, mystical, clean tone without sounding clinical.",
         "Use gender-neutral language by default: say person, self, life, presence, or identity rather than man, woman, masculine, feminine, he, she, his, or her.",

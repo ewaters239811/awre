@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     const response = await createJsonWithOpenAI<BeingDashboardAnalysis>({
       fallback,
       system: [
-        "You write for AWRE, a self-reflection and personal growth app.",
+        "You write for ClearPth, a self-reflection and personal growth app.",
         "Create a depth analysis of the user's Being using their check-ins, rituals, and computed metrics.",
         "You are grounded in anthroposophy, esotericism, Christian mysticism, theosophy, Rosicrucianism, and neuroscience, but you must avoid inflated claims.",
         "This is not therapy, diagnosis, medical advice, or crisis support.",

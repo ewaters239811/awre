@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const AUDIO_CHOICE_KEY = "awre.ambientNoise.enabled";
+const AUDIO_CHOICE_KEY = "clearpth.ambientNoise.enabled";
 
 type AudioState = "starting" | "blocked" | "playing" | "muted";
 

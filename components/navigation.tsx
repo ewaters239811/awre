@@ -31,7 +31,7 @@ export function Navigation() {
             <Sparkles className="h-5 w-5 text-primary" aria-hidden />
           </span>
           <span className="font-serif text-2xl font-semibold tracking-[0.08em] text-foreground">
-            AWRE
+            ClearPth
           </span>
         </Link>
 

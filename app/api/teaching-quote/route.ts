@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     const ai = await createJsonWithOpenAI<QuoteResult>({
       fallback,
       system: [
-        "Write one original AWRE teaching quote.",
+        "Write one original ClearPth teaching quote.",
         "The quote should be inspired by the user's latest alignment result when provided.",
         "Use an elegant, mystical, grounded tone. Avoid clinical or diagnostic language.",
         "Use gender-neutral language by default. Only use gendered language if the user explicitly provides gender context.",
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
           }
         : {
             context:
-              "No check-in is available yet. Generate a general AWRE quote.",
+              "No check-in is available yet. Generate a general ClearPth quote.",
           },
     });
 

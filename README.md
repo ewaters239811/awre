@@ -1,6 +1,6 @@
-# AWRE
+# ClearPth
 
-AWRE is a free MVP self-reflection web app for aligning Thinking, Willing, and Feeling into a more magnetic state of Being.
+ClearPth is a free MVP self-reflection web app for aligning Thinking, Willing, and Feeling into a more practical state of Being.
 
 ## Tech Stack
 
@@ -21,7 +21,7 @@ Open `http://localhost:3000`.
 
 ## Optional AI Personalization
 
-AWRE works without AI. To enable personalized results and AI-generated teaching quotes, create a `.env.local` file:
+ClearPth works without AI. To enable personalized results and AI-generated teaching quotes, create a `.env.local` file:
 
 ```bash
 OPENAI_API_KEY=your_api_key_here
@@ -32,7 +32,7 @@ Then restart the dev server.
 
 ## What Is Included
 
-- Landing page with the AWRE model and CTA
+- Landing page with the ClearPth model and CTA
 - Daily Alignment Check-In form
 - Being Dashboard with score, integration debt, trends, pillar balance, ritual rhythm, and depth analysis
 - Daily Ritual page for morning intention and evening reflection
@@ -40,7 +40,7 @@ Then restart the dev server.
 - Optional personalized result summary and prescription
 - Local history page with calendar tracking, pattern insights, and clear history action
 - Weekly Review page with score trends and ritual notes
-- Daily Guide chat for working through challenges with the AWRE model
+- Daily Guide chat for working through challenges with the ClearPth model
 - Single teaching quote based on the latest check-in when an API key is configured
 - About page explaining the model
 - Crisis-language guardrail message for severe distress or self-harm language
@@ -53,7 +53,7 @@ Check-ins are saved in the browser under:
 aura.checkIns.v1
 ```
 
-The storage keys keep the original internal prefix so existing local data continues to work after the AWRE rename.
+The storage keys keep the original internal prefix so existing local data continues to work after earlier brand changes.
 
 Guide conversations are saved in the browser under:
 
