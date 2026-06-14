@@ -14,7 +14,7 @@ const cormorant = Cormorant_Garamond({
 export const metadata: Metadata = {
   title: "AWRE | Alignment Check-In",
   description:
-    "Align Thinking, Willing, and Feeling into a more magnetic state of Being.",
+    "A self-reflection app for inner order, clear action, and embodied presence.",
 };
 
 export default function RootLayout({

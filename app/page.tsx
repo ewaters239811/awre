@@ -37,7 +37,7 @@ export default function HomePage() {
           </h1>
           <div className="aura-luxury-line mt-7 max-w-lg" />
           <p className="mt-7 max-w-2xl text-xl leading-8 text-foreground/86 sm:text-2xl">
-            Align Thinking, Willing, and Feeling into magnetic Being.
+            A daily mirror for inner order, clear action, and embodied presence.
           </p>
           <p className="mt-6 max-w-2xl text-base leading-7 text-muted-foreground">
             A free self-reflection ritual for noticing the inner pattern behind
