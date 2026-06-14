@@ -1,0 +1,10 @@
+node_modules
+.next
+out
+
+.next-dev*.log
+.next-dev*.err.log
+
+.env
+.env*.local
+npm-debug.log*
