@@ -22,9 +22,21 @@ export function AmbientNoise() {
     audioContext.current = null;
   }, []);
 
+  const resumeExistingContext = useCallback(async (context: AudioContext) => {
+    try {
+      if (context.state === "suspended") {
+        await context.resume();
+      }
+
+      setAudioState(context.state === "running" ? "playing" : "blocked");
+    } catch {
+      setAudioState("blocked");
+    }
+  }, []);
+
   const startNoise = useCallback(async () => {
     if (audioContext.current) {
-      setAudioState("playing");
+      await resumeExistingContext(audioContext.current);
       return;
     }
 
@@ -130,21 +142,22 @@ export function AmbientNoise() {
 
     audioContext.current = context;
     stopHandles.current.push(() => airSource.stop());
-    nodes.current.push(masterGain, padGain, shimmerGain, airGain, lowPass, highPass, airSource);
+    nodes.current.push(
+      masterGain,
+      padGain,
+      shimmerGain,
+      airGain,
+      lowPass,
+      highPass,
+      airSource,
+    );
 
-    try {
-      await context.resume();
-      setAudioState(context.state === "running" ? "playing" : "blocked");
-    } catch {
-      setAudioState("blocked");
-    }
-  }, []);
+    await resumeExistingContext(context);
+  }, [resumeExistingContext]);
 
   const enableNoise = useCallback(() => {
     localStorage.setItem(AUDIO_CHOICE_KEY, "true");
-    queueMicrotask(() => {
-      void startNoise();
-    });
+    void startNoise();
   }, [startNoise]);
 
   const muteNoise = useCallback(() => {
@@ -172,10 +185,12 @@ export function AmbientNoise() {
     };
 
     window.addEventListener("pointerdown", unlockAudio, { once: true });
+    window.addEventListener("touchstart", unlockAudio, { once: true });
     window.addEventListener("keydown", unlockAudio, { once: true });
 
     return () => {
       window.removeEventListener("pointerdown", unlockAudio);
+      window.removeEventListener("touchstart", unlockAudio);
       window.removeEventListener("keydown", unlockAudio);
       stopNoise();
     };
