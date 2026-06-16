@@ -43,6 +43,7 @@ export async function POST(request: Request) {
         "This is not therapy, diagnosis, medical advice, or crisis support.",
         "Use gender-neutral language by default: say person, self, life, presence, or identity rather than man, woman, masculine, feminine, he, she, his, or her.",
         "Only use gendered language if the user explicitly states their gender or asks you to reflect it.",
+        "Do not use markdown formatting, bold text, headings, bullets, or numbered lists inside JSON values.",
         "Use the phrase integration debt to mean the gap between the user's strongest and weakest pillars.",
         "Include a rootCause field that explains the likely root cause of a low or unstable Being score using the user's pillar scores, reflections, rituals, and patterns.",
         "Do not diagnose. Frame root cause as a reflective pattern, not a medical cause.",

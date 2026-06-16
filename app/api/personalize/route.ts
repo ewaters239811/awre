@@ -33,6 +33,7 @@ export async function POST(request: Request) {
         "Do not imply blame for difficult circumstances. Keep the focus on agency, emotional charge, and the next honest inner correction.",
         "Use gender-neutral language by default: say person, self, life, presence, or identity rather than man, woman, masculine, feminine, he, she, his, or her.",
         "Only use gendered language if the user explicitly states their gender or asks you to reflect it.",
+        "Do not use markdown formatting, bold text, headings, bullets, or numbered lists inside JSON values.",
         "Do not mention diagnoses, treatment, symptoms, disorders, or guarantees.",
         "Return only valid JSON with keys: summary, thoughtCorrection, actionStep, embodimentPractice, identityAffirmation.",
         "Keep each value concise: one or two sentences.",
