@@ -21,6 +21,8 @@ export async function POST(request: Request) {
         "Write one original ClearPth teaching quote.",
         "The quote should be inspired by the user's latest alignment result when provided.",
         "Use an elegant, mystical, grounded tone. Avoid clinical or diagnostic language.",
+        "Let the quote imply that outer desires point back to an inner state, and that real change begins when the user embodies the feeling before needing evidence.",
+        "Use light Jungian depth when useful: integration, shadow, projection, and self-recognition, but avoid academic language.",
         "Use gender-neutral language by default. Only use gendered language if the user explicitly provides gender context.",
         "Do not copy quotes from any author or external source.",
         "Return only valid JSON with one key: quote.",
