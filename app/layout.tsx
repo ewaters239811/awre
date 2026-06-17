@@ -29,6 +29,15 @@ export default function RootLayout({
         <Script id="theme-init" strategy="beforeInteractive">
           {`
             try {
+              if (!window.queueMicrotask) {
+                window.queueMicrotask = function(callback) {
+                  Promise.resolve()
+                    .then(callback)
+                    .catch(function(error) {
+                      setTimeout(function() { throw error; });
+                    });
+                };
+              }
               var theme = localStorage.getItem("clearpth.theme") || "dark";
               document.documentElement.classList.toggle("light", theme === "light");
               document.documentElement.classList.toggle("dark", theme !== "light");

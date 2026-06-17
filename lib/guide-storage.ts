@@ -1,4 +1,5 @@
 import type { GuideConversation, GuideMessage } from "@/lib/types";
+import { createId } from "@/lib/id";
 
 const STORAGE_KEY = "aura.guideConversations.v1";
 
@@ -15,7 +16,7 @@ export function createConversation(): GuideConversation {
   const now = new Date().toISOString();
 
   return {
-    id: crypto.randomUUID(),
+    id: createId("conversation"),
     title: "New conversation",
     createdAt: now,
     updatedAt: now,

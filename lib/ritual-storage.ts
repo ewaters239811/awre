@@ -1,4 +1,5 @@
 import type { DailyRitual } from "@/lib/types";
+import { createId } from "@/lib/id";
 
 const STORAGE_KEY = "aura.dailyRituals.v1";
 
@@ -6,7 +7,7 @@ export function createEmptyRitual(date = toDateKey(new Date())): DailyRitual {
   const now = new Date().toISOString();
 
   return {
-    id: crypto.randomUUID(),
+    id: createId("ritual"),
     date,
     morningIntention: "",
     chosenBeing: "",

@@ -1,4 +1,5 @@
 import type { CheckInDraft, CheckInResult, PillarName } from "@/lib/types";
+import { createId } from "@/lib/id";
 
 const STORAGE_KEY = "aura.checkIns.v1";
 
@@ -21,7 +22,7 @@ export function buildResult(draft: CheckInDraft): CheckInResult {
 
   return {
     ...draft,
-    id: crypto.randomUUID(),
+    id: createId("check-in"),
     createdAt: new Date().toISOString(),
     beingScore,
     stateLabel: getStateLabel(beingScore),
