@@ -16,6 +16,12 @@ import {
 import type { CheckInResult, GuideConversation } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
+const suggestedPrompts = [
+  "What is the deeper root of this pattern?",
+  "What feeling am I trying to get from the outside?",
+  "What is one practical action I can take from that state?",
+];
+
 export function GuideChat() {
   const [conversations, setConversations] = useState<GuideConversation[]>([]);
   const [activeConversation, setActiveConversation] =
@@ -72,6 +78,13 @@ export function GuideChat() {
     setActiveConversation(conversation);
     setConversations(getGuideConversations());
   };
+
+  const messages = activeConversation?.messages ?? [];
+  const lastMessage = messages[messages.length - 1];
+  const shouldShowSuggestions =
+    !isSending &&
+    messages.length > 1 &&
+    lastMessage?.role === "assistant";
 
   const sendMessage = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -227,10 +240,27 @@ export function GuideChat() {
               Reading the pattern...
             </div>
           ) : null}
+          {shouldShowSuggestions ? (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {suggestedPrompts.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => setInput(prompt)}
+                  className="rounded-full border border-primary/20 bg-primary/10 px-3 py-2 text-left text-xs leading-5 text-primary transition hover:border-primary/35 hover:bg-primary/15"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          ) : null}
           <div ref={endRef} />
         </div>
 
-        <form className="border-t border-border/60 bg-black/10 p-5" onSubmit={sendMessage}>
+        <form
+          className="border-t border-border/60 bg-black/10 p-5"
+          onSubmit={sendMessage}
+        >
           <Textarea
             value={input}
             onChange={(event) => setInput(event.target.value)}
