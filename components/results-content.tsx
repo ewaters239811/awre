@@ -10,6 +10,7 @@ import {
   getLatestCheckIn,
   updateCheckIn,
 } from "@/lib/alignment";
+import { getJournalEntries } from "@/lib/journal-storage";
 import type { CheckInResult } from "@/lib/types";
 
 type AiStatus = "idle" | "loading" | "ready" | "unavailable";
@@ -41,7 +42,13 @@ export function ResultsContent() {
     fetch("/api/personalize", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(result),
+      body: JSON.stringify({
+        result,
+        recentJournalEntries: getJournalEntries().slice(0, 8).map((entry) => ({
+          date: entry.date,
+          content: entry.content,
+        })),
+      }),
     })
       .then((response) => response.json())
       .then(

@@ -2,6 +2,16 @@ import { NextResponse } from "next/server";
 import { createJsonWithOpenAI } from "@/lib/server/openai";
 import type { AiAlignment, CheckInResult } from "@/lib/types";
 
+type PersonalizeRequest =
+  | CheckInResult
+  | {
+      result?: CheckInResult;
+      recentJournalEntries?: Array<{
+        date: string;
+        content: string;
+      }>;
+    };
+
 const fallback: AiAlignment = {
   summary:
     "Your alignment result is ready. Use the strongest pillar as support while giving patient attention to the weakest pillar.",
@@ -17,7 +27,17 @@ const fallback: AiAlignment = {
 
 export async function POST(request: Request) {
   try {
-    const result = (await request.json()) as CheckInResult;
+    const body = (await request.json()) as PersonalizeRequest;
+    const result = getPersonalizeResult(body);
+    const recentJournalEntries =
+      "recentJournalEntries" in body ? body.recentJournalEntries ?? [] : [];
+
+    if (!result) {
+      return NextResponse.json(
+        { enabled: false, data: fallback, error: "Missing check-in result." },
+        { status: 200 },
+      );
+    }
 
     const ai = await createJsonWithOpenAI<AiAlignment>({
       fallback,
@@ -27,6 +47,8 @@ export async function POST(request: Request) {
         "Create a personalized alignment result using the user's scores and answers.",
         "Use a premium, grounded, mystical, clean tone without sounding clinical.",
         "Look for the root issue beneath the user's surface answers: the desired feeling, identity, shadow pattern, projection, unmet need, or avoided inner shift.",
+        "If recent journal entries are provided, use them as private context for repeated patterns, emotional charges, avoided actions, and root issue clues.",
+        "Do not quote journal entries at length. Distill them into the current check-in reading.",
         "Use Jungian psychology lightly as a lens for integration, shadow, persona, projection, and self-recognition without sounding academic.",
         "Frame manifestation as becoming emotionally independent from outer confirmation: the user practices the state they seek before reality visibly changes.",
         "If the user's desire is external, translate it into the inner feeling or identity it represents, then give a practical action from that state.",
@@ -50,6 +72,9 @@ export async function POST(request: Request) {
         avoidedAction: result.avoidedAction,
         currentFeeling: result.currentFeeling,
         highestBeingChoice: result.highestBeingChoice,
+        recentJournalEntries: recentJournalEntries
+          .filter((entry) => entry.content.trim())
+          .slice(0, 8),
       },
     });
 
@@ -60,4 +85,20 @@ export async function POST(request: Request) {
       { status: 200 },
     );
   }
+}
+
+function getPersonalizeResult(body: PersonalizeRequest): CheckInResult | null {
+  if ("result" in body) return body.result ?? null;
+  return isCheckInResult(body) ? body : null;
+}
+
+function isCheckInResult(value: unknown): value is CheckInResult {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    "thinkingScore" in value &&
+    "willingScore" in value &&
+    "feelingScore" in value &&
+    "beingScore" in value
+  );
 }

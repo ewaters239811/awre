@@ -14,6 +14,14 @@ import type {
   PillarName,
 } from "@/lib/types";
 
+type CachedBeingAnalysis = {
+  signature: string;
+  analysis: BeingDashboardAnalysis;
+  createdAt: string;
+};
+
+const ANALYSIS_CACHE_KEY = "clearpth.beingAnalysis.v1";
+
 export function BeingDashboard() {
   const [checkIns, setCheckIns] = useState<CheckInResult[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
@@ -35,6 +43,17 @@ export function BeingDashboard() {
   useEffect(() => {
     if (checkIns.length === 0) {
       queueMicrotask(() => setAnalysis(dashboard.localAnalysis));
+      return;
+    }
+
+    const signature = buildAnalysisSignature(checkIns, journalEntries);
+    const cached = getCachedAnalysis(signature);
+
+    if (cached) {
+      queueMicrotask(() => {
+        setAnalysis(cached.analysis);
+        setIsReading(false);
+      });
       return;
     }
 
@@ -66,7 +85,13 @@ export function BeingDashboard() {
     })
       .then((response) => response.json())
       .then((payload: { data?: BeingDashboardAnalysis }) => {
-        setAnalysis(payload.data ?? dashboard.localAnalysis);
+        const nextAnalysis = payload.data ?? dashboard.localAnalysis;
+        setAnalysis(nextAnalysis);
+        saveCachedAnalysis({
+          signature,
+          analysis: nextAnalysis,
+          createdAt: new Date().toISOString(),
+        });
       })
       .catch(() => setAnalysis(dashboard.localAnalysis))
       .finally(() => setIsReading(false));
@@ -274,4 +299,66 @@ function AnalysisBlock({
       </p>
     </article>
   );
+}
+
+function buildAnalysisSignature(
+  checkIns: CheckInResult[],
+  journalEntries: JournalEntry[],
+) {
+  const checkInSignal = checkIns
+    .map((item) =>
+      [
+        item.id,
+        item.createdAt,
+        item.thinkingScore,
+        item.willingScore,
+        item.feelingScore,
+        item.dominantThought,
+        item.avoidedAction,
+        item.currentFeeling,
+        item.highestBeingChoice,
+      ].join("|"),
+    )
+    .join("::");
+  const journalSignal = journalEntries
+    .slice(0, 12)
+    .map((entry) =>
+      [entry.id, entry.date, entry.updatedAt, entry.content.trim()].join("|"),
+    )
+    .join("::");
+
+  return simpleHash(`${checkInSignal}--${journalSignal}`);
+}
+
+function getCachedAnalysis(signature: string) {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = localStorage.getItem(ANALYSIS_CACHE_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw) as CachedBeingAnalysis;
+    return cached.signature === signature ? cached : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveCachedAnalysis(cached: CachedBeingAnalysis) {
+  if (typeof window === "undefined") return;
+
+  try {
+    localStorage.setItem(ANALYSIS_CACHE_KEY, JSON.stringify(cached));
+  } catch {
+    // If storage is unavailable, the dashboard still works without caching.
+  }
+}
+
+function simpleHash(value: string) {
+  let hash = 0;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash = Math.imul(31, hash) + value.charCodeAt(index);
+  }
+
+  return String(hash >>> 0);
 }
