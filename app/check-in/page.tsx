@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, type ReactNode, useState } from "react";
+import { FormEvent, type ReactNode, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Brain, Flame, Heart, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScoreSlider } from "@/components/score-slider";
 import { buildResult, saveCheckIn } from "@/lib/alignment";
+import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import type { CheckInDraft } from "@/lib/types";
 
 const initialDraft: CheckInDraft = {
@@ -28,6 +30,11 @@ export default function CheckInPage() {
   const [draft, setDraft] = useState<CheckInDraft>(initialDraft);
   const [error, setError] = useState("");
   const [supportMessage, setSupportMessage] = useState(false);
+  const [hasProfile, setHasProfile] = useState(true);
+
+  useEffect(() => {
+    queueMicrotask(() => setHasProfile(Boolean(getOnboardingProfile())));
+  }, []);
 
   const updateField = <K extends keyof CheckInDraft>(
     field: K,
@@ -70,6 +77,27 @@ export default function CheckInPage() {
           Score each pillar, name the pattern underneath it, then choose the
           Being you want to inhabit today.
         </p>
+
+        {!hasProfile ? (
+          <section className="aura-glass mt-6 rounded-lg p-5">
+            <p className="text-xs uppercase tracking-[0.24em] text-primary">
+              First Time Setup
+            </p>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+              ClearPth can give better guidance if it knows your main goal,
+              current pattern, desired state, and preferred tone first.
+            </p>
+            <Button asChild className="mt-4">
+              <Link href="/onboarding">Complete Setup</Link>
+            </Button>
+          </section>
+        ) : (
+          <div className="mt-5">
+            <Button asChild variant="secondary" size="sm">
+              <Link href="/onboarding">Update Setup</Link>
+            </Button>
+          </div>
+        )}
 
         <form className="mt-8 space-y-5" onSubmit={submit}>
           <CheckInGate

@@ -43,6 +43,19 @@ export default function AboutPage() {
           </article>
         ))}
       </section>
+
+      <section className="aura-glass mx-auto mt-8 max-w-4xl rounded-lg p-5">
+        <h2 className="font-serif text-2xl font-semibold text-primary">
+          A note on support
+        </h2>
+        <p className="mt-2 leading-7 text-muted-foreground">
+          ClearPth is for self-reflection and personal growth. It is not crisis
+          support, therapy, medical care, diagnosis, or a replacement for a
+          trusted professional. If you may hurt yourself or feel in immediate
+          danger, contact emergency services, a trusted person, or in the U.S.
+          call or text 988 for the Suicide & Crisis Lifeline.
+        </p>
+      </section>
     </main>
   );
 }

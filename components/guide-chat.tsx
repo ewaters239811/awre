@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { getLatestCheckIn } from "@/lib/alignment";
 import { getJournalEntries } from "@/lib/journal-storage";
+import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import {
   createAssistantMessage,
   createConversation,
@@ -18,6 +19,24 @@ const fallbackSuggestedPrompts = [
   "What is the deeper root of this pattern?",
   "What feeling am I trying to get from the outside?",
   "What is one practical action I can take from that state?",
+];
+
+const entryPaths = [
+  {
+    label: "Work through a problem",
+    prompt:
+      "Help me work through a problem I am facing and find the deeper pattern underneath it.",
+  },
+  {
+    label: "Understand a desire",
+    prompt:
+      "Help me understand what inner state or feeling is underneath something I want.",
+  },
+  {
+    label: "Find my next action",
+    prompt:
+      "Help me find the cleanest next action I can take from a steadier state.",
+  },
 ];
 
 export function GuideChat() {
@@ -57,6 +76,8 @@ export function GuideChat() {
     !isSending &&
     messages.length > 1 &&
     lastMessage?.role === "assistant";
+  const shouldShowEntryPaths =
+    !isSending && messages.length === 1 && lastMessage?.role === "assistant";
 
   const sendMessage = async (event?: FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
@@ -83,6 +104,7 @@ export function GuideChat() {
             content: message.content,
           })),
           latestCheckIn,
+          onboardingProfile: getOnboardingProfile(),
           recentJournalEntries: getJournalEntries().slice(0, 8).map((entry) => ({
             date: entry.date,
             content: entry.content,
@@ -164,6 +186,20 @@ export function GuideChat() {
               Reading the pattern...
             </div>
           ) : null}
+          {shouldShowEntryPaths ? (
+            <div className="grid gap-2 pt-1 sm:grid-cols-3">
+              {entryPaths.map((path) => (
+                <button
+                  key={path.label}
+                  type="button"
+                  onClick={() => setInput(path.prompt)}
+                  className="rounded-md border border-border bg-card px-4 py-3 text-left text-sm leading-5 text-foreground transition hover:border-foreground/35 hover:bg-accent"
+                >
+                  {path.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
           {shouldShowSuggestions ? (
             <div className="flex flex-wrap gap-2 pt-1">
               {suggestedPrompts.map((prompt) => (
@@ -203,6 +239,10 @@ export function GuideChat() {
               <Send className="h-4 w-4" aria-hidden />
             </Button>
           </div>
+          <p className="mt-3 text-xs leading-5 text-muted-foreground">
+            ClearPth is for reflection and personal growth, not crisis care,
+            medical advice, therapy, or diagnosis.
+          </p>
         </form>
       </div>
     </section>

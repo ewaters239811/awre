@@ -92,7 +92,7 @@ export function Navigation() {
         </div>
       </nav>
       {open ? (
-        <div className="container grid gap-1 pb-4 lg:hidden">
+        <div className="container grid max-h-[calc(100dvh-5rem)] gap-1 overflow-y-auto pb-4 lg:hidden">
           {links.map((link) => (
             <Link
               key={link.href}

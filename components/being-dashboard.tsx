@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { getCheckIns } from "@/lib/alignment";
 import { buildBeingDashboardData } from "@/lib/being-analysis";
 import { getJournalEntries } from "@/lib/journal-storage";
+import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import type {
   BeingDashboardAnalysis,
   CheckInResult,
   JournalEntry,
+  OnboardingProfile,
   PillarName,
 } from "@/lib/types";
 
@@ -46,7 +48,12 @@ export function BeingDashboard() {
       return;
     }
 
-    const signature = buildAnalysisSignature(checkIns, journalEntries);
+    const onboardingProfile = getOnboardingProfile();
+    const signature = buildAnalysisSignature(
+      checkIns,
+      journalEntries,
+      onboardingProfile,
+    );
     const cached = getCachedAnalysis(signature);
 
     if (cached) {
@@ -65,6 +72,7 @@ export function BeingDashboard() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         checkIns,
+        onboardingProfile,
         journalEntries: journalEntries.slice(0, 12).map((entry) => ({
           date: entry.date,
           content: entry.content,
@@ -304,6 +312,7 @@ function AnalysisBlock({
 function buildAnalysisSignature(
   checkIns: CheckInResult[],
   journalEntries: JournalEntry[],
+  onboardingProfile: OnboardingProfile | null,
 ) {
   const checkInSignal = checkIns
     .map((item) =>
@@ -326,8 +335,20 @@ function buildAnalysisSignature(
       [entry.id, entry.date, entry.updatedAt, entry.content.trim()].join("|"),
     )
     .join("::");
+  const profileSignal = onboardingProfile
+    ? [
+        onboardingProfile.primaryGoal,
+        onboardingProfile.currentChallenge,
+        onboardingProfile.desiredState,
+        onboardingProfile.practiceStyle,
+        onboardingProfile.spiritualOpenness,
+        onboardingProfile.commitmentLevel,
+        onboardingProfile.guidanceTone,
+        onboardingProfile.updatedAt,
+      ].join("|")
+    : "no-profile";
 
-  return simpleHash(`${checkInSignal}--${journalSignal}`);
+  return simpleHash(`${checkInSignal}--${journalSignal}--${profileSignal}`);
 }
 
 function getCachedAnalysis(signature: string) {

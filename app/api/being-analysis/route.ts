@@ -3,10 +3,12 @@ import { createJsonWithOpenAI } from "@/lib/server/openai";
 import type {
   BeingDashboardAnalysis,
   CheckInResult,
+  OnboardingProfile,
 } from "@/lib/types";
 
 type AnalysisRequest = {
   checkIns?: CheckInResult[];
+  onboardingProfile?: OnboardingProfile | null;
   journalEntries?: Array<{
     date: string;
     content: string;
@@ -37,6 +39,7 @@ export async function POST(request: Request) {
       system: [
         "You write for ClearPth, a self-reflection and personal growth app.",
         "Create a depth analysis of the user's Being using their check-ins, journal entries, and computed metrics.",
+        "If an onboarding profile is provided, use it to interpret the user's stated goal, repeated challenge, desired state, preferred tone, commitment level, and spiritual openness.",
         "You are grounded in anthroposophy, esotericism, Christian mysticism, theosophy, Rosicrucianism, and neuroscience, but you must avoid inflated claims.",
         "Use Jungian psychology as a practical depth lens: notice shadow patterns, projection, persona maintenance, repeated emotional charges, and what wants integration.",
         "When reading goals or repeated frustrations, infer the deeper feeling, identity, or inner state the user may be seeking beneath the outer circumstance.",
@@ -56,6 +59,7 @@ export async function POST(request: Request) {
       ].join(" "),
       user: {
         metrics: body.metrics,
+        onboardingProfile: body.onboardingProfile ?? null,
         recentCheckIns: (body.checkIns ?? []).slice(0, 12).map((item) => ({
           createdAt: item.createdAt,
           thinkingScore: item.thinkingScore,

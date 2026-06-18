@@ -11,6 +11,7 @@ import {
   updateCheckIn,
 } from "@/lib/alignment";
 import { getJournalEntries } from "@/lib/journal-storage";
+import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import type { CheckInResult } from "@/lib/types";
 
 type AiStatus = "idle" | "loading" | "ready" | "unavailable";
@@ -44,6 +45,7 @@ export function ResultsContent() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         result,
+        onboardingProfile: getOnboardingProfile(),
         recentJournalEntries: getJournalEntries().slice(0, 8).map((entry) => ({
           date: entry.date,
           content: entry.content,

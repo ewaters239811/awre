@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { createJsonWithOpenAI } from "@/lib/server/openai";
-import type { AiAlignment, CheckInResult } from "@/lib/types";
+import type { AiAlignment, CheckInResult, OnboardingProfile } from "@/lib/types";
 
 type PersonalizeRequest =
   | CheckInResult
   | {
       result?: CheckInResult;
+      onboardingProfile?: OnboardingProfile | null;
       recentJournalEntries?: Array<{
         date: string;
         content: string;
@@ -31,6 +32,8 @@ export async function POST(request: Request) {
     const result = getPersonalizeResult(body);
     const recentJournalEntries =
       "recentJournalEntries" in body ? body.recentJournalEntries ?? [] : [];
+    const onboardingProfile =
+      "onboardingProfile" in body ? body.onboardingProfile ?? null : null;
 
     if (!result) {
       return NextResponse.json(
@@ -48,6 +51,7 @@ export async function POST(request: Request) {
         "Use a premium, grounded, mystical, clean tone without sounding clinical.",
         "Look for the root issue beneath the user's surface answers: the desired feeling, identity, shadow pattern, projection, unmet need, or avoided inner shift.",
         "If recent journal entries are provided, use them as private context for repeated patterns, emotional charges, avoided actions, and root issue clues.",
+        "If an onboarding profile is provided, use it to calibrate the user's goal, preferred tone, commitment level, desired state, and comfort with mystical language.",
         "Do not quote journal entries at length. Distill them into the current check-in reading.",
         "Use Jungian psychology lightly as a lens for integration, shadow, persona, projection, and self-recognition without sounding academic.",
         "Frame manifestation as becoming emotionally independent from outer confirmation: the user practices the state they seek before reality visibly changes.",
@@ -72,6 +76,7 @@ export async function POST(request: Request) {
         avoidedAction: result.avoidedAction,
         currentFeeling: result.currentFeeling,
         highestBeingChoice: result.highestBeingChoice,
+        onboardingProfile,
         recentJournalEntries: recentJournalEntries
           .filter((entry) => entry.content.trim())
           .slice(0, 8),

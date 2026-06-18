@@ -69,6 +69,18 @@ export type JournalEntry = {
   updatedAt: string;
 };
 
+export type OnboardingProfile = {
+  primaryGoal: string;
+  currentChallenge: string;
+  desiredState: string;
+  practiceStyle: string;
+  spiritualOpenness: string;
+  commitmentLevel: string;
+  guidanceTone: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type BeingMetric = {
   label: string;
   value: string;

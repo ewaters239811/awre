@@ -44,6 +44,9 @@ html.light {
 
 body {
   @apply min-h-screen bg-background text-foreground antialiased;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  touch-action: manipulation;
   background:
     linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
@@ -146,4 +149,11 @@ html.light .aura-glass::before {
 
 .clearpth-page-title {
   @apply mt-3 font-serif text-4xl font-semibold leading-tight tracking-normal sm:text-5xl;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
 }
