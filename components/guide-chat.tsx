@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Plus, Send, Trash2 } from "lucide-react";
+import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { getLatestCheckIn } from "@/lib/alignment";
@@ -10,9 +10,6 @@ import {
   createAssistantMessage,
   createConversation,
   createUserMessage,
-  deleteGuideConversation,
-  getGuideConversations,
-  saveGuideConversation,
 } from "@/lib/guide-storage";
 import type { CheckInResult, GuideConversation } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -24,7 +21,6 @@ const fallbackSuggestedPrompts = [
 ];
 
 export function GuideChat() {
-  const [conversations, setConversations] = useState<GuideConversation[]>([]);
   const [activeConversation, setActiveConversation] =
     useState<GuideConversation | null>(null);
   const [input, setInput] = useState("");
@@ -37,14 +33,7 @@ export function GuideChat() {
 
   useEffect(() => {
     queueMicrotask(() => {
-      const saved = getGuideConversations();
-      const initial = saved[0] ?? createConversation();
-
-      if (saved.length === 0) {
-        saveGuideConversation(initial);
-      }
-
-      setConversations(saved.length > 0 ? saved : [initial]);
+      const initial = createConversation();
       setActiveConversation(initial);
       setSuggestedPrompts(getSuggestionsForConversation(initial));
       setLatestCheckIn(getLatestCheckIn());
@@ -55,46 +44,10 @@ export function GuideChat() {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeConversation?.messages]);
 
-  const createNewConversation = () => {
-    const conversation = createConversation();
-    saveGuideConversation(conversation);
-    const next = [conversation, ...conversations];
-    setConversations(next);
-    setActiveConversation(conversation);
-    setSuggestedPrompts(fallbackSuggestedPrompts);
-    setInput("");
-  };
-
-  const removeConversation = (id: string) => {
-    const next = deleteGuideConversation(id);
-    const replacement = next[0] ?? createConversation();
-
-    if (next.length === 0) {
-      saveGuideConversation(replacement);
-    }
-
-    setConversations(next.length > 0 ? next : [replacement]);
-    setActiveConversation((current) =>
-      current?.id === id ? replacement : current,
-    );
-    setSuggestedPrompts(getSuggestionsForConversation(replacement));
-  };
-
   const persistConversation = (conversation: GuideConversation) => {
-    saveGuideConversation(conversation);
-    setActiveConversation(conversation);
-    setConversations((current) => {
-      const next = [
-        {
-          ...conversation,
-          title: getConversationTitle(conversation),
-          updatedAt: new Date().toISOString(),
-        },
-        ...current.filter((item) => item.id !== conversation.id),
-      ];
-      const saved = getGuideConversations();
-
-      return saved.length > 0 ? saved : next;
+    setActiveConversation({
+      ...conversation,
+      updatedAt: new Date().toISOString(),
     });
   };
 
@@ -170,66 +123,7 @@ export function GuideChat() {
   };
 
   return (
-    <section className="mx-auto mt-8 grid max-w-6xl gap-5 lg:grid-cols-[280px_1fr]">
-      <aside className="aura-glass rounded-lg p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-primary">
-              Conversations
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {conversations.length} saved
-            </p>
-          </div>
-          <Button
-            type="button"
-            size="icon"
-            onClick={createNewConversation}
-            aria-label="New conversation"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="mt-4 grid gap-2">
-          {conversations.map((conversation) => (
-            <div
-              key={conversation.id}
-              className={cn(
-                "group flex items-center gap-2 rounded-md border border-border/70 bg-card/60 p-2 transition duration-200 hover:border-foreground/25 hover:bg-accent",
-                activeConversation?.id === conversation.id &&
-                  "border-foreground/40 bg-accent",
-              )}
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveConversation(conversation);
-                  setSuggestedPrompts(getSuggestionsForConversation(conversation));
-                }}
-                className="min-w-0 flex-1 text-left"
-              >
-                <span className="block truncate text-sm font-medium">
-                  {conversation.title}
-                </span>
-                <span className="mt-1 block text-xs text-muted-foreground">
-                  {new Date(conversation.updatedAt).toLocaleDateString()}
-                </span>
-              </button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => removeConversation(conversation.id)}
-                aria-label="Delete conversation"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      </aside>
-
+    <section className="mx-auto mt-8 max-w-5xl">
       <div className="aura-glass flex min-h-[680px] flex-col rounded-lg">
         <div className="border-b border-border/60 p-5">
           <p className="text-xs uppercase tracking-[0.24em] text-primary">
@@ -322,17 +216,6 @@ function normalizeSuggestions(suggestions?: string[]) {
     .slice(0, 3);
 
   return clean.length === 3 ? clean : fallbackSuggestedPrompts;
-}
-
-function getConversationTitle(conversation: GuideConversation) {
-  const firstUserMessage = conversation.messages.find(
-    (message) => message.role === "user",
-  );
-
-  if (!firstUserMessage) return conversation.title;
-
-  const title = firstUserMessage.content.trim().replace(/\s+/g, " ");
-  return title.length > 42 ? `${title.slice(0, 42)}...` : title;
 }
 
 function getSuggestionsForConversation(conversation: GuideConversation) {
