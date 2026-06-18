@@ -145,5 +145,5 @@ html.light .aura-glass::before {
 }
 
 .clearpth-page-title {
-  @apply mt-3 font-serif text-4xl font-semibold leading-tight sm:text-5xl;
+  @apply mt-3 font-serif text-4xl font-semibold leading-tight tracking-normal sm:text-5xl;
 }

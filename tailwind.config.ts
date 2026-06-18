@@ -45,8 +45,14 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
-        serif: ["var(--font-cormorant)", "Cormorant Garamond", "serif"],
+        sans: ["var(--font-geist)", "Geist", "system-ui", "sans-serif"],
+        serif: ["var(--font-geist)", "Geist", "system-ui", "sans-serif"],
+        mono: [
+          "var(--font-geist-mono)",
+          "Geist Mono",
+          "ui-monospace",
+          "monospace",
+        ],
       },
       boxShadow: {
         aura: "0 24px 80px rgba(0, 0, 0, 0.35)",

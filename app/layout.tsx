@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Inter } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { AmbientNoise } from "@/components/ambient-noise";
 import { Navigation } from "@/components/navigation";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const cormorant = Cormorant_Garamond({
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
+const geistMono = Geist_Mono({
   subsets: ["latin"],
-  variable: "--font-cormorant",
-  weight: ["500", "600", "700"],
+  variable: "--font-geist-mono",
 });
 
 export const metadata: Metadata = {
@@ -45,7 +44,7 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body className={`${inter.variable} ${cormorant.variable}`}>
+      <body className={`${geist.variable} ${geistMono.variable}`}>
         <Navigation />
         {children}
         <AmbientNoise />

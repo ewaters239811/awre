@@ -57,7 +57,7 @@ export function Navigation() {
               <circle cx="18" cy="18" r="2.2" fill="currentColor" />
             </svg>
           </span>
-          <span className="text-xl font-semibold tracking-[-0.02em] text-foreground">
+          <span className="text-xl font-semibold tracking-normal text-foreground">
             ClearPth
           </span>
         </Link>
