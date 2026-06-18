@@ -170,8 +170,21 @@ export function GuideChat() {
   };
 
   return (
-    <section className="mx-auto mt-8 grid max-w-6xl gap-5 lg:grid-cols-[280px_1fr]">
-      <aside className="aura-glass rounded-lg p-4">
+    <section className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 sm:px-6 lg:px-8">
+      <header className="border-b border-border/60 pb-6">
+        <p className="text-xs uppercase tracking-[0.24em] text-primary">
+          Daily Guide
+        </p>
+        <h1 className="mt-2 font-serif text-4xl font-semibold md:text-5xl">
+          Work Through A Challenge
+        </h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+          A reflective guide for daily challenges, drawing from spiritual
+          traditions, inner development, and nervous-system awareness.
+        </p>
+      </header>
+
+      <aside className="border-b border-border/60 pb-5">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-primary">
@@ -191,12 +204,12 @@ export function GuideChat() {
           </Button>
         </div>
 
-        <div className="mt-4 grid gap-2">
+        <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
           {conversations.map((conversation) => (
             <div
               key={conversation.id}
               className={cn(
-                "group flex items-center gap-2 rounded-md border border-border/70 bg-card/60 p-2 transition duration-200 hover:border-foreground/25 hover:bg-accent",
+                "group flex min-w-[220px] items-center gap-2 rounded-md border border-border/70 bg-card/55 p-2 transition duration-200 hover:border-foreground/25 hover:bg-accent",
                 activeConversation?.id === conversation.id &&
                   "border-foreground/40 bg-accent",
               )}
@@ -230,21 +243,8 @@ export function GuideChat() {
         </div>
       </aside>
 
-      <div className="aura-glass flex min-h-[680px] flex-col rounded-lg">
-        <div className="border-b border-border/60 p-5">
-          <p className="text-xs uppercase tracking-[0.24em] text-primary">
-            Daily Guide
-          </p>
-          <h1 className="mt-2 font-serif text-4xl font-semibold">
-            Work Through A Challenge
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-            A reflective guide for daily challenges, drawing from spiritual
-            traditions, inner development, and nervous-system awareness.
-          </p>
-        </div>
-
-        <div className="max-h-[58vh] min-h-[420px] flex-1 space-y-4 overflow-y-auto p-5">
+      <div className="flex min-h-[60vh] flex-col">
+        <div className="flex-1 space-y-5 pb-6">
           {activeConversation?.messages.map((message) => (
             <div
               key={message.createdAt}
@@ -255,10 +255,10 @@ export function GuideChat() {
             >
               <div
                 className={cn(
-                  "max-w-[85%] rounded-md border px-4 py-3 text-sm leading-6 shadow-sm",
+                  "max-w-[88%] rounded-md border px-4 py-3 text-sm leading-6 shadow-sm md:max-w-[72%]",
                   message.role === "user"
                     ? "border-foreground/25 bg-foreground text-background"
-                    : "border-border/70 bg-card text-muted-foreground",
+                    : "border-transparent bg-transparent px-0 text-muted-foreground shadow-none",
                 )}
               >
                 {message.content}
@@ -266,7 +266,7 @@ export function GuideChat() {
             </div>
           ))}
           {isSending ? (
-            <div className="max-w-[85%] rounded-md border border-border/70 bg-card px-4 py-3 text-sm text-muted-foreground">
+            <div className="max-w-[88%] rounded-md border border-border/70 bg-card px-4 py-3 text-sm text-muted-foreground md:max-w-[72%]">
               Reading the pattern...
             </div>
           ) : null}
@@ -288,16 +288,18 @@ export function GuideChat() {
         </div>
 
         <form
-          className="border-t border-border/60 bg-card/40 p-5"
+          className="sticky bottom-0 border-t border-border/60 bg-background/92 py-4 backdrop-blur-xl"
           onSubmit={sendMessage}
         >
-          <Textarea
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-            placeholder="What challenge are you facing today?"
-            rows={4}
-          />
-          <div className="mt-3 flex justify-end">
+          <div className="flex flex-col gap-3 rounded-lg border border-border/70 bg-card/70 p-3 shadow-sm">
+            <Textarea
+              className="min-h-28 border-0 bg-transparent p-1 focus-visible:ring-0"
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              placeholder="What challenge are you facing today?"
+              rows={3}
+            />
+            <div className="flex justify-end">
             <Button
               type="button"
               disabled={isSending || !input.trim() || !activeConversation}
@@ -308,6 +310,7 @@ export function GuideChat() {
               Send
               <Send className="h-4 w-4" aria-hidden />
             </Button>
+            </div>
           </div>
         </form>
       </div>
