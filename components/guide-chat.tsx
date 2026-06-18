@@ -83,7 +83,19 @@ export function GuideChat() {
   const persistConversation = (conversation: GuideConversation) => {
     saveGuideConversation(conversation);
     setActiveConversation(conversation);
-    setConversations(getGuideConversations());
+    setConversations((current) => {
+      const next = [
+        {
+          ...conversation,
+          title: getConversationTitle(conversation),
+          updatedAt: new Date().toISOString(),
+        },
+        ...current.filter((item) => item.id !== conversation.id),
+      ];
+      const saved = getGuideConversations();
+
+      return saved.length > 0 ? saved : next;
+    });
   };
 
   const messages = activeConversation?.messages ?? [];
@@ -93,8 +105,8 @@ export function GuideChat() {
     messages.length > 1 &&
     lastMessage?.role === "assistant";
 
-  const sendMessage = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const sendMessage = async (event?: FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
     const content = input.trim();
     if (!content || isSending || !activeConversation) return;
 
@@ -286,7 +298,13 @@ export function GuideChat() {
             rows={4}
           />
           <div className="mt-3 flex justify-end">
-            <Button type="submit" disabled={isSending || !input.trim()}>
+            <Button
+              type="button"
+              disabled={isSending || !input.trim() || !activeConversation}
+              onClick={() => {
+                void sendMessage();
+              }}
+            >
               Send
               <Send className="h-4 w-4" aria-hidden />
             </Button>
@@ -304,6 +322,17 @@ function normalizeSuggestions(suggestions?: string[]) {
     .slice(0, 3);
 
   return clean.length === 3 ? clean : fallbackSuggestedPrompts;
+}
+
+function getConversationTitle(conversation: GuideConversation) {
+  const firstUserMessage = conversation.messages.find(
+    (message) => message.role === "user",
+  );
+
+  if (!firstUserMessage) return conversation.title;
+
+  const title = firstUserMessage.content.trim().replace(/\s+/g, " ");
+  return title.length > 42 ? `${title.slice(0, 42)}...` : title;
 }
 
 function getSuggestionsForConversation(conversation: GuideConversation) {

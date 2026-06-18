@@ -56,29 +56,41 @@ export function getGuideConversations(): GuideConversation[] {
 export function saveGuideConversation(conversation: GuideConversation) {
   if (!isBrowser()) return;
 
-  const conversations = getGuideConversations();
-  const next = [
-    {
-      ...conversation,
-      title: getConversationTitle(conversation),
-      updatedAt: new Date().toISOString(),
-    },
-    ...conversations.filter((item) => item.id !== conversation.id),
-  ];
+  try {
+    const conversations = getGuideConversations();
+    const next = [
+      {
+        ...conversation,
+        title: getConversationTitle(conversation),
+        updatedAt: new Date().toISOString(),
+      },
+      ...conversations.filter((item) => item.id !== conversation.id),
+    ];
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    // Safari private browsing or storage limits can block writes.
+  }
 }
 
 export function deleteGuideConversation(id: string) {
   if (!isBrowser()) return [];
 
-  const next = getGuideConversations().filter((item) => item.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  return next;
+  try {
+    const next = getGuideConversations().filter((item) => item.id !== id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    return next;
+  } catch {
+    return [];
+  }
 }
 
 export function clearGuideConversations() {
-  if (isBrowser()) localStorage.removeItem(STORAGE_KEY);
+  try {
+    if (isBrowser()) localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Storage may be unavailable in some browser modes.
+  }
 }
 
 function getConversationTitle(conversation: GuideConversation) {
