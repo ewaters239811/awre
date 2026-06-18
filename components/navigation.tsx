@@ -29,10 +29,33 @@ export function Navigation() {
       <nav className="container flex h-20 items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-foreground text-background">
-            <span
-              className="h-0 w-0 border-x-[7px] border-b-[12px] border-x-transparent border-b-current"
+            <svg
+              viewBox="0 0 36 36"
+              className="h-6 w-6"
+              fill="none"
               aria-hidden
-            />
+            >
+              <path
+                d="M18 4 29 18 18 32 7 18 18 4Z"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M12 21.5c2.1 2.6 5.6 3.8 9 2.9 3.5-.9 6-3.9 6.1-7.3"
+                stroke="currentColor"
+                strokeWidth="2.6"
+                strokeLinecap="round"
+              />
+              <path
+                d="M24 14.5c-2-2.2-5.1-3.1-8.1-2.3-3.5.9-6 3.9-6.1 7.3"
+                stroke="currentColor"
+                strokeWidth="2.6"
+                strokeLinecap="round"
+                opacity="0.55"
+              />
+              <circle cx="18" cy="18" r="2.2" fill="currentColor" />
+            </svg>
           </span>
           <span className="text-xl font-semibold tracking-[-0.02em] text-foreground">
             ClearPth
