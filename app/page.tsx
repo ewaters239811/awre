@@ -52,11 +52,11 @@ export default function HomePage() {
         </div>
 
         <div className="aura-glass rounded-lg p-5 md:p-6">
-          <div className="rounded-md border border-primary/20 bg-black/20 p-5">
-            <p className="text-xs uppercase tracking-[0.24em] text-primary/85">
+          <div className="rounded-md border border-border bg-card p-5">
+            <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
               Integrated State
             </p>
-            <p className="mt-2 font-serif text-4xl font-semibold text-primary">
+            <p className="mt-2 font-serif text-4xl font-semibold text-foreground">
               Being
             </p>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">

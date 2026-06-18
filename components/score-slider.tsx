@@ -16,7 +16,7 @@ export function ScoreSlider({
     <div className="space-y-3 border-b border-border/50 py-5 last:border-b-0">
       <div className="flex items-center justify-between gap-4">
         <Label>{label}</Label>
-        <span className="flex h-9 min-w-9 items-center justify-center rounded-md border border-primary/25 bg-primary/10 px-3 font-medium text-primary shadow-inner shadow-primary/5">
+        <span className="flex h-9 min-w-9 items-center justify-center rounded-md border border-border bg-foreground px-3 font-medium text-background">
           {value}
         </span>
       </div>

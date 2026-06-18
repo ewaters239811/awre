@@ -3,39 +3,39 @@
 @tailwind utilities;
 
 :root {
-  --background: 225 18% 6%;
-  --foreground: 42 28% 91%;
-  --card: 225 15% 9%;
-  --card-foreground: 42 28% 91%;
-  --primary: 40 58% 66%;
-  --primary-foreground: 225 18% 7%;
-  --secondary: 196 18% 16%;
-  --secondary-foreground: 42 28% 91%;
-  --muted: 225 13% 13%;
-  --muted-foreground: 42 14% 67%;
-  --accent: 168 24% 45%;
-  --accent-foreground: 42 28% 94%;
-  --border: 42 15% 20%;
-  --input: 42 15% 22%;
-  --ring: 40 58% 66%;
+  --background: 0 0% 0%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 4%;
+  --card-foreground: 0 0% 98%;
+  --primary: 0 0% 100%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 10%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 8%;
+  --muted-foreground: 0 0% 63%;
+  --accent: 0 0% 16%;
+  --accent-foreground: 0 0% 98%;
+  --border: 0 0% 16%;
+  --input: 0 0% 18%;
+  --ring: 0 0% 82%;
 }
 
 html.light {
-  --background: 42 42% 95%;
-  --foreground: 216 18% 14%;
-  --card: 42 38% 91%;
-  --card-foreground: 216 18% 14%;
-  --primary: 38 45% 42%;
-  --primary-foreground: 42 42% 96%;
-  --secondary: 198 18% 86%;
-  --secondary-foreground: 216 18% 14%;
-  --muted: 42 24% 88%;
-  --muted-foreground: 216 11% 42%;
-  --accent: 171 26% 38%;
-  --accent-foreground: 42 42% 96%;
-  --border: 39 23% 74%;
-  --input: 39 23% 72%;
-  --ring: 38 45% 42%;
+  --background: 0 0% 100%;
+  --foreground: 0 0% 4%;
+  --card: 0 0% 98%;
+  --card-foreground: 0 0% 4%;
+  --primary: 0 0% 0%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 4%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 40%;
+  --accent: 0 0% 92%;
+  --accent-foreground: 0 0% 4%;
+  --border: 0 0% 88%;
+  --input: 0 0% 82%;
+  --ring: 0 0% 18%;
 }
 
 * {
@@ -45,12 +45,10 @@ html.light {
 body {
   @apply min-h-screen bg-background text-foreground antialiased;
   background:
-    linear-gradient(rgba(239, 215, 164, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(239, 215, 164, 0.018) 1px, transparent 1px),
-    radial-gradient(circle at 50% -10%, rgba(202, 170, 105, 0.18), transparent 34%),
-    radial-gradient(circle at 88% 8%, rgba(69, 129, 126, 0.12), transparent 26%),
-    radial-gradient(circle at 12% 40%, rgba(144, 113, 75, 0.1), transparent 25%),
-    linear-gradient(145deg, #080a0f 0%, #111318 48%, #091211 100%);
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at 50% -10%, rgba(255, 255, 255, 0.08), transparent 32%),
+    linear-gradient(180deg, #050505 0%, #000 45%, #050505 100%);
   background-attachment: fixed;
   background-size:
     56px 56px,
@@ -63,12 +61,10 @@ body {
 
 html.light body {
   background:
-    linear-gradient(rgba(131, 104, 57, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(131, 104, 57, 0.035) 1px, transparent 1px),
-    radial-gradient(circle at 50% -10%, rgba(199, 166, 98, 0.22), transparent 34%),
-    radial-gradient(circle at 88% 8%, rgba(83, 143, 139, 0.14), transparent 28%),
-    radial-gradient(circle at 8% 42%, rgba(222, 204, 168, 0.38), transparent 30%),
-    linear-gradient(145deg, #f7f1e4 0%, #f1eadc 48%, #e9f0ec 100%);
+    linear-gradient(rgba(0, 0, 0, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.035) 1px, transparent 1px),
+    radial-gradient(circle at 50% -10%, rgba(0, 0, 0, 0.05), transparent 30%),
+    linear-gradient(180deg, #fff 0%, #fafafa 48%, #fff 100%);
   background-attachment: fixed;
   background-size:
     56px 56px,
@@ -80,7 +76,7 @@ html.light body {
 }
 
 ::selection {
-  background: rgba(210, 174, 88, 0.35);
+  background: rgba(255, 255, 255, 0.22);
 }
 
 ::-webkit-scrollbar {
@@ -93,13 +89,13 @@ html.light body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(222, 192, 126, 0.24);
-  border: 2px solid rgba(8, 10, 15, 0.9);
+  background: rgba(255, 255, 255, 0.24);
+  border: 2px solid rgba(0, 0, 0, 0.9);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(222, 192, 126, 0.36);
+  background: rgba(255, 255, 255, 0.36);
 }
 
 html.light ::-webkit-scrollbar-track {
@@ -107,39 +103,27 @@ html.light ::-webkit-scrollbar-track {
 }
 
 html.light ::-webkit-scrollbar-thumb {
-  background: rgba(128, 101, 53, 0.28);
-  border-color: rgba(247, 241, 228, 0.9);
+  background: rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.9);
 }
 
 .aura-glass {
   position: relative;
   overflow: hidden;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
-    rgba(9, 11, 16, 0.74);
-  border: 1px solid rgba(233, 211, 166, 0.16);
-  box-shadow:
-    0 28px 90px rgba(0, 0, 0, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(24px) saturate(120%);
+  background: rgba(10, 10, 10, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+  backdrop-filter: blur(18px);
 }
 
 html.light .aura-glass {
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.34)),
-    rgba(247, 241, 228, 0.74);
-  border-color: rgba(118, 94, 50, 0.2);
-  box-shadow:
-    0 24px 70px rgba(88, 77, 55, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.86);
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: none;
 }
 
 .aura-glass::before {
-  content: "";
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 28%);
+  content: none;
 }
 
 html.light .aura-glass::before {
@@ -153,11 +137,11 @@ html.light .aura-glass::before {
 
 .aura-luxury-line {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(222, 192, 126, 0.55), transparent);
+  background: linear-gradient(90deg, transparent, hsl(var(--border)), transparent);
 }
 
 .clearpth-page-kicker {
-  @apply text-sm uppercase tracking-[0.28em] text-primary;
+  @apply text-sm uppercase tracking-[0.28em] text-muted-foreground;
 }
 
 .clearpth-page-title {

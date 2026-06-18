@@ -169,9 +169,9 @@ export function GuideChat() {
             <div
               key={conversation.id}
               className={cn(
-                "group flex items-center gap-2 rounded-md border border-border/50 bg-black/18 p-2 transition duration-200 hover:border-primary/25 hover:bg-white/[0.04]",
+                "group flex items-center gap-2 rounded-md border border-border/70 bg-card/60 p-2 transition duration-200 hover:border-foreground/25 hover:bg-accent",
                 activeConversation?.id === conversation.id &&
-                  "border-primary/40 bg-primary/10",
+                  "border-foreground/40 bg-accent",
               )}
             >
               <button
@@ -227,8 +227,8 @@ export function GuideChat() {
                 className={cn(
                   "max-w-[85%] rounded-md border px-4 py-3 text-sm leading-6 shadow-sm",
                   message.role === "user"
-                    ? "border-primary/30 bg-primary/14 text-foreground"
-                    : "border-border/55 bg-black/24 text-muted-foreground",
+                    ? "border-foreground/25 bg-foreground text-background"
+                    : "border-border/70 bg-card text-muted-foreground",
                 )}
               >
                 {message.content}
@@ -236,7 +236,7 @@ export function GuideChat() {
             </div>
           ))}
           {isSending ? (
-            <div className="max-w-[85%] rounded-md border border-border/55 bg-black/24 px-4 py-3 text-sm text-muted-foreground">
+            <div className="max-w-[85%] rounded-md border border-border/70 bg-card px-4 py-3 text-sm text-muted-foreground">
               Reading the pattern...
             </div>
           ) : null}
@@ -247,7 +247,7 @@ export function GuideChat() {
                   key={prompt}
                   type="button"
                   onClick={() => setInput(prompt)}
-                  className="rounded-full border border-primary/20 bg-primary/10 px-3 py-2 text-left text-xs leading-5 text-primary transition hover:border-primary/35 hover:bg-primary/15"
+                  className="rounded-full border border-border bg-card px-3 py-2 text-left text-xs leading-5 text-foreground transition hover:border-foreground/35 hover:bg-accent"
                 >
                   {prompt}
                 </button>
@@ -258,7 +258,7 @@ export function GuideChat() {
         </div>
 
         <form
-          className="border-t border-border/60 bg-black/10 p-5"
+          className="border-t border-border/60 bg-card/40 p-5"
           onSubmit={sendMessage}
         >
           <Textarea

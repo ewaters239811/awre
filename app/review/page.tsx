@@ -103,7 +103,7 @@ export default function ReviewPage() {
       ) : (
         <>
           <section className="mx-auto mt-8 grid max-w-6xl gap-5 lg:grid-cols-[1.15fr_0.85fr]">
-            <article className="rounded-md border border-primary/25 bg-primary/10 p-6 md:p-7">
+            <article className="rounded-md border border-foreground/20 bg-card p-6 md:p-7">
               <div className="flex items-center gap-3">
                 <Crosshair className="h-5 w-5 text-primary" aria-hidden />
                 <p className="text-xs uppercase tracking-[0.24em] text-primary">

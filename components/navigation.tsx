@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Sparkles } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -28,10 +28,13 @@ export function Navigation() {
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/70 backdrop-blur-2xl">
       <nav className="container flex h-20 items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-md border border-primary/30 bg-primary/10 shadow-[0_0_30px_rgba(202,170,105,0.12)]">
-            <Sparkles className="h-5 w-5 text-primary" aria-hidden />
+          <span className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-foreground text-background">
+            <span
+              className="h-0 w-0 border-x-[7px] border-b-[12px] border-x-transparent border-b-current"
+              aria-hidden
+            />
           </span>
-          <span className="font-serif text-2xl font-semibold tracking-[0.08em] text-foreground">
+          <span className="text-xl font-semibold tracking-[-0.02em] text-foreground">
             ClearPth
           </span>
         </Link>
@@ -44,7 +47,7 @@ export function Navigation() {
               className={cn(
                 "rounded-md px-3 py-2 text-sm text-muted-foreground transition hover:bg-white/[0.07] hover:text-foreground",
                 pathname === link.href &&
-                  "bg-primary/12 text-primary shadow-inner shadow-primary/5",
+                  "bg-foreground text-background hover:bg-foreground hover:text-background",
               )}
             >
               {link.label}
@@ -74,7 +77,8 @@ export function Navigation() {
               onClick={() => setOpen(false)}
               className={cn(
                 "rounded-md px-3 py-3 text-sm text-muted-foreground transition hover:bg-white/[0.07] hover:text-foreground",
-                pathname === link.href && "bg-primary/10 text-primary",
+                pathname === link.href &&
+                  "bg-foreground text-background hover:bg-foreground hover:text-background",
               )}
             >
               {link.label}
