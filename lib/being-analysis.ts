@@ -2,7 +2,7 @@ import type {
   BeingDashboardAnalysis,
   BeingMetric,
   CheckInResult,
-  DailyRitual,
+  JournalEntry,
   PillarName,
 } from "@/lib/types";
 
@@ -14,7 +14,7 @@ export type BeingDashboardData = {
   trend: number;
   volatility: number;
   integrationDebt: number;
-  ritualCompletion: number;
+  journalRhythm: number;
   weakestPillar: PillarName | null;
   strongestPillar: PillarName | null;
   timeline: Array<{
@@ -26,7 +26,7 @@ export type BeingDashboardData = {
 
 export function buildBeingDashboardData(
   checkIns: CheckInResult[],
-  rituals: DailyRitual[],
+  journalEntries: JournalEntry[],
 ): BeingDashboardData {
   const sorted = [...checkIns].sort(
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
@@ -50,14 +50,14 @@ export function buildBeingDashboardData(
   const volatility = sorted.length
     ? roundToTenth(standardDeviation(sorted.map((item) => item.beingScore)))
     : 0;
-  const ritualCompletion = calculateRitualCompletion(rituals);
+  const journalRhythm = calculateJournalRhythm(journalEntries);
   const metrics = buildMetrics({
     latestScore: latest?.beingScore ?? null,
     averageScore,
     trend,
     volatility,
     integrationDebt,
-    ritualCompletion,
+    journalRhythm,
     weakestPillar,
     strongestPillar,
     totalCheckIns: sorted.length,
@@ -71,7 +71,7 @@ export function buildBeingDashboardData(
     trend: roundToTenth(trend),
     volatility,
     integrationDebt,
-    ritualCompletion,
+    journalRhythm,
     weakestPillar,
     strongestPillar,
     timeline: sorted.map((item) => ({
@@ -82,7 +82,7 @@ export function buildBeingDashboardData(
       averageScore,
       trend,
       integrationDebt,
-      ritualCompletion,
+      journalRhythm,
       weakestPillar,
       strongestPillar,
     }),
@@ -95,7 +95,7 @@ function buildMetrics({
   trend,
   volatility,
   integrationDebt,
-  ritualCompletion,
+  journalRhythm,
   weakestPillar,
   strongestPillar,
   totalCheckIns,
@@ -105,7 +105,7 @@ function buildMetrics({
   trend: number;
   volatility: number;
   integrationDebt: number;
-  ritualCompletion: number;
+  journalRhythm: number;
   weakestPillar: PillarName | null;
   strongestPillar: PillarName | null;
   totalCheckIns: number;
@@ -151,9 +151,9 @@ function buildMetrics({
           : "Your state is showing a workable level of consistency.",
     },
     {
-      label: "Ritual Completion",
-      value: `${ritualCompletion}%`,
-      detail: "Morning and evening ritual completion across saved rituals.",
+      label: "Journal Rhythm",
+      value: `${journalRhythm}%`,
+      detail: "Saved journal entries across the last seven days.",
     },
     {
       label: "Strongest Pillar",
@@ -176,14 +176,14 @@ function buildLocalAnalysis({
   averageScore,
   trend,
   integrationDebt,
-  ritualCompletion,
+  journalRhythm,
   weakestPillar,
   strongestPillar,
 }: {
   averageScore: number | null;
   trend: number;
   integrationDebt: number;
-  ritualCompletion: number;
+  journalRhythm: number;
   weakestPillar: PillarName | null;
   strongestPillar: PillarName | null;
 }): BeingDashboardAnalysis {
@@ -197,7 +197,7 @@ function buildLocalAnalysis({
       hiddenDebt:
         "The first debt is visibility: the state cannot be refined until it is named.",
       leveragePoint:
-        "Complete one check-in and one ritual entry today.",
+        "Complete one check-in and one journal entry today.",
       nextPractice:
         "Name one thought, one action, and one feeling before the day ends.",
     };
@@ -210,7 +210,7 @@ function buildLocalAnalysis({
       averageScore,
       trend,
       integrationDebt,
-      ritualCompletion,
+      journalRhythm,
       weakestPillar,
     }),
     hiddenDebt:
@@ -218,8 +218,8 @@ function buildLocalAnalysis({
         ? `The main debt is imbalance: ${weakestPillar} is lagging behind the rest of the system.`
         : "The main debt is subtle: your pillars are not far apart, so the work is consistency rather than overhaul.",
     leveragePoint:
-      ritualCompletion < 60
-        ? "Use the morning and evening ritual to make alignment a daily rhythm."
+      journalRhythm < 60
+        ? "Use the daily journal to make self-honesty a visible rhythm."
         : `Let ${strongestPillar ?? "your strongest pillar"} support direct repair in ${weakestPillar ?? "your weakest pillar"}.`,
     nextPractice:
       trend < -0.2
@@ -232,16 +232,16 @@ function getRootCause({
   averageScore,
   trend,
   integrationDebt,
-  ritualCompletion,
+  journalRhythm,
   weakestPillar,
 }: {
   averageScore: number;
   trend: number;
   integrationDebt: number;
-  ritualCompletion: number;
+  journalRhythm: number;
   weakestPillar: PillarName | null;
 }) {
-  if (averageScore < 5 && ritualCompletion < 50) {
+  if (averageScore < 5 && journalRhythm < 50) {
     return "The likely root cause is low continuity: the chosen identity is not yet being reinforced by a daily rhythm.";
   }
 
@@ -268,20 +268,24 @@ function buildPillarAverages(items: CheckInResult[]) {
   } satisfies Record<PillarName, number>;
 }
 
-function calculateRitualCompletion(rituals: DailyRitual[]) {
-  if (rituals.length === 0) return 0;
+function calculateJournalRhythm(journalEntries: JournalEntry[]) {
+  if (journalEntries.length === 0) return 0;
 
-  const completedParts = rituals.reduce((sum, ritual) => {
-    const morning = Boolean(
-      ritual.chosenBeing || ritual.morningIntention || ritual.protectedBoundary,
-    );
-    const evening = Boolean(
-      ritual.eveningAlignment || ritual.eveningFragmentation || ritual.lesson,
-    );
-    return sum + Number(morning) + Number(evening);
-  }, 0);
+  const dates = new Set(
+    journalEntries
+      .filter((entry) => entry.content.trim())
+      .map((entry) => entry.date),
+  );
+  const today = new Date();
+  let completedDays = 0;
 
-  return Math.round((completedParts / (rituals.length * 2)) * 100);
+  for (let offset = 0; offset < 7; offset += 1) {
+    const cursor = new Date(today);
+    cursor.setDate(today.getDate() - offset);
+    if (dates.has(toDateKey(cursor))) completedDays += 1;
+  }
+
+  return Math.round((completedDays / 7) * 100);
 }
 
 function getArchetype(score: number, trend: number, debt: number) {
@@ -306,4 +310,11 @@ function standardDeviation(values: number[]) {
 
 function roundToTenth(value: number) {
   return Math.round(value * 10) / 10;
+}
+
+function toDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }

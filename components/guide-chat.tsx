@@ -5,6 +5,7 @@ import { Plus, Send, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { getLatestCheckIn } from "@/lib/alignment";
+import { getJournalEntries } from "@/lib/journal-storage";
 import {
   createAssistantMessage,
   createConversation,
@@ -117,6 +118,10 @@ export function GuideChat() {
             content: message.content,
           })),
           latestCheckIn,
+          recentJournalEntries: getJournalEntries().slice(0, 8).map((entry) => ({
+            date: entry.date,
+            content: entry.content,
+          })),
         }),
       });
       const payload = (await response.json()) as {

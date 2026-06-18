@@ -3,19 +3,21 @@ import { createJsonWithOpenAI } from "@/lib/server/openai";
 import type {
   BeingDashboardAnalysis,
   CheckInResult,
-  DailyRitual,
 } from "@/lib/types";
 
 type AnalysisRequest = {
   checkIns?: CheckInResult[];
-  rituals?: DailyRitual[];
+  journalEntries?: Array<{
+    date: string;
+    content: string;
+  }>;
   metrics?: unknown;
 };
 
 const fallback: BeingDashboardAnalysis = {
   archetype: "Active Integration",
   summary:
-    "Your Being is being shaped by the relationship between your scores, your rituals, and your willingness to return to alignment.",
+    "Your Being is being shaped by the relationship between your scores, your journal pattern, and your willingness to return to alignment.",
   rootCause:
     "The likely root cause is the place where thought, action, and feeling are not yet reinforcing the same identity.",
   hiddenDebt:
@@ -34,10 +36,12 @@ export async function POST(request: Request) {
       fallback,
       system: [
         "You write for ClearPth, a self-reflection and personal growth app.",
-        "Create a depth analysis of the user's Being using their check-ins, rituals, and computed metrics.",
+        "Create a depth analysis of the user's Being using their check-ins, journal entries, and computed metrics.",
         "You are grounded in anthroposophy, esotericism, Christian mysticism, theosophy, Rosicrucianism, and neuroscience, but you must avoid inflated claims.",
         "Use Jungian psychology as a practical depth lens: notice shadow patterns, projection, persona maintenance, repeated emotional charges, and what wants integration.",
         "When reading goals or repeated frustrations, infer the deeper feeling, identity, or inner state the user may be seeking beneath the outer circumstance.",
+        "Use recent journal entries as additional private context for repeated patterns, root causes, emotional dependencies, self-concept, and practical next steps.",
+        "Do not quote journal entries at length. Distill them into concise pattern intelligence.",
         "Frame manifestation as alignment with a state of Being before outer evidence appears: the user becomes less emotionally dependent on reality changing and more capable of acting from the desired state now.",
         "Do not suggest that hardship is the user's fault or that inner change replaces practical action. Pair inner state work with grounded next steps.",
         "This is not therapy, diagnosis, medical advice, or crisis support.",
@@ -45,7 +49,7 @@ export async function POST(request: Request) {
         "Only use gendered language if the user explicitly states their gender or asks you to reflect it.",
         "Do not use markdown formatting, bold text, headings, bullets, or numbered lists inside JSON values.",
         "Use the phrase integration debt to mean the gap between the user's strongest and weakest pillars.",
-        "Include a rootCause field that explains the likely root cause of a low or unstable Being score using the user's pillar scores, reflections, rituals, and patterns.",
+        "Include a rootCause field that explains the likely root cause of a low or unstable Being score using the user's pillar scores, reflections, journal entries, and patterns.",
         "Do not diagnose. Frame root cause as a reflective pattern, not a medical cause.",
         "Return only valid JSON with keys: archetype, summary, rootCause, hiddenDebt, leveragePoint, nextPractice.",
         "Keep each value concise and premium. Make it feel insightful, direct, and personally sculpted.",
@@ -66,15 +70,9 @@ export async function POST(request: Request) {
           currentFeeling: item.currentFeeling,
           highestBeingChoice: item.highestBeingChoice,
         })),
-        recentRituals: (body.rituals ?? []).slice(0, 12).map((ritual) => ({
-          date: ritual.date,
-          chosenBeing: ritual.chosenBeing,
-          morningIntention: ritual.morningIntention,
-          protectedBoundary: ritual.protectedBoundary,
-          eveningAlignment: ritual.eveningAlignment,
-          eveningFragmentation: ritual.eveningFragmentation,
-          lesson: ritual.lesson,
-        })),
+        recentJournalEntries: (body.journalEntries ?? [])
+          .filter((entry) => entry.content.trim())
+          .slice(0, 12),
       },
     });
 

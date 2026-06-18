@@ -10,11 +10,11 @@ import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/", label: "Home" },
-  { href: "/dashboard", label: "Analysis" },
-  { href: "/ritual", label: "Ritual" },
   { href: "/check-in", label: "Check-In" },
-  { href: "/history", label: "History" },
   { href: "/review", label: "Review" },
+  { href: "/ritual", label: "Ritual" },
+  { href: "/dashboard", label: "Analysis" },
+  { href: "/history", label: "History" },
   { href: "/guide", label: "Guide" },
   { href: "/teachings", label: "Teachings" },
   { href: "/about", label: "About" },

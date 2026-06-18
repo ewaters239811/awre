@@ -6,30 +6,30 @@ import { Activity, BarChart3, Compass, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getCheckIns } from "@/lib/alignment";
 import { buildBeingDashboardData } from "@/lib/being-analysis";
-import { getRituals } from "@/lib/ritual-storage";
+import { getJournalEntries } from "@/lib/journal-storage";
 import type {
   BeingDashboardAnalysis,
   CheckInResult,
-  DailyRitual,
+  JournalEntry,
   PillarName,
 } from "@/lib/types";
 
 export function BeingDashboard() {
   const [checkIns, setCheckIns] = useState<CheckInResult[]>([]);
-  const [rituals, setRituals] = useState<DailyRitual[]>([]);
+  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [analysis, setAnalysis] = useState<BeingDashboardAnalysis | null>(null);
   const [isReading, setIsReading] = useState(false);
 
   useEffect(() => {
     queueMicrotask(() => {
       setCheckIns(getCheckIns());
-      setRituals(getRituals());
+      setJournalEntries(getJournalEntries());
     });
   }, []);
 
   const dashboard = useMemo(
-    () => buildBeingDashboardData(checkIns, rituals),
-    [checkIns, rituals],
+    () => buildBeingDashboardData(checkIns, journalEntries),
+    [checkIns, journalEntries],
   );
 
   useEffect(() => {
@@ -46,14 +46,17 @@ export function BeingDashboard() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         checkIns,
-        rituals,
+        journalEntries: journalEntries.slice(0, 12).map((entry) => ({
+          date: entry.date,
+          content: entry.content,
+        })),
         metrics: {
           latestScore: dashboard.latestScore,
           averageScore: dashboard.averageScore,
           trend: dashboard.trend,
           volatility: dashboard.volatility,
           integrationDebt: dashboard.integrationDebt,
-          ritualCompletion: dashboard.ritualCompletion,
+          journalRhythm: dashboard.journalRhythm,
           weakestPillar: dashboard.weakestPillar,
           strongestPillar: dashboard.strongestPillar,
           pillarAverages: dashboard.pillarAverages,
@@ -69,7 +72,7 @@ export function BeingDashboard() {
       .finally(() => setIsReading(false));
 
     return () => controller.abort();
-  }, [checkIns, dashboard, rituals]);
+  }, [checkIns, dashboard, journalEntries]);
 
   return (
     <main className="container py-8 md:py-12">
@@ -77,7 +80,7 @@ export function BeingDashboard() {
         <p className="clearpth-page-kicker">Integration Analysis</p>
         <h1 className="clearpth-page-title">Where you are Gathering or Leaking Power</h1>
         <p className="mt-4 max-w-3xl text-muted-foreground">
-          A living read of your current score, pillar balance, ritual rhythm,
+          A living read of your current score, pillar balance, journal rhythm,
           integration debt, and the pattern shaping your state over time.
         </p>
       </section>
@@ -88,7 +91,7 @@ export function BeingDashboard() {
             Your Being has not been measured yet.
           </h2>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            Complete a check-in and a daily ritual to unlock the dashboard.
+            Complete a check-in and a daily journal to unlock the dashboard.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Button asChild>

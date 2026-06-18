@@ -1,217 +1,244 @@
 "use client";
 
-import { FormEvent, ReactNode, useEffect, useState } from "react";
-import { Check } from "lucide-react";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { Mic, MicOff, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  createEmptyRitual,
-  getRitualForDate,
-  saveRitual,
+  createEmptyJournalEntry,
+  getJournalEntries,
+  getJournalEntryForDate,
+  saveJournalEntry,
   toDateKey,
-} from "@/lib/ritual-storage";
-import type { DailyRitual } from "@/lib/types";
+} from "@/lib/journal-storage";
+import type { JournalEntry } from "@/lib/types";
 
 const today = toDateKey(new Date());
 
-type SaveState = "idle" | "morning" | "evening";
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+
+type SpeechRecognitionLike = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+
+type SpeechRecognitionEventLike = {
+  results: ArrayLike<{
+    0: {
+      transcript: string;
+    };
+    isFinal: boolean;
+  }>;
+};
+
+type SpeechWindow = Window & {
+  SpeechRecognition?: SpeechRecognitionConstructor;
+  webkitSpeechRecognition?: SpeechRecognitionConstructor;
+};
 
 export default function RitualPage() {
-  const [ritual, setRitual] = useState<DailyRitual | null>(null);
-  const [savedSection, setSavedSection] = useState<SaveState>("idle");
+  const [entry, setEntry] = useState<JournalEntry | null>(null);
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [saved, setSaved] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const speechBaseRef = useRef("");
 
   useEffect(() => {
-    queueMicrotask(() =>
-      setRitual(getRitualForDate(today) ?? createEmptyRitual()),
-    );
+    queueMicrotask(() => {
+      setEntry(getJournalEntryForDate(today) ?? createEmptyJournalEntry());
+      setEntries(getJournalEntries());
+      const speechWindow = window as SpeechWindow;
+      setSpeechSupported(
+        Boolean(
+          speechWindow.SpeechRecognition ||
+            speechWindow.webkitSpeechRecognition,
+        ),
+      );
+    });
   }, []);
 
-  const updateField = <K extends keyof DailyRitual>(
-    field: K,
-    value: DailyRitual[K],
-  ) => {
-    setSavedSection("idle");
-    setRitual((current) => (current ? { ...current, [field]: value } : current));
+  const updateContent = (content: string) => {
+    setSaved(false);
+    setEntry((current) => (current ? { ...current, content } : current));
   };
 
-  const saveSection = (
-    event: FormEvent<HTMLFormElement>,
-    section: Exclude<SaveState, "idle">,
-  ) => {
+  const saveEntry = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!ritual) return;
-    saveRitual(ritual);
-    setSavedSection(section);
+    if (!entry || !entry.content.trim()) return;
+
+    saveJournalEntry(entry);
+    setEntries(getJournalEntries());
+    setSaved(true);
   };
 
-  if (!ritual) {
-    return <main className="container py-12">Loading ritual...</main>;
+  const toggleSpeech = () => {
+    if (!entry || !speechSupported) return;
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const speechWindow = window as SpeechWindow;
+    const Recognition =
+      speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition;
+
+    if (!Recognition) return;
+
+    const recognition = new Recognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+    speechBaseRef.current = entry.content.trim();
+    recognition.onresult = (event) => {
+      let transcript = "";
+
+      for (let index = 0; index < event.results.length; index += 1) {
+        transcript += event.results[index][0].transcript;
+      }
+
+      setEntry((current) =>
+        current
+          ? {
+              ...current,
+              content: `${speechBaseRef.current} ${transcript}`.trim(),
+            }
+          : current,
+      );
+      setSaved(false);
+    };
+    recognition.onend = () => setIsListening(false);
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
+  };
+
+  if (!entry) {
+    return <main className="container py-12">Loading journal...</main>;
   }
 
-  const morningComplete = Boolean(
-    ritual.chosenBeing.trim() ||
-      ritual.morningIntention.trim() ||
-      ritual.protectedBoundary.trim(),
-  );
-  const eveningComplete = Boolean(
-    ritual.eveningAlignment.trim() ||
-      ritual.eveningFragmentation.trim() ||
-      ritual.lesson.trim(),
-  );
+  const recentEntries = entries.filter((item) => item.id !== entry.id).slice(0, 4);
+  const wordCount = entry.content.trim()
+    ? entry.content.trim().split(/\s+/).length
+    : 0;
 
   return (
     <main className="container py-8 md:py-12">
-      <section className="mx-auto max-w-5xl">
-        <p className="clearpth-page-kicker">Daily Ritual</p>
-        <h1 className="clearpth-page-title">
-          Morning Intention. Evening Review.
-        </h1>
-        <p className="mt-4 max-w-2xl text-muted-foreground">
-          Save the morning ritual when the day begins. Return later, even after
-          closing the app, to complete the evening review for the same date.
+      <section className="mx-auto max-w-6xl">
+        <p className="clearpth-page-kicker">Daily Journal</p>
+        <h1 className="clearpth-page-title">Journal The Pattern Of The Day</h1>
+        <p className="mt-4 max-w-3xl text-muted-foreground">
+          Write or speak one honest entry. ClearPth uses your saved journal
+          history as additional context for wiser guidance and deeper analysis.
         </p>
       </section>
 
-      <section className="mx-auto mt-8 grid max-w-5xl gap-6 lg:grid-cols-2">
-        <RitualCard
-          title="Morning"
-          kicker="Begin"
-          complete={morningComplete}
-          saved={savedSection === "morning"}
-          saveLabel="Save Morning Ritual"
-          onSubmit={(event) => saveSection(event, "morning")}
+      <section className="mx-auto mt-8 grid max-w-6xl gap-5 lg:grid-cols-[1fr_320px]">
+        <form
+          className="aura-glass rounded-lg p-5 md:p-6"
+          onSubmit={saveEntry}
         >
-          <TextAreaField
-            label="What Being are you choosing today?"
-            value={ritual.chosenBeing}
-            onChange={(value) => updateField("chosenBeing", value)}
-          />
-          <TextAreaField
-            label="What intention will organize your thoughts, actions, and feelings?"
-            value={ritual.morningIntention}
-            onChange={(value) => updateField("morningIntention", value)}
-          />
-          <TextAreaField
-            label="What boundary will protect your alignment?"
-            value={ritual.protectedBoundary}
-            onChange={(value) => updateField("protectedBoundary", value)}
-          />
-        </RitualCard>
+          <div className="flex flex-col gap-4 border-b border-border/60 pb-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                {entry.date}
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold">Today&apos;s Entry</h2>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={toggleSpeech}
+              disabled={!speechSupported}
+              title={
+                speechSupported
+                  ? "Speak journal entry"
+                  : "Speech input is not supported in this browser"
+              }
+            >
+              {isListening ? (
+                <MicOff className="h-4 w-4" aria-hidden />
+              ) : (
+                <Mic className="h-4 w-4" aria-hidden />
+              )}
+              {isListening ? "Stop" : "Speak"}
+            </Button>
+          </div>
 
-        <RitualCard
-          title="Evening"
-          kicker="Return"
-          complete={eveningComplete}
-          saved={savedSection === "evening"}
-          saveLabel="Save Evening Review"
-          onSubmit={(event) => saveSection(event, "evening")}
-        >
-          <TextAreaField
-            label="Where did you align today?"
-            value={ritual.eveningAlignment}
-            onChange={(value) => updateField("eveningAlignment", value)}
+          <Textarea
+            className="mt-5 min-h-[360px]"
+            value={entry.content}
+            onChange={(event) => updateContent(event.target.value)}
+            placeholder="What happened today? What did it reveal about your thinking, willing, feeling, or identity? Where did you gather power, and where did you leak it?"
           />
-          <TextAreaField
-            label="Where did you fragment or leak energy?"
-            value={ritual.eveningFragmentation}
-            onChange={(value) => updateField("eveningFragmentation", value)}
-          />
-          <TextAreaField
-            label="What lesson does your Being carry into tomorrow?"
-            value={ritual.lesson}
-            onChange={(value) => updateField("lesson", value)}
-          />
-        </RitualCard>
-      </section>
 
-      <section className="aura-glass mx-auto mt-6 max-w-5xl rounded-lg p-5">
-        <p className="text-xs uppercase tracking-[0.24em] text-primary">
-          Today
-        </p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <StatusRow label="Morning ritual" complete={morningComplete} />
-          <StatusRow label="Evening review" complete={eveningComplete} />
-        </div>
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-muted-foreground">
+              {wordCount} words recorded for today.
+            </p>
+            <div className="flex items-center gap-3">
+              {saved ? <p className="text-sm text-muted-foreground">Saved.</p> : null}
+              <Button type="submit" disabled={!entry.content.trim()}>
+                <Save className="h-4 w-4" aria-hidden />
+                Save Journal
+              </Button>
+            </div>
+          </div>
+        </form>
+
+        <aside className="aura-glass rounded-lg p-5">
+          <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+            Journal Signal
+          </p>
+          <div className="mt-5 grid gap-3">
+            <JournalStat label="Saved entries" value={String(entries.length)} />
+            <JournalStat label="Today" value={entry.content.trim() ? "Open" : "Blank"} />
+            <JournalStat label="Voice input" value={speechSupported ? "Ready" : "Unavailable"} />
+          </div>
+
+          <div className="mt-6 border-t border-border/60 pt-5">
+            <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+              Recent Entries
+            </p>
+            <div className="mt-4 grid gap-3">
+              {recentEntries.length > 0 ? (
+                recentEntries.map((item) => (
+                  <article
+                    key={item.id}
+                    className="rounded-md border border-border/70 bg-card p-3"
+                  >
+                    <p className="text-xs text-muted-foreground">{item.date}</p>
+                    <p className="mt-2 line-clamp-3 text-sm leading-6">
+                      {item.content}
+                    </p>
+                  </article>
+                ))
+              ) : (
+                <p className="text-sm leading-6 text-muted-foreground">
+                  Your saved journal entries will appear here after today.
+                </p>
+              )}
+            </div>
+          </div>
+        </aside>
       </section>
     </main>
   );
 }
 
-function RitualCard({
-  title,
-  kicker,
-  complete,
-  saved,
-  saveLabel,
-  onSubmit,
-  children,
-}: {
-  title: string;
-  kicker: string;
-  complete: boolean;
-  saved: boolean;
-  saveLabel: string;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-  children: ReactNode;
-}) {
+function JournalStat({ label, value }: { label: string; value: string }) {
   return (
-    <form className="aura-glass rounded-lg p-5 md:p-6" onSubmit={onSubmit}>
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-primary">
-            {kicker}
-          </p>
-          <h2 className="mt-2 font-serif text-3xl font-semibold">{title}</h2>
-        </div>
-        <StatusPill complete={complete} />
-      </div>
-      <div className="mt-6 grid gap-5">{children}</div>
-      <div className="mt-6 flex items-center gap-4">
-        <Button type="submit">{saveLabel}</Button>
-        {saved ? <p className="text-sm text-primary">Saved.</p> : null}
-      </div>
-    </form>
-  );
-}
-
-function TextAreaField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      <Textarea
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        rows={3}
-      />
-    </div>
-  );
-}
-
-function StatusPill({ complete }: { complete: boolean }) {
-  return (
-    <span className="inline-flex items-center gap-2 rounded-md border border-border/55 bg-black/18 px-3 py-2 text-xs text-muted-foreground">
-      {complete ? <Check className="h-3.5 w-3.5 text-primary" /> : null}
-      {complete ? "Started" : "Open"}
-    </span>
-  );
-}
-
-function StatusRow({ label, complete }: { label: string; complete: boolean }) {
-  return (
-    <div className="flex items-center justify-between rounded-md border border-border/55 bg-black/18 px-4 py-3">
+    <div className="flex items-center justify-between rounded-md border border-border/70 bg-card px-4 py-3">
       <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="text-sm text-primary">
-        {complete ? "Saved for today" : "Still open"}
-      </span>
+      <span className="text-sm font-medium">{value}</span>
     </div>
   );
 }

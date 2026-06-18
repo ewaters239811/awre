@@ -6,7 +6,7 @@ import {
   Activity,
   CalendarDays,
   Crosshair,
-  Shield,
+  NotebookPen,
   Target,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,25 +16,25 @@ import {
   filterByDateRange,
   getWeekRange,
 } from "@/lib/insights";
-import { getRituals } from "@/lib/ritual-storage";
-import type { CheckInResult, DailyRitual, PillarName } from "@/lib/types";
+import { getJournalEntries } from "@/lib/journal-storage";
+import type { CheckInResult, JournalEntry, PillarName } from "@/lib/types";
 
 export default function ReviewPage() {
   const [checkIns, setCheckIns] = useState<CheckInResult[]>([]);
-  const [rituals, setRituals] = useState<DailyRitual[]>([]);
+  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const { start, end } = useMemo(() => getWeekRange(), []);
 
   useEffect(() => {
     queueMicrotask(() => {
       setCheckIns(getCheckIns());
-      setRituals(getRituals());
+      setJournalEntries(getJournalEntries());
     });
   }, []);
 
   const weeklyCheckIns = filterByDateRange(checkIns, start, end);
-  const weeklyRituals = rituals.filter((ritual) => {
-    const ritualDate = new Date(`${ritual.date}T12:00:00`);
-    return ritualDate >= start && ritualDate <= end;
+  const weeklyJournalEntries = journalEntries.filter((entry) => {
+    const journalDate = new Date(`${entry.date}T12:00:00`);
+    return journalDate >= start && journalDate <= end;
   });
   const insights = buildPatternInsights(weeklyCheckIns);
   const averageBeing =
@@ -44,7 +44,7 @@ export default function ReviewPage() {
           weeklyCheckIns.length
         ).toFixed(1)
       : "-";
-  const report = buildWeeklyReport(weeklyCheckIns, weeklyRituals);
+  const report = buildWeeklyReport(weeklyCheckIns, weeklyJournalEntries);
 
   return (
     <main className="container py-8 md:py-12">
@@ -69,7 +69,7 @@ export default function ReviewPage() {
         <div className="grid divide-y divide-border/60 md:grid-cols-4 md:divide-x md:divide-y-0">
           <ReviewStat label="Average Being" value={averageBeing} />
           <ReviewStat label="Check-ins" value={String(weeklyCheckIns.length)} />
-          <ReviewStat label="Rituals" value={String(weeklyRituals.length)} />
+          <ReviewStat label="Journals" value={String(weeklyJournalEntries.length)} />
           <ReviewStat label="Weekly Signal" value={report.signalLabel} />
         </div>
       </section>
@@ -85,7 +85,7 @@ export default function ReviewPage() {
                 This week has not been measured.
               </h2>
               <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
-                Complete a check-in or daily ritual to begin building a weekly
+                Complete a check-in or daily journal to begin building a weekly
                 pattern. ClearPth needs repeated signal before it can separate
                 a passing mood from a real leak.
               </p>
@@ -157,31 +157,29 @@ export default function ReviewPage() {
         </>
       )}
 
-      {weeklyRituals.length > 0 ? (
+      {weeklyJournalEntries.length > 0 ? (
         <section className="mx-auto mt-8 max-w-6xl rounded-md border border-border/70 bg-card/30">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-3">
-              <Shield className="h-5 w-5 text-primary" aria-hidden />
+              <NotebookPen className="h-5 w-5 text-primary" aria-hidden />
               <p className="text-xs uppercase tracking-[0.24em] text-primary">
-                Ritual Notes
+                Journal Notes
               </p>
             </div>
           </div>
           <div className="divide-y divide-border/60">
-            {weeklyRituals.map((ritual) => (
+            {weeklyJournalEntries.map((entry) => (
               <article
-                key={ritual.id}
+                key={entry.id}
                 className="grid gap-3 px-5 py-4 md:grid-cols-[140px_1fr] md:items-start"
               >
-                <p className="text-sm text-primary">{ritual.date}</p>
+                <p className="text-sm text-primary">{entry.date}</p>
                 <div>
                   <p className="font-serif text-2xl font-semibold">
-                    {ritual.chosenBeing || "Chosen Being not named"}
+                    Daily pattern recorded
                   </p>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {ritual.lesson ||
-                      ritual.morningIntention ||
-                      "No lesson recorded yet."}
+                    {entry.content}
                   </p>
                 </div>
               </article>
@@ -228,7 +226,7 @@ function PatternRow({
 
 function buildWeeklyReport(
   checkIns: CheckInResult[],
-  rituals: DailyRitual[],
+  journalEntries: JournalEntry[],
 ) {
   if (checkIns.length === 0) {
     return {
@@ -238,7 +236,7 @@ function buildWeeklyReport(
         "There is not enough weekly data to identify where power is gathering or leaking.",
       correctionTitle: "Create signal",
       correctionDetail:
-        "Complete one check-in and one ritual so the week has something real to read.",
+        "Complete one check-in and one journal entry so the week has something real to read.",
     };
   }
 
@@ -251,16 +249,16 @@ function buildWeeklyReport(
   const averages = getPillarAverages(checkIns);
   const weakest = getRankedPillar(averages, "weakest");
   const strongest = getRankedPillar(averages, "strongest");
-  const ritualRhythm =
-    rituals.length >= 3
-      ? "Ritual rhythm is supporting the signal."
-      : "Ritual rhythm is still thin, so the weekly pattern has less reinforcement.";
+  const journalRhythm =
+    journalEntries.length >= 3
+      ? "Journal rhythm is giving the pattern more depth."
+      : "Journal rhythm is still thin, so the weekly pattern has less inner context.";
 
   if (trend < -0.3) {
     return {
       signalLabel: "Leaking",
       primaryTitle: `Power leaked through ${weakest}.`,
-      primaryDetail: `Your score moved down this week, and ${weakest} is the lowest pillar. Treat this as operational feedback: the week is asking for a cleaner link between the state you want and the actions you repeat. ${ritualRhythm}`,
+      primaryDetail: `Your score moved down this week, and ${weakest} is the lowest pillar. Treat this as operational feedback: the week is asking for a cleaner link between the state you want and the actions you repeat. ${journalRhythm}`,
       correctionTitle: `Stabilize ${weakest}`,
       correctionDetail: `Next week, make one small daily correction in ${weakest}. Keep it visible, repeatable, and boring enough to actually complete.`,
     };
@@ -270,7 +268,7 @@ function buildWeeklyReport(
     return {
       signalLabel: "Gathering",
       primaryTitle: `Power gathered through ${strongest}.`,
-      primaryDetail: `Your score moved up this week, and ${strongest} carried the most coherence. The task is not to chase intensity; it is to repeat the conditions that made this state easier to access. ${ritualRhythm}`,
+      primaryDetail: `Your score moved up this week, and ${strongest} carried the most coherence. The task is not to chase intensity; it is to repeat the conditions that made this state easier to access. ${journalRhythm}`,
       correctionTitle: `Protect ${strongest}`,
       correctionDetail: `Keep ${strongest} as the anchor, then use it to pull ${weakest} into one practical movement each day.`,
     };
@@ -279,7 +277,7 @@ function buildWeeklyReport(
   return {
     signalLabel: "Stable",
     primaryTitle: `The week held steady around ${weakest}.`,
-    primaryDetail: `Your score did not move dramatically, which means the useful question is not what changed, but what kept repeating. ${weakest} is the cleanest place to look for the hidden cost of delay, distraction, or emotional dependence. ${ritualRhythm}`,
+    primaryDetail: `Your score did not move dramatically, which means the useful question is not what changed, but what kept repeating. ${weakest} is the cleanest place to look for the hidden cost of delay, distraction, or emotional dependence. ${journalRhythm}`,
     correctionTitle: `Apply pressure to ${weakest}`,
     correctionDetail: `Choose one daily act that proves ${weakest} is no longer waiting for ideal conditions before it participates.`,
   };

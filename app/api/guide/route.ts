@@ -10,6 +10,10 @@ type ChatMessage = {
 type GuideRequest = {
   messages?: ChatMessage[];
   latestCheckIn?: CheckInResult | null;
+  recentJournalEntries?: Array<{
+    date: string;
+    content: string;
+  }>;
 };
 
 type GuideResponse = {
@@ -66,6 +70,8 @@ export async function POST(request: Request) {
         "Use gender-neutral language by default: say person, self, life, presence, or identity rather than man, woman, masculine, feminine, he, she, his, or her.",
         "Only use gendered language if the user explicitly states their gender or asks you to reflect it.",
         "Help the user work with daily challenges through the ClearPth model: Thinking, Willing, Feeling, and Being.",
+        "Use recent journal entries as private context for understanding the user's repeated patterns, desires, emotional charges, and avoided actions.",
+        "Do not quote journal entries back at length. Distill them into useful pattern recognition.",
         "When the user names an external desire, problem, or goal, look beneath it for the inner state, unmet feeling, identity shift, projection, or shadow pattern that may be driving it.",
         "Use Jungian psychology as a practical lens for shadow, projection, persona, archetypal patterns, and integration, but do not use heavy jargon unless it helps the user see themselves clearly.",
         "Treat manifestation as inner alignment and emotional independence: guide the user toward embodying the feeling or identity they are seeking before needing outer reality to confirm it.",
@@ -102,6 +108,9 @@ export async function POST(request: Request) {
             }
           : null,
         conversation: messages.slice(-10),
+        recentJournalEntries: (body.recentJournalEntries ?? [])
+          .filter((entry) => entry.content.trim())
+          .slice(0, 8),
       },
     });
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Brain, Flame, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CheckInStreak } from "@/components/check-in-streak";
 import { PillarCard } from "@/components/pillar-card";
 
 const pillars = [
@@ -70,6 +71,9 @@ export default function HomePage() {
             ))}
           </div>
         </div>
+      </section>
+      <section className="container pb-12">
+        <CheckInStreak />
       </section>
     </main>
   );

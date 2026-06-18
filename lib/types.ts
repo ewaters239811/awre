@@ -61,6 +61,14 @@ export type DailyRitual = {
   updatedAt: string;
 };
 
+export type JournalEntry = {
+  id: string;
+  date: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type BeingMetric = {
   label: string;
   value: string;
