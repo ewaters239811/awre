@@ -52,24 +52,33 @@ export function AmbientNoise() {
 
     const context = new AudioContextConstructor();
     const masterGain = context.createGain();
-    masterGain.gain.value = 0.035;
+    masterGain.gain.value = 0.055;
     masterGain.connect(context.destination);
 
     const padGain = context.createGain();
-    padGain.gain.value = 0.42;
+    padGain.gain.value = 0.56;
     padGain.connect(masterGain);
 
     const shimmerGain = context.createGain();
-    shimmerGain.gain.value = 0.12;
+    shimmerGain.gain.value = 0.16;
     shimmerGain.connect(masterGain);
 
     const airGain = context.createGain();
-    airGain.gain.value = 0.09;
+    airGain.gain.value = 0.045;
     airGain.connect(masterGain);
+
+    const breathLfo = context.createOscillator();
+    const breathGain = context.createGain();
+    breathLfo.type = "sine";
+    breathLfo.frequency.value = 0.045;
+    breathGain.gain.value = 0.006;
+    breathLfo.connect(breathGain);
+    breathGain.connect(masterGain.gain);
+    breathLfo.start();
 
     const lowPass = context.createBiquadFilter();
     lowPass.type = "lowpass";
-    lowPass.frequency.value = 900;
+    lowPass.frequency.value = 620;
     lowPass.Q.value = 0.3;
 
     const highPass = context.createBiquadFilter();
@@ -81,7 +90,7 @@ export function AmbientNoise() {
     const output = buffer.getChannelData(0);
 
     for (let index = 0; index < bufferSize; index += 1) {
-      output[index] = (Math.random() * 2 - 1) * 0.16;
+      output[index] = (Math.random() * 2 - 1) * 0.09;
     }
 
     const airSource = context.createBufferSource();
@@ -92,7 +101,7 @@ export function AmbientNoise() {
     lowPass.connect(airGain);
     airSource.start();
 
-    const frequencies = [110, 164.81, 220];
+    const frequencies = [108, 162, 216, 324];
     frequencies.forEach((frequency, index) => {
       const oscillator = context.createOscillator();
       const toneGain = context.createGain();
@@ -101,7 +110,7 @@ export function AmbientNoise() {
 
       oscillator.type = "sine";
       oscillator.frequency.value = frequency;
-      toneGain.gain.value = index === 0 ? 0.24 : 0.14;
+      toneGain.gain.value = index === 0 ? 0.26 : 0.13;
       lfo.type = "sine";
       lfo.frequency.value = 0.035 + index * 0.012;
       lfoGain.gain.value = 0.035;
@@ -121,7 +130,7 @@ export function AmbientNoise() {
       nodes.current.push(oscillator, toneGain, lfo, lfoGain);
     });
 
-    [329.63, 440].forEach((frequency, index) => {
+    [432, 648].forEach((frequency, index) => {
       const oscillator = context.createOscillator();
       const toneGain = context.createGain();
 
@@ -130,7 +139,7 @@ export function AmbientNoise() {
       toneGain.gain.setValueAtTime(0.0001, context.currentTime);
       toneGain.gain.linearRampToValueAtTime(
         index === 0 ? 0.055 : 0.035,
-        context.currentTime + 4,
+        context.currentTime + 5,
       );
       oscillator.connect(toneGain);
       toneGain.connect(shimmerGain);
@@ -140,13 +149,48 @@ export function AmbientNoise() {
       nodes.current.push(oscillator, toneGain);
     });
 
+    const playChime = () => {
+      if (context.state === "closed") return;
+
+      [432, 648].forEach((frequency, index) => {
+        const oscillator = context.createOscillator();
+        const chimeGain = context.createGain();
+
+        oscillator.type = "sine";
+        oscillator.frequency.value = frequency;
+        chimeGain.gain.setValueAtTime(0.0001, context.currentTime);
+        chimeGain.gain.exponentialRampToValueAtTime(
+          index === 0 ? 0.07 : 0.035,
+          context.currentTime + 0.08,
+        );
+        chimeGain.gain.exponentialRampToValueAtTime(
+          0.0001,
+          context.currentTime + 4.2,
+        );
+        oscillator.connect(chimeGain);
+        chimeGain.connect(shimmerGain);
+        oscillator.start();
+        oscillator.stop(context.currentTime + 4.4);
+      });
+    };
+
+    const chimeIntroTimer = window.setTimeout(playChime, 900);
+    const chimeTimer = window.setInterval(playChime, 14000);
+
     audioContext.current = context;
+    stopHandles.current.push(() => {
+      breathLfo.stop();
+      window.clearTimeout(chimeIntroTimer);
+      window.clearInterval(chimeTimer);
+    });
     stopHandles.current.push(() => airSource.stop());
     nodes.current.push(
       masterGain,
       padGain,
       shimmerGain,
       airGain,
+      breathLfo,
+      breathGain,
       lowPass,
       highPass,
       airSource,
