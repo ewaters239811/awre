@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createTextWithOpenAI } from "@/lib/server/openai";
+import { createJsonWithOpenAI } from "@/lib/server/openai";
 import type { CheckInResult } from "@/lib/types";
 
 type ChatMessage = {
@@ -12,6 +12,11 @@ type GuideRequest = {
   latestCheckIn?: CheckInResult | null;
 };
 
+type GuideResponse = {
+  reply: string;
+  suggestions: string[];
+};
+
 const crisisPattern =
   /\b(suicide|self[-\s]?harm|kill myself|end my life|can't go on|severe depression|crisis)\b/i;
 
@@ -20,6 +25,12 @@ const supportMessage =
 
 const fallback =
   "Bring the challenge into one clean sentence. Then name the thought driving it, the action being avoided, and the feeling charging it. From there, choose one honorable step you can take today.";
+
+const fallbackSuggestions = [
+  "What is the deeper root of this pattern?",
+  "What feeling am I trying to get from the outside?",
+  "What is one practical action I can take from that state?",
+];
 
 export async function POST(request: Request) {
   try {
@@ -30,11 +41,22 @@ export async function POST(request: Request) {
         ?.content ?? "";
 
     if (crisisPattern.test(latestUserMessage)) {
-      return NextResponse.json({ enabled: true, data: supportMessage });
+      return NextResponse.json({
+        enabled: true,
+        data: supportMessage,
+        suggestions: [
+          "Who is one trusted person I can contact now?",
+          "What immediate step would make me safer?",
+          "Help me make the next minute simple.",
+        ],
+      });
     }
 
-    const response = await createTextWithOpenAI({
-      fallback,
+    const response = await createJsonWithOpenAI<GuideResponse>({
+      fallback: {
+        reply: fallback,
+        suggestions: fallbackSuggestions,
+      },
       maxOutputTokens: 900,
       system: [
         "You are ClearPth's daily reflection guide.",
@@ -53,6 +75,11 @@ export async function POST(request: Request) {
         "Write in smooth natural paragraphs by default, not a worksheet or scripted coaching format.",
         "Do not use markdown bold, markdown headings, numbered lists, or labels like Thinking, Feeling, One next action, or Embodiment practice unless the user explicitly asks for a structured breakdown.",
         "Blend the practical action and embodiment practice into the prose so the response feels human and conversational.",
+        "Return only valid JSON with keys: reply, suggestions.",
+        "The reply value is the guide response. The suggestions value is exactly three short contextual follow-up prompts based on your reply and the user's situation.",
+        "Each suggestion should feel specific to the exchange, invite deeper self-understanding or practical movement, and be written as something the user could send next.",
+        "Do not repeat the same generic suggestions every time.",
+        "Do not use markdown formatting inside reply or suggestions.",
         "Do not provide medical, therapeutic, diagnostic, legal, or financial advice.",
         "If the user indicates self-harm, severe depression, or immediate danger, respond only with a gentle crisis support message.",
         "Avoid saying you are an AI unless directly asked.",
@@ -78,8 +105,16 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(response);
+    return NextResponse.json({
+      enabled: response.enabled,
+      data: response.data.reply,
+      suggestions:
+        response.data.suggestions?.slice(0, 3) ?? fallbackSuggestions,
+    });
   } catch {
-    return NextResponse.json({ enabled: false, data: fallback }, { status: 200 });
+    return NextResponse.json(
+      { enabled: false, data: fallback, suggestions: fallbackSuggestions },
+      { status: 200 },
+    );
   }
 }

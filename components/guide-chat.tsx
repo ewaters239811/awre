@@ -16,7 +16,7 @@ import {
 import type { CheckInResult, GuideConversation } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const suggestedPrompts = [
+const fallbackSuggestedPrompts = [
   "What is the deeper root of this pattern?",
   "What feeling am I trying to get from the outside?",
   "What is one practical action I can take from that state?",
@@ -29,6 +29,9 @@ export function GuideChat() {
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [latestCheckIn, setLatestCheckIn] = useState<CheckInResult | null>(null);
+  const [suggestedPrompts, setSuggestedPrompts] = useState(
+    fallbackSuggestedPrompts,
+  );
   const endRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -42,6 +45,7 @@ export function GuideChat() {
 
       setConversations(saved.length > 0 ? saved : [initial]);
       setActiveConversation(initial);
+      setSuggestedPrompts(getSuggestionsForConversation(initial));
       setLatestCheckIn(getLatestCheckIn());
     });
   }, []);
@@ -56,6 +60,7 @@ export function GuideChat() {
     const next = [conversation, ...conversations];
     setConversations(next);
     setActiveConversation(conversation);
+    setSuggestedPrompts(fallbackSuggestedPrompts);
     setInput("");
   };
 
@@ -71,6 +76,7 @@ export function GuideChat() {
     setActiveConversation((current) =>
       current?.id === id ? replacement : current,
     );
+    setSuggestedPrompts(getSuggestionsForConversation(replacement));
   };
 
   const persistConversation = (conversation: GuideConversation) => {
@@ -115,7 +121,9 @@ export function GuideChat() {
       });
       const payload = (await response.json()) as {
         data?: string;
+        suggestions?: string[];
       };
+      const nextSuggestions = normalizeSuggestions(payload.suggestions);
 
       persistConversation({
         ...conversationWithUserMessage,
@@ -127,6 +135,7 @@ export function GuideChat() {
           ),
         ],
       });
+      setSuggestedPrompts(nextSuggestions);
     } catch {
       persistConversation({
         ...conversationWithUserMessage,
@@ -137,6 +146,7 @@ export function GuideChat() {
           ),
         ],
       });
+      setSuggestedPrompts(fallbackSuggestedPrompts);
     } finally {
       setIsSending(false);
     }
@@ -176,7 +186,10 @@ export function GuideChat() {
             >
               <button
                 type="button"
-                onClick={() => setActiveConversation(conversation)}
+                onClick={() => {
+                  setActiveConversation(conversation);
+                  setSuggestedPrompts(getSuggestionsForConversation(conversation));
+                }}
                 className="min-w-0 flex-1 text-left"
               >
                 <span className="block truncate text-sm font-medium">
@@ -277,4 +290,54 @@ export function GuideChat() {
       </div>
     </section>
   );
+}
+
+function normalizeSuggestions(suggestions?: string[]) {
+  const clean = (suggestions ?? [])
+    .map((suggestion) => suggestion.trim())
+    .filter(Boolean)
+    .slice(0, 3);
+
+  return clean.length === 3 ? clean : fallbackSuggestedPrompts;
+}
+
+function getSuggestionsForConversation(conversation: GuideConversation) {
+  const messages = conversation.messages;
+  const lastMessage = messages[messages.length - 1];
+
+  if (lastMessage?.role === "assistant" && messages.length > 1) {
+    return buildLocalSuggestions(lastMessage.content);
+  }
+
+  return fallbackSuggestedPrompts;
+}
+
+function buildLocalSuggestions(reply: string) {
+  const lowerReply = reply.toLowerCase();
+
+  if (lowerReply.includes("value") || lowerReply.includes("worth")) {
+    return [
+      "Where am I still outsourcing my sense of value?",
+      "What would calm self-respect do next?",
+      "How can I ask for what I want without needing it to define me?",
+    ];
+  }
+
+  if (lowerReply.includes("action") || lowerReply.includes("avoid")) {
+    return [
+      "What is the smallest action that would break the delay?",
+      "What feeling appears right before I avoid this?",
+      "Who would I be if this action was already normal for me?",
+    ];
+  }
+
+  if (lowerReply.includes("feeling") || lowerReply.includes("state")) {
+    return [
+      "How can I practice that state before anything changes?",
+      "What outer thing am I making responsible for this feeling?",
+      "What would this look like in my body today?",
+    ];
+  }
+
+  return fallbackSuggestedPrompts;
 }

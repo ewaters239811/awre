@@ -18,10 +18,12 @@ export async function createJsonWithOpenAI<T>({
   system,
   user,
   fallback,
+  maxOutputTokens = 700,
 }: {
   system: string;
   user: unknown;
   fallback: T;
+  maxOutputTokens?: number;
 }): Promise<{ enabled: boolean; data: T }> {
   const apiKey = process.env.OPENAI_API_KEY;
 
@@ -39,7 +41,7 @@ export async function createJsonWithOpenAI<T>({
       model: process.env.AURA_AI_MODEL || "gpt-5.4-mini",
       instructions: system,
       input: JSON.stringify(user),
-      max_output_tokens: 700,
+      max_output_tokens: maxOutputTokens,
     }),
   });
 
