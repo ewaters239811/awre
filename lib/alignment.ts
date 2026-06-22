@@ -55,12 +55,27 @@ export function getCheckIns(): CheckInResult[] {
 
 export function saveCheckIn(result: CheckInResult) {
   if (!isBrowser()) return;
-  const existing = getCheckIns();
+  const resultDate = toDateKey(new Date(result.createdAt));
+  const existing = getCheckIns().filter(
+    (item) => toDateKey(new Date(item.createdAt)) !== resultDate,
+  );
+
   localStorage.setItem(STORAGE_KEY, JSON.stringify([result, ...existing]));
 }
 
 export function getCheckInById(id: string) {
   return getCheckIns().find((item) => item.id === id) ?? null;
+}
+
+export function getCheckInForDate(date: string) {
+  return (
+    getCheckIns().find((item) => toDateKey(new Date(item.createdAt)) === date) ??
+    null
+  );
+}
+
+export function getTodaysCheckIn() {
+  return getCheckInForDate(toDateKey(new Date()));
 }
 
 export function getLatestCheckIn() {
@@ -122,6 +137,13 @@ function buildPrescription(
 
 function roundToTenth(value: number) {
   return Math.round(value * 10) / 10;
+}
+
+export function toDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function isBrowser() {

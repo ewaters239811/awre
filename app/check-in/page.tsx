@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScoreSlider } from "@/components/score-slider";
-import { buildResult, saveCheckIn } from "@/lib/alignment";
+import { buildResult, getTodaysCheckIn, saveCheckIn } from "@/lib/alignment";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
-import type { CheckInDraft } from "@/lib/types";
+import type { CheckInDraft, CheckInResult } from "@/lib/types";
 
 const initialDraft: CheckInDraft = {
   thinkingScore: 5,
@@ -31,9 +31,13 @@ export default function CheckInPage() {
   const [error, setError] = useState("");
   const [supportMessage, setSupportMessage] = useState(false);
   const [hasProfile, setHasProfile] = useState(true);
+  const [todaysCheckIn, setTodaysCheckIn] = useState<CheckInResult | null>(null);
 
   useEffect(() => {
-    queueMicrotask(() => setHasProfile(Boolean(getOnboardingProfile())));
+    queueMicrotask(() => {
+      setHasProfile(Boolean(getOnboardingProfile()));
+      setTodaysCheckIn(getTodaysCheckIn());
+    });
   }, []);
 
   const updateField = <K extends keyof CheckInDraft>(
@@ -58,8 +62,16 @@ export default function CheckInPage() {
     }
 
     try {
+      const existing = getTodaysCheckIn();
+      if (existing) {
+        setTodaysCheckIn(existing);
+        router.push(`/results?id=${existing.id}`);
+        return;
+      }
+
       const result = buildResult(draft);
       saveCheckIn(result);
+      setTodaysCheckIn(result);
       router.push(`/results?id=${result.id}`);
     } catch {
       setError("Something interrupted the check-in. Please try again.");
@@ -99,6 +111,34 @@ export default function CheckInPage() {
           </div>
         )}
 
+        {todaysCheckIn ? (
+          <section className="aura-glass mt-8 rounded-lg p-6 md:p-7">
+            <p className="text-xs uppercase tracking-[0.24em] text-primary">
+              Today&apos;s Check-In Is Complete
+            </p>
+            <h2 className="mt-3 font-serif text-3xl font-semibold">
+              One check-in per day keeps the signal clean.
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+              Today&apos;s Being score is {todaysCheckIn.beingScore.toFixed(1)}
+              /10. You can review the result, add a journal entry, or return
+              tomorrow for a new check-in.
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Button asChild>
+                <Link href={`/results?id=${todaysCheckIn.id}`}>
+                  View Today&apos;s Result
+                </Link>
+              </Button>
+              <Button asChild variant="secondary">
+                <Link href="/review">Today&apos;s Review</Link>
+              </Button>
+              <Button asChild variant="secondary">
+                <Link href="/ritual">Add Journal</Link>
+              </Button>
+            </div>
+          </section>
+        ) : (
         <form className="mt-8 space-y-5" onSubmit={submit}>
           <CheckInGate
             eyebrow="Gate 01"
@@ -193,6 +233,7 @@ export default function CheckInPage() {
             </Button>
           </div>
         </form>
+        )}
       </div>
     </main>
   );
