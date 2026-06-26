@@ -237,23 +237,7 @@ export function BeingDashboard() {
                 Recent check-ins, oldest to newest
               </p>
             </div>
-            <div className="mt-6 flex min-h-48 items-end gap-2 overflow-x-auto pb-2">
-              {dashboard.timeline.map((point, index) => (
-                <div
-                  key={`${point.date}-${index}`}
-                  className="flex min-w-12 flex-1 flex-col items-center justify-end gap-2"
-                  title={`${point.date}: ${point.score.toFixed(1)}`}
-                >
-                  <div
-                    className="w-full rounded-t-md border border-primary/25 bg-primary/25"
-                    style={{ height: `${Math.max(point.score * 10, 8)}%` }}
-                  />
-                  <span className="text-xs text-muted-foreground">
-                    {point.score.toFixed(1)}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <ScoreTrendChart timeline={dashboard.timeline} />
           </section>
         </>
       )}
@@ -307,6 +291,191 @@ function AnalysisBlock({
       </p>
     </article>
   );
+}
+
+function ScoreTrendChart({
+  timeline,
+}: {
+  timeline: Array<{ date: string; score: number }>;
+}) {
+  if (timeline.length === 0) {
+    return (
+      <div className="mt-6 rounded-md border border-border/70 bg-card/45 p-6 text-sm text-muted-foreground">
+        Complete check-ins to build your score graph.
+      </div>
+    );
+  }
+
+  const chart = buildChartPoints(timeline);
+  const latest = timeline[timeline.length - 1];
+
+  return (
+    <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_260px]">
+      <div className="rounded-md border border-border/70 bg-card/45 p-4">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-foreground">
+              Being Score Trend
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {timeline.length} recorded day{timeline.length === 1 ? "" : "s"}
+            </p>
+          </div>
+          <div className="rounded-md border border-border bg-background/60 px-3 py-2 text-right">
+            <p className="text-xs text-muted-foreground">Latest</p>
+            <p className="font-serif text-2xl font-semibold">
+              {latest.score.toFixed(1)}
+            </p>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <svg
+            viewBox="0 0 720 280"
+            className="min-h-[260px] min-w-[640px] text-foreground"
+            role="img"
+            aria-label="Being score line graph over time"
+          >
+            {[0, 2.5, 5, 7.5, 10].map((score) => {
+              const y = scoreToY(score);
+
+              return (
+                <g key={score}>
+                  <line
+                    x1="56"
+                    x2="688"
+                    y1={y}
+                    y2={y}
+                    className="stroke-border"
+                    strokeDasharray={score === 0 ? "0" : "4 6"}
+                  />
+                  <text
+                    x="22"
+                    y={y + 4}
+                    className="fill-muted-foreground text-[12px]"
+                  >
+                    {score}
+                  </text>
+                </g>
+              );
+            })}
+
+            <line x1="56" x2="56" y1="28" y2="240" className="stroke-border" />
+            <line x1="56" x2="688" y1="240" y2="240" className="stroke-border" />
+
+            {chart.areaPath ? (
+              <path d={chart.areaPath} className="fill-primary/10" />
+            ) : null}
+            {chart.linePath ? (
+              <path
+                d={chart.linePath}
+                className="fill-none stroke-primary"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            ) : null}
+
+            {chart.points.map((point, index) => (
+              <g key={`${point.date}-${index}`}>
+                <circle
+                  cx={point.x}
+                  cy={point.y}
+                  r="5"
+                  className="fill-background stroke-primary"
+                  strokeWidth="3"
+                />
+                <text
+                  x={point.x}
+                  y={point.y - 12}
+                  textAnchor="middle"
+                  className="fill-foreground text-[12px]"
+                >
+                  {point.score.toFixed(1)}
+                </text>
+              </g>
+            ))}
+
+            {chart.points.map((point, index) => (
+              <text
+                key={`${point.date}-${index}-label`}
+                x={point.x}
+                y="264"
+                textAnchor="middle"
+                className="fill-muted-foreground text-[11px]"
+              >
+                {formatShortDate(point.date)}
+              </text>
+            ))}
+          </svg>
+        </div>
+      </div>
+
+      <div className="rounded-md border border-border/70 bg-card/45 p-4">
+        <p className="text-sm font-medium text-foreground">Recent Scores</p>
+        <div className="mt-4 divide-y divide-border/60">
+          {timeline
+            .slice(-6)
+            .reverse()
+            .map((point, index) => (
+              <div
+                key={`${point.date}-${index}`}
+                className="flex items-center justify-between gap-4 py-3 text-sm"
+              >
+                <span className="text-muted-foreground">{point.date}</span>
+                <span className="font-medium text-foreground">
+                  {point.score.toFixed(1)}
+                </span>
+              </div>
+            ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function buildChartPoints(timeline: Array<{ date: string; score: number }>) {
+  const left = 72;
+  const right = 672;
+  const width = right - left;
+  const points = timeline.map((point, index) => {
+    const x =
+      timeline.length === 1
+        ? left + width / 2
+        : left + (index / (timeline.length - 1)) * width;
+
+    return {
+      ...point,
+      x,
+      y: scoreToY(point.score),
+    };
+  });
+  const linePath = points
+    .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
+    .join(" ");
+  const areaPath =
+    points.length > 1
+      ? `${linePath} L ${points[points.length - 1].x} 240 L ${points[0].x} 240 Z`
+      : "";
+
+  return { points, linePath, areaPath };
+}
+
+function scoreToY(score: number) {
+  const top = 28;
+  const bottom = 240;
+  const clamped = Math.max(0, Math.min(score, 10));
+  return bottom - (clamped / 10) * (bottom - top);
+}
+
+function formatShortDate(date: string) {
+  const parts = date.split("/");
+
+  if (parts.length >= 2) {
+    return `${parts[0]}/${parts[1]}`;
+  }
+
+  return date;
 }
 
 function buildAnalysisSignature(
