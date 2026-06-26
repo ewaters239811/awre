@@ -41,7 +41,7 @@ export default function HomePage() {
             A daily mirror for inner order, clear action, and embodied presence.
           </p>
           <p className="mt-6 max-w-2xl text-base leading-7 text-muted-foreground">
-            A free self-reflection ritual for noticing the inner pattern behind
+            A free self-reflection practice for noticing the inner pattern behind
             your outer presence, then choosing one clear correction for today.
           </p>
           <Button asChild size="lg" className="mt-8">

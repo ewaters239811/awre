@@ -131,7 +131,7 @@ export default function CheckInPage() {
                 </Link>
               </Button>
               <Button asChild variant="secondary">
-                <Link href="/review">Today&apos;s Review</Link>
+                <Link href="/review">Open Today</Link>
               </Button>
               <Button asChild variant="secondary">
                 <Link href="/ritual">Add Journal</Link>

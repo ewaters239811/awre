@@ -34,12 +34,12 @@ Then restart the dev server.
 
 - Landing page with the ClearPth model and CTA
 - Daily Alignment Check-In form
-- Being Dashboard with score, integration debt, trends, pillar balance, ritual rhythm, and depth analysis
-- Daily Ritual page for morning intention and evening reflection
+- Patterns dashboard with score, integration debt, trends, pillar balance, journal rhythm, and depth analysis
+- Daily Journal page for written or spoken reflection
 - Results page with Being Score, state label, strongest and weakest pillars, and prescriptions
 - Optional personalized result summary and prescription
 - Local history page with calendar tracking, pattern insights, and clear history action
-- Weekly Review page with score trends and ritual notes
+- Today page with the current day's check-in, journal status, signal, and correction
 - Daily Guide chat for working through challenges with the ClearPth model
 - Single teaching quote based on the latest check-in when an API key is configured
 - About page explaining the model
@@ -55,16 +55,10 @@ aura.checkIns.v1
 
 The storage keys keep the original internal prefix so existing local data continues to work after earlier brand changes.
 
-Guide conversations are saved in the browser under:
+Journal entries are saved in the browser under:
 
 ```txt
-aura.guideConversations.v1
-```
-
-Daily rituals are saved in the browser under:
-
-```txt
-aura.dailyRituals.v1
+clearpth.journalEntries.v1
 ```
 
 There is no authentication, payment, email, or analytics in this MVP. The AI layer is optional and only runs when `OPENAI_API_KEY` is configured.

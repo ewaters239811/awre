@@ -110,8 +110,8 @@ export function BeingDashboard() {
   return (
     <main className="container py-8 md:py-12">
       <section className="mx-auto max-w-6xl">
-        <p className="clearpth-page-kicker">Integration Analysis</p>
-        <h1 className="clearpth-page-title">Where you are Gathering or Leaking Power</h1>
+        <p className="clearpth-page-kicker">Pattern Intelligence</p>
+        <h1 className="clearpth-page-title">What Is Happening Over Time</h1>
         <p className="mt-4 max-w-3xl text-muted-foreground">
           A living read of your current score, pillar balance, journal rhythm,
           integration debt, and the pattern shaping your state over time.
@@ -124,14 +124,14 @@ export function BeingDashboard() {
             Your Being has not been measured yet.
           </h2>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            Complete a check-in and a daily journal to unlock the dashboard.
+            Complete a check-in and a daily journal to unlock your patterns.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Button asChild>
               <Link href="/check-in">Begin Check-In</Link>
             </Button>
             <Button asChild variant="secondary">
-              <Link href="/ritual">Open Ritual</Link>
+              <Link href="/ritual">Open Journal</Link>
             </Button>
           </div>
         </section>
@@ -181,7 +181,7 @@ export function BeingDashboard() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-xs uppercase tracking-[0.24em] text-primary">
-                    Pattern Reading
+                  Pattern Reading
                   </p>
                   <h2 className="mt-2 font-serif text-3xl font-semibold">
                     {analysis?.archetype ?? "Reading your pattern"}

@@ -32,7 +32,7 @@ export default function ReviewPage() {
       <section className="mx-auto max-w-6xl">
         <div className="flex flex-col gap-5 border-b border-border/60 pb-7 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="clearpth-page-kicker">Today&apos;s Review</p>
+            <p className="clearpth-page-kicker">Today</p>
             <h1 className="clearpth-page-title">What Today Is Showing You</h1>
           </div>
           <div className="flex items-center gap-3 rounded-md border border-border/60 bg-card/35 px-4 py-3 text-sm text-muted-foreground">
