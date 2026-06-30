@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Activity, BarChart3, Compass, Gauge } from "lucide-react";
+import { Activity, ArrowRight, BarChart3, Compass, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getCheckIns } from "@/lib/alignment";
 import { buildBeingDashboardData } from "@/lib/being-analysis";
@@ -22,11 +22,24 @@ type CachedBeingAnalysis = {
   createdAt: string;
 };
 
+type GapInsight = {
+  currentState: string;
+  desiredState: string;
+  bridgePillar: PillarName | null;
+  supportPillar: PillarName | null;
+  distanceLabel: string;
+  progress: number;
+  missingBridge: string;
+  nextMove: string;
+};
+
 const ANALYSIS_CACHE_KEY = "clearpth.beingAnalysis.v1";
 
 export function BeingDashboard() {
   const [checkIns, setCheckIns] = useState<CheckInResult[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
+  const [onboardingProfile, setOnboardingProfile] =
+    useState<OnboardingProfile | null>(null);
   const [analysis, setAnalysis] = useState<BeingDashboardAnalysis | null>(null);
   const [isReading, setIsReading] = useState(false);
 
@@ -34,6 +47,7 @@ export function BeingDashboard() {
     queueMicrotask(() => {
       setCheckIns(getCheckIns());
       setJournalEntries(getJournalEntries());
+      setOnboardingProfile(getOnboardingProfile());
     });
   }, []);
 
@@ -48,7 +62,6 @@ export function BeingDashboard() {
       return;
     }
 
-    const onboardingProfile = getOnboardingProfile();
     const signature = buildAnalysisSignature(
       checkIns,
       journalEntries,
@@ -105,7 +118,12 @@ export function BeingDashboard() {
       .finally(() => setIsReading(false));
 
     return () => controller.abort();
-  }, [checkIns, dashboard, journalEntries]);
+  }, [checkIns, dashboard, journalEntries, onboardingProfile]);
+
+  const gapInsight = useMemo(
+    () => buildGapInsight(dashboard, onboardingProfile),
+    [dashboard, onboardingProfile],
+  );
 
   return (
     <main className="container py-8 md:py-12">
@@ -206,6 +224,8 @@ export function BeingDashboard() {
             </div>
           </section>
 
+          <GapInsightCard insight={gapInsight} />
+
           <section className="mx-auto mt-8 grid max-w-6xl gap-4 md:grid-cols-2 xl:grid-cols-4">
             {dashboard.metrics.map((metric) => (
               <article key={metric.label} className="aura-glass rounded-lg p-5">
@@ -291,6 +311,180 @@ function AnalysisBlock({
       </p>
     </article>
   );
+}
+
+function GapInsightCard({ insight }: { insight: GapInsight }) {
+  return (
+    <section className="aura-glass mx-auto mt-8 max-w-6xl rounded-lg p-6 md:p-7">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div className="max-w-2xl">
+          <div className="flex items-center gap-3">
+            <Compass className="h-5 w-5 text-primary" aria-hidden />
+            <p className="text-xs uppercase tracking-[0.24em] text-primary">
+              The Gap To Fill
+            </p>
+          </div>
+          <h2 className="mt-4 font-serif text-4xl font-semibold">
+            {insight.missingBridge}
+          </h2>
+          <p className="mt-4 leading-7 text-muted-foreground">
+            The gap is the distance between the state you are currently
+            recording and the state you are trying to live from. Fill it by
+            bringing your weakest pillar into agreement with your strongest one.
+          </p>
+        </div>
+
+        <div className="w-full max-w-sm rounded-md border border-border/70 bg-card/45 p-4">
+          <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            <span>Gap closed</span>
+            <span>{insight.progress}%</span>
+          </div>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-primary"
+              style={{ width: `${insight.progress}%` }}
+            />
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">
+            {insight.distanceLabel}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-7 grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-stretch">
+        <GapState label="Current state" value={insight.currentState} />
+        <div className="hidden items-center justify-center md:flex">
+          <span className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card">
+            <ArrowRight className="h-4 w-4 text-primary" aria-hidden />
+          </span>
+        </div>
+        <GapState label="Desired state" value={insight.desiredState} />
+      </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-3">
+        <GapDetail
+          label="Bridge pillar"
+          value={insight.bridgePillar ?? "-"}
+          detail={
+            insight.bridgePillar
+              ? `${insight.bridgePillar} is where the gap is most visible.`
+              : "Complete check-ins to reveal the bridge."
+          }
+        />
+        <GapDetail
+          label="Support"
+          value={insight.supportPillar ?? "-"}
+          detail={
+            insight.supportPillar
+              ? `Use ${insight.supportPillar} as support instead of starting from zero.`
+              : "Your support pillar will appear with more signal."
+          }
+        />
+        <GapDetail
+          label="Next bridge move"
+          value={insight.nextMove}
+          detail="Do this before adding more complexity."
+        />
+      </div>
+    </section>
+  );
+}
+
+function GapState({ label, value }: { label: string; value: string }) {
+  return (
+    <article className="rounded-md border border-border/70 bg-card/45 p-5">
+      <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-3 font-serif text-3xl font-semibold text-foreground">
+        {value}
+      </p>
+    </article>
+  );
+}
+
+function GapDetail({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <article className="rounded-md border border-border/70 bg-card/35 p-4">
+      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-2 text-lg font-medium text-foreground">{value}</p>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{detail}</p>
+    </article>
+  );
+}
+
+function buildGapInsight(
+  dashboard: ReturnType<typeof buildBeingDashboardData>,
+  onboardingProfile: OnboardingProfile | null,
+): GapInsight {
+  const latestScore = dashboard.latestScore ?? 0;
+  const desiredState =
+    onboardingProfile?.desiredState.trim() || "Clear, steady Being";
+  const bridgePillar = dashboard.weakestPillar;
+  const supportPillar = dashboard.strongestPillar;
+  const nextThreshold = getNextThreshold(latestScore);
+  const pointsToThreshold = Math.max(0, nextThreshold.score - latestScore);
+  const progress = Math.round(Math.min((latestScore / nextThreshold.score) * 100, 100));
+
+  return {
+    currentState:
+      dashboard.latestScore === null
+        ? "Unmeasured"
+        : `${latestScore.toFixed(1)} / 10`,
+    desiredState,
+    bridgePillar,
+    supportPillar,
+    distanceLabel:
+      dashboard.latestScore === null
+        ? "Complete a check-in to reveal the gap."
+        : `${pointsToThreshold.toFixed(1)} points from ${nextThreshold.label}.`,
+    progress,
+    missingBridge: getMissingBridge(bridgePillar, latestScore),
+    nextMove: getBridgeMove(bridgePillar),
+  };
+}
+
+function getNextThreshold(score: number) {
+  if (score < 6) return { label: "stable alignment", score: 6 };
+  if (score < 7.5) return { label: "aligned action", score: 7.5 };
+  if (score < 9) return { label: "magnetic coherence", score: 9 };
+  return { label: "sustained magnetic coherence", score: 10 };
+}
+
+function getMissingBridge(pillar: PillarName | null, score: number) {
+  if (!pillar) return "The gap will appear once you create signal.";
+
+  const byPillar: Record<PillarName, string> = {
+    Thinking: "The gap is cleaner perception.",
+    Willing: "The gap is embodied action.",
+    Feeling: "The gap is emotional agreement.",
+  };
+
+  if (score < 6) return `${byPillar[pillar]} Stabilize it first.`;
+  if (score < 7.5) return `${byPillar[pillar]} Make it repeatable.`;
+  return `${byPillar[pillar]} Protect it under pressure.`;
+}
+
+function getBridgeMove(pillar: PillarName | null) {
+  if (!pillar) return "Check in";
+
+  const moves: Record<PillarName, string> = {
+    Thinking: "Name one truer sentence",
+    Willing: "Complete one visible action",
+    Feeling: "Practice the state now",
+  };
+
+  return moves[pillar];
 }
 
 function ScoreTrendChart({
