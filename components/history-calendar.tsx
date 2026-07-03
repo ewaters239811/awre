@@ -8,7 +8,15 @@ import type { CheckInResult } from "@/lib/types";
 
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export function HistoryCalendar({ items }: { items: CheckInResult[] }) {
+export function HistoryCalendar({
+  items,
+  selectedId,
+  onSelect,
+}: {
+  items: CheckInResult[];
+  selectedId?: string;
+  onSelect?: (item: CheckInResult) => void;
+}) {
   const [visibleDate, setVisibleDate] = useState(() => new Date());
 
   const monthLabel = visibleDate.toLocaleString(undefined, {
@@ -45,6 +53,10 @@ export function HistoryCalendar({ items }: { items: CheckInResult[] }) {
           <h2 className="mt-2 font-serif text-3xl font-semibold">
             {monthLabel}
           </h2>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+            Each day shows the Being score recorded for that date. Select a day
+            to inspect the full record.
+          </p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -78,21 +90,31 @@ export function HistoryCalendar({ items }: { items: CheckInResult[] }) {
         {days.map((day) => {
           const key = toDateKey(day.date);
           const checkIns = scoresByDate.get(key) ?? [];
-          const score = getAverageScore(checkIns);
+          const latestCheckIn = getLatestCheckIn(checkIns);
+          const score = latestCheckIn?.beingScore ?? null;
           const isCurrentMonth = day.date.getMonth() === visibleDate.getMonth();
+          const isSelected = Boolean(
+            latestCheckIn && latestCheckIn.id === selectedId,
+          );
 
           return (
-            <div
+            <button
               key={key}
+              type="button"
+              disabled={!latestCheckIn}
+              onClick={() => {
+                if (latestCheckIn) onSelect?.(latestCheckIn);
+              }}
               title={
                 score
                   ? `${score.toFixed(1)} Being score`
                   : "No check-in recorded"
               }
               className={cn(
-                "flex aspect-square min-h-14 flex-col items-center justify-center rounded-md border border-border/50 bg-black/18 p-1 text-sm transition duration-200 hover:-translate-y-0.5 hover:border-primary/25",
+                "flex aspect-square min-h-14 flex-col items-center justify-center rounded-md border border-border/50 bg-black/18 p-1 text-sm transition duration-200 hover:-translate-y-0.5 hover:border-primary/25 disabled:hover:translate-y-0",
                 !isCurrentMonth && "opacity-35",
                 score && getScoreClass(score),
+                isSelected && "ring-2 ring-primary ring-offset-2 ring-offset-background",
               )}
             >
               <span className="text-xs text-muted-foreground">
@@ -105,7 +127,7 @@ export function HistoryCalendar({ items }: { items: CheckInResult[] }) {
               ) : (
                 <span className="mt-1 h-6 text-muted-foreground/40">-</span>
               )}
-            </div>
+            </button>
           );
         })}
       </div>
@@ -136,9 +158,12 @@ function buildMonthDays(date: Date) {
   });
 }
 
-function getAverageScore(items: CheckInResult[]) {
+function getLatestCheckIn(items: CheckInResult[]) {
   if (items.length === 0) return null;
-  return items.reduce((sum, item) => sum + item.beingScore, 0) / items.length;
+
+  return [...items].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  )[0];
 }
 
 function getScoreClass(score: number) {
