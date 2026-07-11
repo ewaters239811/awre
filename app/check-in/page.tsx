@@ -269,7 +269,7 @@ function CheckInGate({
             {description}
           </p>
         </div>
-        <div className="rounded-md border border-border/55 bg-black/18 p-4">
+        <div className="rounded-md border border-border/55 bg-card/55 p-4">
           {children}
         </div>
       </div>

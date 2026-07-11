@@ -13,11 +13,11 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
     const savedTheme = localStorage.getItem(THEME_KEY);
-    const nextTheme: Theme = savedTheme === "light" ? "light" : "dark";
+    const nextTheme: Theme = savedTheme === "dark" ? "dark" : "light";
 
     queueMicrotask(() => {
       setTheme(nextTheme);

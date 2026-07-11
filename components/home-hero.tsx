@@ -1,0 +1,210 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowRight, CalendarCheck, NotebookPen, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { getCurrentAccount } from "@/lib/account-data";
+import { getCheckIns, getLatestCheckIn, getTodaysCheckIn } from "@/lib/alignment";
+import {
+  getJournalEntries,
+  getJournalEntryForDate,
+  toDateKey,
+} from "@/lib/journal-storage";
+import type { CheckInResult, JournalEntry } from "@/lib/types";
+
+type AccountUser = {
+  email?: string;
+  user_metadata?: {
+    full_name?: string;
+    name?: string;
+  };
+};
+
+type HomeState = {
+  user: AccountUser | null;
+  latestCheckIn: CheckInResult | null;
+  todaysCheckIn: CheckInResult | null;
+  todaysJournal: JournalEntry | null;
+  totalCheckIns: number;
+  totalJournals: number;
+};
+
+export function HomeHero() {
+  const [state, setState] = useState<HomeState>({
+    user: null,
+    latestCheckIn: null,
+    todaysCheckIn: null,
+    todaysJournal: null,
+    totalCheckIns: 0,
+    totalJournals: 0,
+  });
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      const today = toDateKey(new Date());
+
+      getCurrentAccount()
+        .then((user) => {
+          setState({
+            user,
+            latestCheckIn: getLatestCheckIn(),
+            todaysCheckIn: getTodaysCheckIn(),
+            todaysJournal: getJournalEntryForDate(today),
+            totalCheckIns: getCheckIns().length,
+            totalJournals: getJournalEntries().length,
+          });
+        })
+        .finally(() => setLoaded(true));
+    });
+  }, []);
+
+  if (!loaded || !state.user) {
+    return <PublicHomeHero />;
+  }
+
+  return <PersonalHomeHero state={state} />;
+}
+
+function PublicHomeHero() {
+  return (
+    <div className="max-w-3xl">
+      <p className="mb-4 text-xs uppercase tracking-[0.24em] text-primary sm:text-sm sm:tracking-[0.28em]">
+        Thinking | Willing | Feeling = Being
+      </p>
+      <h1 className="font-serif text-5xl font-semibold leading-[0.96] text-foreground sm:text-7xl lg:text-8xl">
+        ClearPth
+      </h1>
+      <div className="aura-luxury-line mt-6 max-w-lg" />
+      <p className="mt-6 max-w-2xl text-lg leading-8 text-foreground/86 sm:text-2xl sm:leading-9">
+        A daily mirror for inner order, clear action, and embodied presence.
+      </p>
+      <p className="mt-4 max-w-2xl text-base leading-8 text-muted-foreground">
+        A free self-reflection practice for noticing the inner pattern behind
+        your outer presence, then choosing one clear correction for today.
+      </p>
+      <Button asChild size="lg" className="mt-8">
+        <Link href="/check-in">
+          Begin Alignment Check-In
+          <ArrowRight className="h-4 w-4" aria-hidden />
+        </Link>
+      </Button>
+    </div>
+  );
+}
+
+function PersonalHomeHero({ state }: { state: HomeState }) {
+  const firstName = useMemo(() => getFirstName(state.user), [state.user]);
+  const hasCheckedInToday = Boolean(state.todaysCheckIn);
+  const hasJournalToday = Boolean(state.todaysJournal?.content.trim());
+  const nextHref = hasCheckedInToday
+    ? hasJournalToday
+      ? "/review"
+      : "/ritual"
+    : "/check-in";
+  const nextLabel = hasCheckedInToday
+    ? hasJournalToday
+      ? "Review Today"
+      : "Write Today"
+    : "Begin Today";
+
+  return (
+    <div className="max-w-3xl">
+      <p className="mb-4 text-xs uppercase tracking-[0.24em] text-primary sm:text-sm sm:tracking-[0.28em]">
+        Welcome Back
+      </p>
+      <h1 className="font-serif text-4xl font-semibold leading-[1.02] text-foreground sm:text-6xl lg:text-7xl">
+        Hi {firstName}. Good to see you.
+      </h1>
+      <div className="aura-luxury-line mt-6 max-w-lg" />
+      <p className="mt-6 max-w-2xl text-lg leading-8 text-foreground/86 sm:text-2xl sm:leading-9">
+        {buildHomeMessage(state)}
+      </p>
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-3">
+        <PersonalStat
+          icon={<Sparkles className="h-4 w-4" aria-hidden />}
+          label="Last score"
+          value={
+            state.latestCheckIn
+              ? state.latestCheckIn.beingScore.toFixed(1)
+              : "Open"
+          }
+        />
+        <PersonalStat
+          icon={<CalendarCheck className="h-4 w-4" aria-hidden />}
+          label="Today"
+          value={hasCheckedInToday ? "Checked in" : "Ready"}
+        />
+        <PersonalStat
+          icon={<NotebookPen className="h-4 w-4" aria-hidden />}
+          label="Journal"
+          value={hasJournalToday ? "Written" : "Open"}
+        />
+      </div>
+
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        <Button asChild size="lg">
+          <Link href={nextHref}>
+            {nextLabel}
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+        </Button>
+        <Button asChild variant="secondary" size="lg">
+          <Link href="/dashboard">See Patterns</Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function PersonalStat({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <article className="rounded-md border border-border/70 bg-card/55 p-4">
+      <div className="flex items-center gap-2 text-muted-foreground">
+        {icon}
+        <p className="text-xs uppercase tracking-[0.18em]">{label}</p>
+      </div>
+      <p className="mt-3 text-lg font-medium text-foreground">{value}</p>
+    </article>
+  );
+}
+
+function getFirstName(user: AccountUser | null) {
+  const name =
+    user?.user_metadata?.full_name?.trim() ||
+    user?.user_metadata?.name?.trim() ||
+    user?.email?.split("@")[0] ||
+    "there";
+
+  return name.split(/\s+/)[0];
+}
+
+function buildHomeMessage(state: HomeState) {
+  if (!state.latestCheckIn) {
+    return "No pressure. Start with one honest check-in and let today become a little clearer.";
+  }
+
+  if (!state.todaysCheckIn) {
+    return `Your last recorded state was ${state.latestCheckIn.beingScore.toFixed(
+      1,
+    )}/10. Come in gently today: notice what is true, then choose the next clean step.`;
+  }
+
+  if (!state.todaysJournal?.content.trim()) {
+    return `Today is already measured at ${state.todaysCheckIn.beingScore.toFixed(
+      1,
+    )}/10. A few honest lines would give the day more texture.`;
+  }
+
+  return `You have ${state.totalCheckIns} check-ins and ${state.totalJournals} journal entries in your record. Today has a shape now; let it support the next decision.`;
+}

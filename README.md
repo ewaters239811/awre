@@ -9,6 +9,7 @@ ClearPth is a free MVP self-reflection web app for aligning Thinking, Willing, a
 - Tailwind CSS
 - shadcn/ui-style components
 - Browser `localStorage`
+- Optional Supabase Auth and database profile sync
 
 ## Getting Started
 
@@ -29,6 +30,37 @@ AURA_AI_MODEL=gpt-5.4-mini
 ```
 
 Then restart the dev server.
+
+## Optional Supabase Login And Profile Sync
+
+ClearPth can save a user's check-ins, journal entries, and onboarding profile to
+their login profile with Supabase.
+
+1. Create a Supabase project.
+2. Add these values to `.env.local`:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_api_url
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+```
+
+If your Supabase dashboard only shows an `anon` key, this also works:
+
+```bash
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+3. Open the Supabase SQL Editor and run the contents of:
+
+```txt
+supabase/schema.sql
+```
+
+4. Restart the dev server.
+5. Open `/login` and create an account.
+
+The app remains local-first. Existing browser data is preserved, then copied into
+the signed-in user's Supabase profile automatically.
 
 ## What Is Included
 
@@ -61,12 +93,16 @@ Journal entries are saved in the browser under:
 clearpth.journalEntries.v1
 ```
 
-There is no authentication, payment, email, or analytics in this MVP. The AI layer is optional and only runs when `OPENAI_API_KEY` is configured.
+There is optional Supabase authentication and profile sync. Payment, email
+marketing, and analytics are not included in this MVP. The AI layer is optional
+and only runs when `OPENAI_API_KEY` is configured.
 
-## Future Supabase Direction
+## Supabase Data Model
 
-1. Add Supabase Auth with email/password or magic link.
-2. Create a `check_ins` table with user id, scores, reflection text, score metadata, and timestamp.
-3. Replace the localStorage helpers in `lib/alignment.ts` with Supabase read/write functions.
-4. Add row-level security so users can only access their own check-ins.
-5. Keep localStorage as an optional offline draft cache.
+The schema in `supabase/schema.sql` creates:
+
+- `check_ins`
+- `journal_entries`
+- `onboarding_profiles`
+
+Each table uses row-level security so users can only access their own records.

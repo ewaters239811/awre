@@ -60,7 +60,7 @@ export function AlignmentResult({
             </article>
 
             {result.aiAlignment?.summary ? (
-              <article className="rounded-md border border-border/55 bg-black/18 p-5">
+              <article className="rounded-md border border-border/55 bg-card/55 p-5">
                 <div className="flex items-center gap-3">
                   <Compass className="h-5 w-5 text-primary" aria-hidden />
                   <p className="text-xs uppercase tracking-[0.22em] text-primary">
@@ -84,7 +84,7 @@ export function AlignmentResult({
             {prescription.map(([label, body]) => (
               <article
                 key={label}
-                className="rounded-md border border-border/55 bg-black/18 p-5"
+                className="rounded-md border border-border/55 bg-card/55 p-5"
               >
                 <p className="text-xs uppercase tracking-[0.22em] text-primary">
                   {label}
@@ -135,7 +135,7 @@ function AiStatus({
 
   if (status === "loading") {
     return (
-      <p className="mt-4 rounded-md border border-border/70 bg-black/15 px-4 py-3 text-sm text-muted-foreground">
+      <p className="mt-4 rounded-md border border-border/70 bg-card/45 px-4 py-3 text-sm text-muted-foreground">
         Reading your alignment...
       </p>
     );
@@ -143,7 +143,7 @@ function AiStatus({
 
   if (status === "unavailable") {
     return (
-      <p className="mt-4 rounded-md border border-border/70 bg-black/15 px-4 py-3 text-sm text-muted-foreground">
+      <p className="mt-4 rounded-md border border-border/70 bg-card/45 px-4 py-3 text-sm text-muted-foreground">
         Showing your alignment result.
       </p>
     );
@@ -154,7 +154,7 @@ function AiStatus({
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between rounded-md border border-border/55 bg-black/18 px-4 py-3">
+    <div className="flex items-center justify-between rounded-md border border-border/55 bg-card/55 px-4 py-3">
       <span className="text-muted-foreground">{label}</span>
       <span className="font-medium text-foreground">{value}</span>
     </div>

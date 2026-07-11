@@ -2,6 +2,7 @@ import type { CheckInDraft, CheckInResult, PillarName } from "@/lib/types";
 import { createId } from "@/lib/id";
 
 const STORAGE_KEY = "aura.checkIns.v1";
+export const CHECK_INS_CHANGED_EVENT = "clearpth:check-ins-changed";
 
 type PillarScore = {
   name: PillarName;
@@ -61,6 +62,7 @@ export function saveCheckIn(result: CheckInResult) {
   );
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify([result, ...existing]));
+  emitStorageEvent(CHECK_INS_CHANGED_EVENT);
 }
 
 export function getCheckInById(id: string) {
@@ -88,10 +90,24 @@ export function updateCheckIn(updated: CheckInResult) {
     item.id === updated.id ? updated : item,
   );
   localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  emitStorageEvent(CHECK_INS_CHANGED_EVENT);
 }
 
 export function clearCheckIns() {
-  if (isBrowser()) localStorage.removeItem(STORAGE_KEY);
+  if (isBrowser()) {
+    localStorage.removeItem(STORAGE_KEY);
+    emitStorageEvent(CHECK_INS_CHANGED_EVENT);
+  }
+}
+
+export function replaceCheckIns(results: CheckInResult[]) {
+  if (!isBrowser()) return;
+  const sorted = [...results].sort(
+    (a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(sorted));
+  emitStorageEvent(CHECK_INS_CHANGED_EVENT);
 }
 
 function buildPrescription(
@@ -148,4 +164,8 @@ export function toDateKey(date: Date) {
 
 function isBrowser() {
   return typeof window !== "undefined";
+}
+
+function emitStorageEvent(name: string) {
+  window.dispatchEvent(new Event(name));
 }

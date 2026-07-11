@@ -18,6 +18,7 @@ const links = [
   { href: "/guide", label: "Guide" },
   { href: "/teachings", label: "Teachings" },
   { href: "/about", label: "About" },
+  { href: "/settings", label: "Settings" },
 ];
 
 export function Navigation() {
@@ -68,7 +69,7 @@ export function Navigation() {
               key={link.href}
               href={link.href}
               className={cn(
-                "rounded-md px-3 py-2 text-sm text-muted-foreground transition hover:bg-white/[0.07] hover:text-foreground",
+                "rounded-md px-3 py-2 text-sm text-muted-foreground transition hover:bg-accent/70 hover:text-foreground",
                 pathname === link.href &&
                   "bg-foreground text-background hover:bg-foreground hover:text-background",
               )}
@@ -99,7 +100,7 @@ export function Navigation() {
               href={link.href}
               onClick={() => setOpen(false)}
               className={cn(
-                "rounded-md px-3 py-3 text-sm text-muted-foreground transition hover:bg-white/[0.07] hover:text-foreground",
+                "rounded-md px-3 py-3 text-sm text-muted-foreground transition hover:bg-accent/70 hover:text-foreground",
                 pathname === link.href &&
                   "bg-foreground text-background hover:bg-foreground hover:text-background",
               )}

@@ -6,6 +6,7 @@ import { ArrowRight, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HistoryCalendar } from "@/components/history-calendar";
 import { PatternInsights } from "@/components/pattern-insights";
+import { clearRemoteCheckIns } from "@/lib/account-data";
 import { clearCheckIns, getCheckIns } from "@/lib/alignment";
 import type { CheckInResult } from "@/lib/types";
 
@@ -23,10 +24,17 @@ export default function HistoryPage() {
 
   const stats = useMemo(() => buildHistoryStats(items), [items]);
 
-  const clear = () => {
-    clearCheckIns();
-    setItems([]);
-    setSelectedItem(null);
+  const clear = async () => {
+    try {
+      await clearRemoteCheckIns();
+      clearCheckIns();
+      setItems([]);
+      setSelectedItem(null);
+    } catch {
+      clearCheckIns();
+      setItems([]);
+      setSelectedItem(null);
+    }
   };
 
   return (
@@ -88,8 +96,9 @@ export default function HistoryPage() {
             </p>
             <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-                Check-ins are stored locally in this browser. Clearing history
-                removes the record used by History and Patterns.
+                Check-ins are stored in this browser and, when signed in, your
+                account profile. Clearing history removes the record used by
+                History and Patterns.
               </p>
               <Button variant="secondary" onClick={clear}>
                 Clear local history
@@ -211,7 +220,7 @@ function RecentEntries({ items }: { items: CheckInResult[] }) {
       <div className="aura-glass mt-5 hidden overflow-hidden rounded-lg border border-border md:block">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] text-left text-sm">
-            <thead className="bg-white/5 text-muted-foreground">
+            <thead className="bg-accent/35 text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 font-medium">Date</th>
                 <th className="px-4 py-3 font-medium">Thinking</th>
@@ -226,7 +235,7 @@ function RecentEntries({ items }: { items: CheckInResult[] }) {
               {items.map((item) => (
                 <tr
                   key={item.id}
-                  className="border-t border-border/55 transition hover:bg-white/[0.035]"
+                  className="border-t border-border/55 transition hover:bg-accent/25"
                 >
                   <td className="px-4 py-4">
                     {new Date(item.createdAt).toLocaleDateString()}

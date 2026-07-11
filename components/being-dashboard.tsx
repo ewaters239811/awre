@@ -206,7 +206,7 @@ export function BeingDashboard() {
                   </h2>
                 </div>
                 {isReading ? (
-                  <span className="rounded-md border border-border/55 bg-black/18 px-3 py-2 text-xs text-muted-foreground">
+                  <span className="rounded-md border border-border/55 bg-card/55 px-3 py-2 text-xs text-muted-foreground">
                     Reading
                   </span>
                 ) : null}
@@ -304,7 +304,7 @@ function AnalysisBlock({
   body?: string;
 }) {
   return (
-    <article className="rounded-md border border-border/55 bg-black/18 p-4">
+    <article className="rounded-md border border-border/55 bg-card/55 p-4">
       <p className="text-xs uppercase tracking-[0.2em] text-primary">{label}</p>
       <p className="mt-2 leading-7 text-muted-foreground">
         {body ?? "Reading the pattern..."}

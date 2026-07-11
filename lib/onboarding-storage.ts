@@ -1,6 +1,7 @@
 import type { OnboardingProfile } from "@/lib/types";
 
 const STORAGE_KEY = "clearpth.onboardingProfile.v1";
+export const ONBOARDING_CHANGED_EVENT = "clearpth:onboarding-changed";
 
 export function createEmptyOnboardingProfile(): OnboardingProfile {
   const now = new Date().toISOString();
@@ -44,6 +45,7 @@ export function saveOnboardingProfile(profile: OnboardingProfile) {
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    emitStorageEvent(ONBOARDING_CHANGED_EVENT);
   } catch {
     // If storage is blocked, the rest of the app can still be used.
   }
@@ -61,4 +63,8 @@ function isOnboardingProfile(value: unknown): value is OnboardingProfile {
 
 function isBrowser() {
   return typeof window !== "undefined";
+}
+
+function emitStorageEvent(name: string) {
+  window.dispatchEvent(new Event(name));
 }

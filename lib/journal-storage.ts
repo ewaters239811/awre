@@ -2,6 +2,7 @@ import { createId } from "@/lib/id";
 import type { JournalEntry } from "@/lib/types";
 
 const STORAGE_KEY = "clearpth.journalEntries.v1";
+export const JOURNAL_CHANGED_EVENT = "clearpth:journal-changed";
 
 export function createEmptyJournalEntry(date = toDateKey(new Date())) {
   const now = new Date().toISOString();
@@ -45,6 +46,14 @@ export function saveJournalEntry(entry: JournalEntry) {
   ].sort((a, b) => b.date.localeCompare(a.date));
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  emitStorageEvent(JOURNAL_CHANGED_EVENT);
+}
+
+export function replaceJournalEntries(entries: JournalEntry[]) {
+  if (!isBrowser()) return;
+  const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(sorted));
+  emitStorageEvent(JOURNAL_CHANGED_EVENT);
 }
 
 export function toDateKey(date: Date) {
@@ -56,4 +65,8 @@ export function toDateKey(date: Date) {
 
 function isBrowser() {
   return typeof window !== "undefined";
+}
+
+function emitStorageEvent(name: string) {
+  window.dispatchEvent(new Event(name));
 }

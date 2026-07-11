@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { AmbientNoise } from "@/components/ambient-noise";
+import { AccountSync } from "@/components/account-sync";
 import { Navigation } from "@/components/navigation";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
@@ -23,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className="light" suppressHydrationWarning>
       <head>
         <Script id="theme-init" strategy="beforeInteractive">
           {`
@@ -37,7 +38,7 @@ export default function RootLayout({
                     });
                 };
               }
-              var theme = localStorage.getItem("clearpth.theme") || "dark";
+              var theme = localStorage.getItem("clearpth.theme") || "light";
               document.documentElement.classList.toggle("light", theme === "light");
               document.documentElement.classList.toggle("dark", theme !== "light");
             } catch {}
@@ -47,6 +48,7 @@ export default function RootLayout({
       <body className={`${geist.variable} ${geistMono.variable}`}>
         <Navigation />
         {children}
+        <AccountSync />
         <AmbientNoise />
       </body>
     </html>

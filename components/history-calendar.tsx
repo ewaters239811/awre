@@ -111,7 +111,7 @@ export function HistoryCalendar({
                   : "No check-in recorded"
               }
               className={cn(
-                "flex aspect-square min-h-14 flex-col items-center justify-center rounded-md border border-border/50 bg-black/18 p-1 text-sm transition duration-200 hover:-translate-y-0.5 hover:border-primary/25 disabled:hover:translate-y-0",
+                "flex aspect-square min-h-14 flex-col items-center justify-center rounded-md border border-border/50 bg-card/55 p-1 text-sm transition duration-200 hover:-translate-y-0.5 hover:border-primary/25 disabled:hover:translate-y-0",
                 !isCurrentMonth && "opacity-35",
                 score && getScoreClass(score),
                 isSelected && "ring-2 ring-primary ring-offset-2 ring-offset-background",
