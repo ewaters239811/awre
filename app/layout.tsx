@@ -47,6 +47,7 @@ export default function RootLayout({
         </Script>
       </head>
       <body className={`${geist.variable} ${geistMono.variable}`}>
+        <div className="aura-animated-backdrop" aria-hidden />
         <Navigation />
         {children}
         <AuthChoicePrompt />

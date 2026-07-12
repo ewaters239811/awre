@@ -88,6 +88,18 @@ function PublicHomeHero() {
           <ArrowRight className="h-4 w-4" aria-hidden />
         </Link>
       </Button>
+      <div className="mt-6 flex flex-wrap gap-2">
+        {["2-minute check-in", "Clear next step", "Pattern tracking"].map(
+          (item) => (
+            <span
+              key={item}
+              className="rounded-full border border-border bg-card/70 px-3 py-2 text-xs font-medium text-muted-foreground shadow-sm"
+            >
+              {item}
+            </span>
+          ),
+        )}
+      </div>
     </div>
   );
 }
@@ -152,6 +164,16 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
         <Button asChild variant="secondary" size="lg">
           <Link href="/dashboard">See Patterns</Link>
         </Button>
+      </div>
+      <div className="mt-6 flex flex-wrap gap-2">
+        {["state", "journal", "next move"].map((item) => (
+          <span
+            key={item}
+            className="rounded-full border border-border bg-card/70 px-3 py-2 text-xs font-medium text-muted-foreground shadow-sm"
+          >
+            {item}
+          </span>
+        ))}
       </div>
     </div>
   );
