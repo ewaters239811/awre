@@ -1,14 +1,17 @@
 "use client";
 
 import {
-  getCheckIns,
+  clearCheckIns,
   replaceCheckIns,
 } from "@/lib/alignment";
 import {
-  getJournalEntries,
   replaceJournalEntries,
 } from "@/lib/journal-storage";
-import { getOnboardingProfile, saveOnboardingProfile } from "@/lib/onboarding-storage";
+import {
+  clearOnboardingProfile,
+  saveOnboardingProfile,
+} from "@/lib/onboarding-storage";
+import { clearGuideConversations } from "@/lib/guide-storage";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import type { CheckInResult, JournalEntry, OnboardingProfile } from "@/lib/types";
 
@@ -32,6 +35,21 @@ export async function getCurrentAccount() {
 export async function signOutOfAccount() {
   const supabase = createSupabaseBrowserClient();
   await supabase.auth.signOut();
+  clearLocalAccountData();
+}
+
+export function clearLocalAccountData() {
+  clearCheckIns();
+  replaceJournalEntries([]);
+  clearOnboardingProfile();
+  clearGuideConversations();
+
+  try {
+    localStorage.removeItem("clearpth.beingAnalysis.v1");
+    localStorage.removeItem("aura.dailyRituals.v1");
+  } catch {
+    // Storage can be unavailable in private browsing modes.
+  }
 }
 
 export async function updateAccountName(name: string) {
@@ -58,12 +76,6 @@ export async function syncLocalDataToAccount(): Promise<AccountSyncResult | null
 
   if (!user) return null;
 
-  await Promise.all([
-    upsertCheckIns(user.id),
-    upsertJournalEntries(user.id),
-    upsertOnboardingProfile(user.id),
-  ]);
-
   const [remoteCheckIns, remoteJournalEntries, remoteProfile] =
     await Promise.all([
       fetchRemoteCheckIns(),
@@ -71,8 +83,8 @@ export async function syncLocalDataToAccount(): Promise<AccountSyncResult | null
       fetchRemoteOnboardingProfile(),
     ]);
 
-  replaceCheckIns(mergeById(getCheckIns(), remoteCheckIns));
-  replaceJournalEntries(mergeById(getJournalEntries(), remoteJournalEntries));
+  replaceCheckIns(remoteCheckIns);
+  replaceJournalEntries(remoteJournalEntries);
 
   if (remoteProfile) {
     saveOnboardingProfile(remoteProfile);
@@ -83,6 +95,61 @@ export async function syncLocalDataToAccount(): Promise<AccountSyncResult | null
     journalEntries: remoteJournalEntries.length,
     hasOnboardingProfile: Boolean(remoteProfile),
   };
+}
+
+export async function saveCheckInToAccount(checkIn: CheckInResult) {
+  const userId = await getCurrentUserId();
+  if (!userId) throw new Error("Sign in before saving a check-in.");
+
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase.from("check_ins").upsert(
+    {
+      id: checkIn.id,
+      user_id: userId,
+      created_at: checkIn.createdAt,
+      data: checkIn,
+    },
+    { onConflict: "id" },
+  );
+
+  if (error) throw error;
+}
+
+export async function saveJournalEntryToAccount(entry: JournalEntry) {
+  const userId = await getCurrentUserId();
+  if (!userId) throw new Error("Sign in before saving a journal entry.");
+
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase.from("journal_entries").upsert(
+    {
+      id: entry.id,
+      user_id: userId,
+      date: entry.date,
+      created_at: entry.createdAt,
+      updated_at: entry.updatedAt,
+      data: entry,
+    },
+    { onConflict: "id" },
+  );
+
+  if (error) throw error;
+}
+
+export async function saveOnboardingProfileToAccount(profile: OnboardingProfile) {
+  const userId = await getCurrentUserId();
+  if (!userId) throw new Error("Sign in before saving a setup profile.");
+
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase.from("onboarding_profiles").upsert(
+    {
+      user_id: userId,
+      updated_at: profile.updatedAt,
+      data: profile,
+    },
+    { onConflict: "user_id" },
+  );
+
+  if (error) throw error;
 }
 
 export async function fetchRemoteCheckIns() {
@@ -134,67 +201,10 @@ export async function clearRemoteCheckIns() {
   if (error) throw error;
 }
 
-async function upsertCheckIns(userId: string) {
-  const checkIns = getCheckIns();
-  if (checkIns.length === 0) return;
+async function getCurrentUserId() {
+  if (!isSupabaseConfigured()) return null;
 
   const supabase = createSupabaseBrowserClient();
-  const { error } = await supabase.from("check_ins").upsert(
-    checkIns.map((checkIn) => ({
-      id: checkIn.id,
-      user_id: userId,
-      created_at: checkIn.createdAt,
-      data: checkIn,
-    })),
-    { onConflict: "id" },
-  );
-
-  if (error) throw error;
-}
-
-async function upsertJournalEntries(userId: string) {
-  const entries = getJournalEntries();
-  if (entries.length === 0) return;
-
-  const supabase = createSupabaseBrowserClient();
-  const { error } = await supabase.from("journal_entries").upsert(
-    entries.map((entry) => ({
-      id: entry.id,
-      user_id: userId,
-      date: entry.date,
-      created_at: entry.createdAt,
-      updated_at: entry.updatedAt,
-      data: entry,
-    })),
-    { onConflict: "id" },
-  );
-
-  if (error) throw error;
-}
-
-async function upsertOnboardingProfile(userId: string) {
-  const profile = getOnboardingProfile();
-  if (!profile) return;
-
-  const supabase = createSupabaseBrowserClient();
-  const { error } = await supabase.from("onboarding_profiles").upsert(
-    {
-      user_id: userId,
-      updated_at: profile.updatedAt,
-      data: profile,
-    },
-    { onConflict: "user_id" },
-  );
-
-  if (error) throw error;
-}
-
-function mergeById<T extends { id: string }>(localItems: T[], remoteItems: T[]) {
-  const byId = new Map<string, T>();
-
-  for (const item of [...remoteItems, ...localItems]) {
-    byId.set(item.id, item);
-  }
-
-  return Array.from(byId.values());
+  const { data } = await supabase.auth.getUser();
+  return data.user?.id ?? null;
 }

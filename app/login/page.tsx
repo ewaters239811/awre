@@ -10,7 +10,12 @@ import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabas
 
 export default function LoginPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const [mode, setMode] = useState<"sign-in" | "sign-up">(() =>
+    typeof window !== "undefined" &&
+    window.location.search.includes("mode=sign-up")
+      ? "sign-up"
+      : "sign-in",
+  );
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -72,8 +77,8 @@ export default function LoginPage() {
       await syncLocalDataToAccount();
       setStatus(
         mode === "sign-up"
-          ? "Account created and signed in. Your local data is syncing to your profile."
-          : "Signed in. Your local data is syncing to your profile.",
+          ? "Account created and signed in. Your record is connected to your profile."
+          : "Signed in. Your record is connected to your profile.",
       );
       router.push("/account");
     } catch {
@@ -97,8 +102,8 @@ export default function LoginPage() {
             <div className="flex items-start gap-3">
               <ShieldCheck className="mt-1 h-5 w-5 text-primary" aria-hidden />
               <p className="text-sm leading-6 text-muted-foreground">
-                Your browser data remains available locally. When you sign in,
-                ClearPth copies it into your Supabase profile.
+                ClearPth saves personal records only when you are signed in.
+                Guest sessions are private and unsaved.
               </p>
             </div>
           </div>

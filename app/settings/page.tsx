@@ -2,12 +2,10 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { LogOut, Moon, Save, ShieldCheck, SlidersHorizontal, Sun } from "lucide-react";
+import { Moon, Save, ShieldCheck, SlidersHorizontal, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   getCurrentAccount,
-  signOutOfAccount,
   syncLocalDataToAccount,
   updateAccountName,
 } from "@/lib/account-data";
@@ -29,11 +27,10 @@ type AccountUser = {
 };
 
 export default function SettingsPage() {
-  const router = useRouter();
   const [user, setUser] = useState<AccountUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("light");
   const [profileMessage, setProfileMessage] = useState("");
   const [accountMessage, setAccountMessage] = useState("");
   const [savingName, setSavingName] = useState(false);
@@ -47,7 +44,7 @@ export default function SettingsPage() {
   useEffect(() => {
     queueMicrotask(() => {
       const savedTheme = localStorage.getItem(THEME_KEY);
-      setTheme(savedTheme === "light" ? "light" : "dark");
+      setTheme(savedTheme === "dark" ? "dark" : "light");
 
       getCurrentAccount()
         .then((account) => {
@@ -94,11 +91,6 @@ export default function SettingsPage() {
     setTheme(nextTheme);
     document.documentElement.classList.toggle("light", nextTheme === "light");
     document.documentElement.classList.toggle("dark", nextTheme === "dark");
-  };
-
-  const signOut = async () => {
-    await signOutOfAccount();
-    router.push("/login");
   };
 
   if (loading) {
@@ -218,7 +210,8 @@ export default function SettingsPage() {
               Account
             </p>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Manage your setup profile or sign out of this device.
+              Adjust the personal setup that shapes your check-ins, Guide, and
+              pattern analysis.
             </p>
             {accountMessage ? (
               <p className="mt-3 text-sm text-muted-foreground">
@@ -229,10 +222,6 @@ export default function SettingsPage() {
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild variant="secondary">
               <Link href="/onboarding">Update Setup</Link>
-            </Button>
-            <Button variant="secondary" onClick={signOut}>
-              <LogOut className="h-4 w-4" aria-hidden />
-              Sign Out
             </Button>
           </div>
         </div>

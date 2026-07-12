@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createJsonWithOpenAI } from "@/lib/server/openai";
-import type { CheckInResult, OnboardingProfile } from "@/lib/types";
 
 type ChatMessage = {
   role: "user" | "assistant";
@@ -9,12 +8,6 @@ type ChatMessage = {
 
 type GuideRequest = {
   messages?: ChatMessage[];
-  latestCheckIn?: CheckInResult | null;
-  onboardingProfile?: OnboardingProfile | null;
-  recentJournalEntries?: Array<{
-    date: string;
-    content: string;
-  }>;
 };
 
 type GuideResponse = {
@@ -25,11 +18,14 @@ type GuideResponse = {
 const crisisPattern =
   /\b(suicide|self[-\s]?harm|kill myself|end my life|can't go on|severe depression|crisis)\b/i;
 
+const greetingPattern =
+  /^(hi|hello|hey|yo|good morning|good afternoon|good evening|what's up|whats up)[.!?\s]*$/i;
+
 const supportMessage =
   "I am here as a reflection guide, not crisis support. If you may hurt yourself or feel in immediate danger, call emergency services now, contact a trusted person, or in the U.S. call or text 988 for the Suicide & Crisis Lifeline.";
 
 const fallback =
-  "Bring the challenge into one clean sentence. Then name the thought driving it, the action being avoided, and the feeling charging it. From there, choose one honorable step you can take today.";
+  "I am here with you. Tell me what has been on your mind today, even if it feels unfinished. We can turn it into something clear together.";
 
 const fallbackSuggestions = [
   "What is the deeper root of this pattern?",
@@ -57,6 +53,19 @@ export async function POST(request: Request) {
       });
     }
 
+    if (greetingPattern.test(latestUserMessage.trim())) {
+      return NextResponse.json({
+        enabled: true,
+        data:
+          "Hi. I am here with you. What would feel most useful right now: talking through something on your mind, understanding a feeling, or finding one clear next step?",
+        suggestions: [
+          "Help me understand what I am feeling today.",
+          "I want to talk through something on my mind.",
+          "Help me find one clear next step.",
+        ],
+      });
+    }
+
     const response = await createJsonWithOpenAI<GuideResponse>({
       fallback: {
         reply: fallback,
@@ -71,9 +80,12 @@ export async function POST(request: Request) {
         "Use gender-neutral language by default: say person, self, life, presence, or identity rather than man, woman, masculine, feminine, he, she, his, or her.",
         "Only use gendered language if the user explicitly states their gender or asks you to reflect it.",
         "Help the user work with daily challenges through the ClearPth model: Thinking, Willing, Feeling, and Being.",
-        "If an onboarding profile is provided, use it to calibrate the response to the user's main goal, desired state, preferred tone, commitment level, and spiritual openness.",
-        "Use recent journal entries as private context for understanding the user's repeated patterns, desires, emotional charges, and avoided actions.",
-        "Do not quote journal entries back at length. Distill them into useful pattern recognition.",
+        "If the user is simply greeting you, respond warmly and naturally like a normal conversation. Do not analyze, prescribe, or force the ClearPth model until the user names something real they want help with.",
+        "If the user's message is casual, unclear, or very short, ask a gentle conversational question before giving advice.",
+        "Use only the current chat conversation as user-specific context.",
+        "Do not use, mention, or infer details from check-ins, journal entries, onboarding answers, saved history, or any private profile context.",
+        "Do not introduce personal facts, relationships, plans, events, or previous situations unless the user explicitly wrote them in the current chat.",
+        "If the user's prompt is broad, respond to the broad prompt. Ask one natural question if more context would help.",
         "When the user names an external desire, problem, or goal, look beneath it for the inner state, unmet feeling, identity shift, projection, or shadow pattern that may be driving it.",
         "Use Jungian psychology as a practical lens for shadow, projection, persona, archetypal patterns, and integration, but do not use heavy jargon unless it helps the user see themselves clearly.",
         "Treat manifestation as inner alignment and emotional independence: guide the user toward embodying the feeling or identity they are seeking before needing outer reality to confirm it.",
@@ -94,26 +106,7 @@ export async function POST(request: Request) {
         "Keep responses concise: 2 to 5 short paragraphs.",
       ].join(" "),
       user: {
-        latestCheckIn: body.latestCheckIn
-          ? {
-              thinkingScore: body.latestCheckIn.thinkingScore,
-              willingScore: body.latestCheckIn.willingScore,
-              feelingScore: body.latestCheckIn.feelingScore,
-              beingScore: body.latestCheckIn.beingScore,
-              stateLabel: body.latestCheckIn.stateLabel,
-              strongestPillar: body.latestCheckIn.strongestPillar,
-              weakestPillar: body.latestCheckIn.weakestPillar,
-              dominantThought: body.latestCheckIn.dominantThought,
-              avoidedAction: body.latestCheckIn.avoidedAction,
-              currentFeeling: body.latestCheckIn.currentFeeling,
-              highestBeingChoice: body.latestCheckIn.highestBeingChoice,
-            }
-          : null,
-        onboardingProfile: body.onboardingProfile ?? null,
         conversation: messages.slice(-10),
-        recentJournalEntries: (body.recentJournalEntries ?? [])
-          .filter((entry) => entry.content.trim())
-          .slice(0, 8),
       },
     });
 

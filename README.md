@@ -8,8 +8,7 @@ ClearPth is a free MVP self-reflection web app for aligning Thinking, Willing, a
 - TypeScript
 - Tailwind CSS
 - shadcn/ui-style components
-- Browser `localStorage`
-- Optional Supabase Auth and database profile sync
+- Supabase Auth and database profile records
 
 ## Getting Started
 
@@ -31,7 +30,7 @@ AURA_AI_MODEL=gpt-5.4-mini
 
 Then restart the dev server.
 
-## Optional Supabase Login And Profile Sync
+## Supabase Login And Profile Records
 
 ClearPth can save a user's check-ins, journal entries, and onboarding profile to
 their login profile with Supabase.
@@ -59,8 +58,9 @@ supabase/schema.sql
 4. Restart the dev server.
 5. Open `/login` and create an account.
 
-The app remains local-first. Existing browser data is preserved, then copied into
-the signed-in user's Supabase profile automatically.
+Personal records are account-first. Check-ins, journal entries, and setup
+profiles are saved only for signed-in users. Guest sessions can explore the app,
+but personal records are not saved.
 
 ## What Is Included
 
@@ -70,28 +70,23 @@ the signed-in user's Supabase profile automatically.
 - Daily Journal page for written or spoken reflection
 - Results page with Being Score, state label, strongest and weakest pillars, and prescriptions
 - Optional personalized result summary and prescription
-- Local history page with calendar tracking, pattern insights, and clear history action
+- Account history page with calendar tracking, pattern insights, and clear history action
 - Today page with the current day's check-in, journal status, signal, and correction
 - Daily Guide chat for working through challenges with the ClearPth model
 - Single teaching quote based on the latest check-in when an API key is configured
 - About page explaining the model
 - Crisis-language guardrail message for severe distress or self-harm language
 
-## Local Storage
+## Data Storage
 
-Check-ins are saved in the browser under:
+ClearPth stores personal records in Supabase for signed-in users:
 
-```txt
-aura.checkIns.v1
-```
+- Check-ins
+- Journal entries
+- Setup profiles
 
-The storage keys keep the original internal prefix so existing local data continues to work after earlier brand changes.
-
-Journal entries are saved in the browser under:
-
-```txt
-clearpth.journalEntries.v1
-```
+When a user signs out, the local account cache is cleared from that browser.
+Theme and audio preferences may remain on the device as non-account preferences.
 
 There is optional Supabase authentication and profile sync. Payment, email
 marketing, and analytics are not included in this MVP. The AI layer is optional

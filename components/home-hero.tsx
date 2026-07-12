@@ -71,18 +71,16 @@ function PublicHomeHero() {
   return (
     <div className="max-w-3xl">
       <p className="mb-4 text-xs uppercase tracking-[0.24em] text-primary sm:text-sm sm:tracking-[0.28em]">
-        Thinking | Willing | Feeling = Being
+        ClearPth
       </p>
       <h1 className="font-serif text-5xl font-semibold leading-[0.96] text-foreground sm:text-7xl lg:text-8xl">
-        ClearPth
+        Close the gap between your current state and the life you want.
       </h1>
       <div className="aura-luxury-line mt-6 max-w-lg" />
       <p className="mt-6 max-w-2xl text-lg leading-8 text-foreground/86 sm:text-2xl sm:leading-9">
-        A daily mirror for inner order, clear action, and embodied presence.
-      </p>
-      <p className="mt-4 max-w-2xl text-base leading-8 text-muted-foreground">
-        A free self-reflection practice for noticing the inner pattern behind
-        your outer presence, then choosing one clear correction for today.
+        ClearPth helps you see the thoughts, feelings, and avoided actions
+        shaping your reality, then guides you into the identity and next step
+        that match what you want to create.
       </p>
       <Button asChild size="lg" className="mt-8">
         <Link href="/check-in">

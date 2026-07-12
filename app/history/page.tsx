@@ -96,12 +96,11 @@ export default function HistoryPage() {
             </p>
             <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-                Check-ins are stored in this browser and, when signed in, your
-                account profile. Clearing history removes the record used by
-                History and Patterns.
+                Check-ins are stored on your account profile. Clearing history
+                removes the record used by History and Patterns.
               </p>
               <Button variant="secondary" onClick={clear}>
-                Clear local history
+                Clear history
               </Button>
             </div>
           </section>

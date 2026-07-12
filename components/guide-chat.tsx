@@ -4,15 +4,12 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { getLatestCheckIn } from "@/lib/alignment";
-import { getJournalEntries } from "@/lib/journal-storage";
-import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import {
   createAssistantMessage,
   createConversation,
   createUserMessage,
 } from "@/lib/guide-storage";
-import type { CheckInResult, GuideConversation } from "@/lib/types";
+import type { GuideConversation } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const fallbackSuggestedPrompts = [
@@ -44,7 +41,6 @@ export function GuideChat() {
     useState<GuideConversation | null>(null);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [latestCheckIn, setLatestCheckIn] = useState<CheckInResult | null>(null);
   const [suggestedPrompts, setSuggestedPrompts] = useState(
     fallbackSuggestedPrompts,
   );
@@ -55,7 +51,6 @@ export function GuideChat() {
       const initial = createConversation();
       setActiveConversation(initial);
       setSuggestedPrompts(getSuggestionsForConversation(initial));
-      setLatestCheckIn(getLatestCheckIn());
     });
   }, []);
 
@@ -102,12 +97,6 @@ export function GuideChat() {
           messages: conversationWithUserMessage.messages.map((message) => ({
             role: message.role,
             content: message.content,
-          })),
-          latestCheckIn,
-          onboardingProfile: getOnboardingProfile(),
-          recentJournalEntries: getJournalEntries().slice(0, 8).map((entry) => ({
-            date: entry.date,
-            content: entry.content,
           })),
         }),
       });
@@ -183,7 +172,7 @@ export function GuideChat() {
           ))}
           {isSending ? (
             <div className="max-w-[85%] rounded-md border border-border/70 bg-card px-4 py-3 text-sm text-muted-foreground">
-              Reading the pattern...
+              Thinking with you...
             </div>
           ) : null}
           {shouldShowEntryPaths ? (

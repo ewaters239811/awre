@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
-import { useState } from "react";
+import { LogOut, Menu } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { getCurrentAccount, signOutOfAccount } from "@/lib/account-data";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -24,6 +25,19 @@ const links = [
 export function Navigation() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      getCurrentAccount().then((user) => setUserEmail(user?.email ?? null));
+    });
+  }, [pathname]);
+
+  const signOut = async () => {
+    await signOutOfAccount();
+    setUserEmail(null);
+    setOpen(false);
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/70 backdrop-blur-2xl">
@@ -81,6 +95,21 @@ export function Navigation() {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          {userEmail ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              className="hidden lg:inline-flex"
+              onClick={signOut}
+            >
+              <LogOut className="h-4 w-4" aria-hidden />
+              Sign Out
+            </Button>
+          ) : (
+            <Button asChild size="sm" className="hidden lg:inline-flex">
+              <Link href="/login">Sign In</Link>
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -108,6 +137,20 @@ export function Navigation() {
               {link.label}
             </Link>
           ))}
+          <div className="mt-2 border-t border-border/60 pt-3">
+            {userEmail ? (
+              <Button variant="secondary" className="w-full" onClick={signOut}>
+                <LogOut className="h-4 w-4" aria-hidden />
+                Sign Out
+              </Button>
+            ) : (
+              <Button asChild className="w-full">
+                <Link href="/login" onClick={() => setOpen(false)}>
+                  Sign In
+                </Link>
+              </Button>
+            )}
+          </div>
         </div>
       ) : null}
     </header>

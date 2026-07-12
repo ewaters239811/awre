@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AlignmentResult } from "@/components/alignment-result";
 import { Button } from "@/components/ui/button";
+import { saveCheckInToAccount } from "@/lib/account-data";
 import {
   getCheckInById,
   getLatestCheckIn,
@@ -68,7 +69,9 @@ export function ResultsContent() {
             aiAlignment: payload.data,
             aiGeneratedAt: new Date().toISOString(),
           };
-          updateCheckIn(updated);
+          saveCheckInToAccount(updated)
+            .then(() => updateCheckIn(updated))
+            .catch(() => undefined);
           setResult(updated);
           setAiStatus("ready");
         },

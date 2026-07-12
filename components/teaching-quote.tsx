@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { saveCheckInToAccount } from "@/lib/account-data";
 import { getLatestCheckIn, updateCheckIn } from "@/lib/alignment";
 import type { CheckInResult } from "@/lib/types";
 
@@ -53,7 +54,9 @@ export function TeachingQuote() {
               aiQuote,
               aiGeneratedAt: new Date().toISOString(),
             };
-            updateCheckIn(updated);
+            saveCheckInToAccount(updated)
+              .then(() => updateCheckIn(updated))
+              .catch(() => undefined);
           }
         },
       )

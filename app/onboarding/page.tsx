@@ -7,6 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  getCurrentAccount,
+  saveOnboardingProfileToAccount,
+} from "@/lib/account-data";
+import {
   createEmptyOnboardingProfile,
   getOnboardingProfile,
   saveOnboardingProfile,
@@ -46,6 +50,7 @@ export default function OnboardingPage() {
     createEmptyOnboardingProfile(),
   );
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -58,12 +63,25 @@ export default function OnboardingPage() {
     value: OnboardingProfile[K],
   ) => {
     setSaved(false);
+    setError("");
     setProfile((current) => ({ ...current, [field]: value }));
   };
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    saveOnboardingProfile(profile);
+    const account = await getCurrentAccount();
+    if (!account) {
+      setError("Sign in or create an account to save your setup profile.");
+      return;
+    }
+
+    const nextProfile = {
+      ...profile,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await saveOnboardingProfileToAccount(nextProfile);
+    saveOnboardingProfile(nextProfile);
     setSaved(true);
     router.push("/check-in");
   };
@@ -130,9 +148,10 @@ export default function OnboardingPage() {
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
-            This profile stays in this browser and can be updated anytime.
+            Sign in to save this setup to your profile.
           </p>
           <div className="flex items-center gap-3">
+            {error ? <span className="text-sm text-primary">{error}</span> : null}
             {saved ? (
               <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
                 <CheckCircle2 className="h-4 w-4" aria-hidden />

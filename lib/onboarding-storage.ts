@@ -51,6 +51,13 @@ export function saveOnboardingProfile(profile: OnboardingProfile) {
   }
 }
 
+export function clearOnboardingProfile() {
+  if (isBrowser()) {
+    localStorage.removeItem(STORAGE_KEY);
+    emitStorageEvent(ONBOARDING_CHANGED_EVENT);
+  }
+}
+
 function isOnboardingProfile(value: unknown): value is OnboardingProfile {
   return (
     value !== null &&

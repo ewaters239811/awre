@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScoreSlider } from "@/components/score-slider";
+import { getCurrentAccount, saveCheckInToAccount } from "@/lib/account-data";
 import { buildResult, getTodaysCheckIn, saveCheckIn } from "@/lib/alignment";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import type { CheckInDraft, CheckInResult } from "@/lib/types";
@@ -45,7 +46,7 @@ export default function CheckInPage() {
     value: CheckInDraft[K],
   ) => setDraft((current) => ({ ...current, [field]: value }));
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
 
@@ -62,6 +63,12 @@ export default function CheckInPage() {
     }
 
     try {
+      const account = await getCurrentAccount();
+      if (!account) {
+        setError("Sign in or create an account to save your check-in.");
+        return;
+      }
+
       const existing = getTodaysCheckIn();
       if (existing) {
         setTodaysCheckIn(existing);
@@ -70,6 +77,7 @@ export default function CheckInPage() {
       }
 
       const result = buildResult(draft);
+      await saveCheckInToAccount(result);
       saveCheckIn(result);
       setTodaysCheckIn(result);
       router.push(`/results?id=${result.id}`);
@@ -226,7 +234,7 @@ export default function CheckInPage() {
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-muted-foreground">
-              Your answers stay in this browser unless you clear history.
+              Sign in to save your check-in to your profile.
             </p>
             <Button type="submit" size="lg" className="w-full sm:w-auto">
               Reveal My Alignment

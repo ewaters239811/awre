@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { Mic, MicOff, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { getCurrentAccount, saveJournalEntryToAccount } from "@/lib/account-data";
 import {
   createEmptyJournalEntry,
   getJournalEntries,
@@ -47,6 +48,7 @@ export default function RitualPage() {
   const [saved, setSaved] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
+  const [error, setError] = useState("");
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const speechBaseRef = useRef("");
 
@@ -66,13 +68,21 @@ export default function RitualPage() {
 
   const updateContent = (content: string) => {
     setSaved(false);
+    setError("");
     setEntry((current) => (current ? { ...current, content } : current));
   };
 
-  const saveEntry = (event: FormEvent<HTMLFormElement>) => {
+  const saveEntry = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!entry || !entry.content.trim()) return;
 
+    const account = await getCurrentAccount();
+    if (!account) {
+      setError("Sign in or create an account to save your journal.");
+      return;
+    }
+
+    await saveJournalEntryToAccount(entry);
     saveJournalEntry(entry);
     setEntries(getJournalEntries());
     setSaved(true);
@@ -186,6 +196,7 @@ export default function RitualPage() {
             </p>
             <div className="flex items-center gap-3">
               {saved ? <p className="text-sm text-muted-foreground">Saved.</p> : null}
+              {error ? <p className="text-sm text-primary">{error}</p> : null}
               <Button type="submit" disabled={!entry.content.trim()}>
                 <Save className="h-4 w-4" aria-hidden />
                 Save Journal

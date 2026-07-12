@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import { AmbientNoise } from "@/components/ambient-noise";
 import { AccountSync } from "@/components/account-sync";
+import { AuthChoicePrompt } from "@/components/auth-choice-prompt";
 import { Navigation } from "@/components/navigation";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
@@ -48,6 +49,7 @@ export default function RootLayout({
       <body className={`${geist.variable} ${geistMono.variable}`}>
         <Navigation />
         {children}
+        <AuthChoicePrompt />
         <AccountSync />
         <AmbientNoise />
       </body>

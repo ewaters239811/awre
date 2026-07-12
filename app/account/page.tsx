@@ -44,7 +44,7 @@ export default function AccountPage() {
             .then((result) => {
               if (!result) return;
               setMessage(
-                `Saved ${result.checkIns} check-ins and ${result.journalEntries} journal entries to your profile.`,
+                `Loaded ${result.checkIns} check-ins and ${result.journalEntries} journal entries from your profile.`,
               );
             })
             .catch(() => {

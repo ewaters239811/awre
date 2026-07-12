@@ -7,7 +7,7 @@ export function createOpeningMessage(): GuideMessage {
   return {
     role: "assistant",
     content:
-      "Bring me one daily challenge. I will help you read it through Thinking, Willing, Feeling, and Being, then find the cleanest next step.",
+      "Hi. I am here with you. You can bring me a challenge, a feeling, a desire, or even just what has been sitting on your mind today.",
     createdAt: new Date().toISOString(),
   };
 }
