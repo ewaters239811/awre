@@ -34,10 +34,10 @@ export default function HomePage() {
           <div className="relative overflow-hidden rounded-md border border-border bg-card p-5">
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-[#c48b5f] to-primary" />
             <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-              What You Practice
+              How It Works
             </p>
             <p className="mt-2 font-serif text-4xl font-semibold leading-tight text-foreground">
-              Desire becomes direction.
+              Want becomes direction.
             </p>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
               ClearPth turns the thing you want into a daily state, decision,

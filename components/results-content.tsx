@@ -103,7 +103,7 @@ function NoResultFound() {
           Complete a check-in first and your alignment result will appear here.
         </p>
         <Button asChild className="mt-6">
-          <Link href="/check-in">Begin Check-In</Link>
+          <Link href="/check-in">Begin Check In</Link>
         </Button>
       </div>
     </main>

@@ -97,7 +97,7 @@ export default function AccountPage() {
       <section className="mx-auto mt-8 grid max-w-5xl gap-4 md:grid-cols-3">
         <AccountStat label="Check-ins" value={String(stats.checkIns)} />
         <AccountStat label="Journal entries" value={String(stats.journalEntries)} />
-        <AccountStat label="Setup profile" value={stats.hasProfile ? "Saved" : "Open"} />
+        <AccountStat label="What you want" value={stats.hasProfile ? "Saved" : "Open"} />
       </section>
 
       <section className="aura-glass mx-auto mt-8 max-w-5xl rounded-lg p-5 md:p-6">
@@ -111,7 +111,7 @@ export default function AccountPage() {
             </div>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
               Your ClearPth record is available to this account, including your
-              check-ins, journal entries, and setup profile.
+              check-ins, journal entries, and personal direction.
             </p>
             {message ? (
               <p className="mt-3 text-sm text-muted-foreground">{message}</p>

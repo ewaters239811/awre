@@ -24,7 +24,7 @@ export function AlignmentResult({
       <div className="aura-glass rounded-lg p-6 md:p-8">
         <div className="text-center">
           <p className="text-sm uppercase tracking-[0.28em] text-primary">
-            Alignment Revealed
+            Today&apos;s Result
           </p>
           <div className="mt-6 flex items-end justify-center gap-3">
             <span className="font-serif text-8xl font-semibold leading-none text-primary sm:text-9xl">
@@ -49,7 +49,7 @@ export function AlignmentResult({
               <div className="flex items-center gap-3">
                 <Sparkles className="h-5 w-5 text-primary" aria-hidden />
                 <p className="text-xs uppercase tracking-[0.22em] text-primary">
-                  Being Signature
+                  State Signal
                 </p>
               </div>
               <div className="mt-5 grid gap-3 text-sm">
@@ -100,12 +100,12 @@ export function AlignmentResult({
         <Button asChild>
           <Link href="/check-in">
             <RotateCcw className="h-4 w-4" aria-hidden />
-            New Check-In
+            Check In
           </Link>
         </Button>
         <Button asChild variant="secondary">
-          <Link href="/history">
-            View History
+          <Link href="/dashboard">
+            View Patterns
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </Button>

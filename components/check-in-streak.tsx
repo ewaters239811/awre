@@ -32,7 +32,7 @@ export function CheckInStreak() {
           <div className="flex items-center gap-3">
             <Flame className="h-5 w-5 text-primary" aria-hidden />
             <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-              Check-In Streak
+              Check In Streak
             </p>
           </div>
           <p className="mt-4 text-5xl font-semibold">

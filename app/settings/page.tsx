@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { Moon, Save, ShieldCheck, SlidersHorizontal, Sun } from "lucide-react";
+import { Save, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   getCurrentAccount,
@@ -12,10 +12,6 @@ import {
 import { getCheckIns } from "@/lib/alignment";
 import { getJournalEntries } from "@/lib/journal-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
-
-const THEME_KEY = "clearpth.theme";
-
-type Theme = "dark" | "light";
 
 type AccountUser = {
   email?: string;
@@ -30,7 +26,6 @@ export default function SettingsPage() {
   const [user, setUser] = useState<AccountUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
-  const [theme, setTheme] = useState<Theme>("light");
   const [profileMessage, setProfileMessage] = useState("");
   const [accountMessage, setAccountMessage] = useState("");
   const [savingName, setSavingName] = useState(false);
@@ -43,9 +38,6 @@ export default function SettingsPage() {
 
   useEffect(() => {
     queueMicrotask(() => {
-      const savedTheme = localStorage.getItem(THEME_KEY);
-      setTheme(savedTheme === "dark" ? "dark" : "light");
-
       getCurrentAccount()
         .then((account) => {
           setUser(account);
@@ -86,13 +78,6 @@ export default function SettingsPage() {
     }
   };
 
-  const chooseTheme = (nextTheme: Theme) => {
-    localStorage.setItem(THEME_KEY, nextTheme);
-    setTheme(nextTheme);
-    document.documentElement.classList.toggle("light", nextTheme === "light");
-    document.documentElement.classList.toggle("dark", nextTheme === "dark");
-  };
-
   if (loading) {
     return <main className="container py-12">Loading settings...</main>;
   }
@@ -126,7 +111,7 @@ export default function SettingsPage() {
         </p>
       </section>
 
-      <section className="mx-auto mt-8 grid max-w-5xl gap-5 lg:grid-cols-[1fr_0.8fr]">
+      <section className="mx-auto mt-8 grid max-w-5xl gap-5">
         <article className="aura-glass rounded-lg p-5 md:p-6">
           <div className="flex items-center gap-3">
             <ShieldCheck className="h-5 w-5 text-primary" aria-hidden />
@@ -162,33 +147,6 @@ export default function SettingsPage() {
             </p>
           ) : null}
         </article>
-
-        <article className="aura-glass rounded-lg p-5 md:p-6">
-          <div className="flex items-center gap-3">
-            <SlidersHorizontal className="h-5 w-5 text-primary" aria-hidden />
-            <p className="text-xs uppercase tracking-[0.24em] text-primary">
-              Appearance
-            </p>
-          </div>
-          <div className="mt-5 grid grid-cols-2 gap-3">
-            <Button
-              type="button"
-              variant={theme === "dark" ? "default" : "secondary"}
-              onClick={() => chooseTheme("dark")}
-            >
-              <Moon className="h-4 w-4" aria-hidden />
-              Dark
-            </Button>
-            <Button
-              type="button"
-              variant={theme === "light" ? "default" : "secondary"}
-              onClick={() => chooseTheme("light")}
-            >
-              <Sun className="h-4 w-4" aria-hidden />
-              Light
-            </Button>
-          </div>
-        </article>
       </section>
 
       <section className="mx-auto mt-5 grid max-w-5xl gap-4 md:grid-cols-3">
@@ -198,7 +156,7 @@ export default function SettingsPage() {
           value={String(stats.journalEntries)}
         />
         <SettingsStat
-          label="Setup profile"
+          label="Personal direction"
           value={stats.hasProfile ? "Saved" : "Open"}
         />
       </section>
@@ -210,8 +168,8 @@ export default function SettingsPage() {
               Account
             </p>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Adjust the personal setup that shapes your check-ins, Guide, and
-              pattern analysis.
+              Adjust what you want so your check-ins, Guide, and pattern
+              analysis stay pointed in the right direction.
             </p>
             {accountMessage ? (
               <p className="mt-3 text-sm text-muted-foreground">
@@ -221,9 +179,29 @@ export default function SettingsPage() {
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild variant="secondary">
-              <Link href="/onboarding">Update Setup</Link>
+              <Link href="/onboarding">Update What You Want</Link>
             </Button>
           </div>
+        </div>
+      </section>
+
+      <section className="aura-glass mx-auto mt-5 rounded-lg p-5 md:p-6">
+        <p className="text-xs uppercase tracking-[0.24em] text-primary">
+          Resources
+        </p>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+          Background pages for the model, teaching quote, and older records.
+        </p>
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+          <Button asChild variant="secondary">
+            <Link href="/teachings">Teaching</Link>
+          </Button>
+          <Button asChild variant="secondary">
+            <Link href="/about">About</Link>
+          </Button>
+          <Button asChild variant="secondary">
+            <Link href="/history">History Archive</Link>
+          </Button>
         </div>
       </section>
     </main>

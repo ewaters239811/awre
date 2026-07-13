@@ -80,7 +80,7 @@ export default function LoginPage() {
           ? "Account created and signed in. Your record is connected to your profile."
           : "Signed in. Your record is connected to your profile.",
       );
-      router.push("/account");
+      router.push("/");
     } catch {
       setError("Something went wrong while connecting your account.");
     } finally {

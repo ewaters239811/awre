@@ -2,8 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Activity, ArrowRight, BarChart3, Compass, Gauge } from "lucide-react";
+import {
+  Activity,
+  ArrowRight,
+  BarChart3,
+  CalendarDays,
+  Compass,
+  Gauge,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { HistoryCalendar } from "@/components/history-calendar";
 import { getCheckIns } from "@/lib/alignment";
 import { buildBeingDashboardData } from "@/lib/being-analysis";
 import { getJournalEntries } from "@/lib/journal-storage";
@@ -42,10 +50,15 @@ export function BeingDashboard() {
     useState<OnboardingProfile | null>(null);
   const [analysis, setAnalysis] = useState<BeingDashboardAnalysis | null>(null);
   const [isReading, setIsReading] = useState(false);
+  const [selectedCheckIn, setSelectedCheckIn] = useState<CheckInResult | null>(
+    null,
+  );
 
   useEffect(() => {
     queueMicrotask(() => {
-      setCheckIns(getCheckIns());
+      const savedCheckIns = getCheckIns();
+      setCheckIns(savedCheckIns);
+      setSelectedCheckIn(savedCheckIns[0] ?? null);
       setJournalEntries(getJournalEntries());
       setOnboardingProfile(getOnboardingProfile());
     });
@@ -146,7 +159,7 @@ export function BeingDashboard() {
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Button asChild>
-              <Link href="/check-in">Begin Check-In</Link>
+              <Link href="/check-in">Begin Check In</Link>
             </Button>
             <Button asChild variant="secondary">
               <Link href="/ritual">Open Journal</Link>
@@ -259,9 +272,133 @@ export function BeingDashboard() {
             </div>
             <ScoreTrendChart timeline={dashboard.timeline} />
           </section>
+
+          <section className="mx-auto mt-8 max-w-6xl">
+            <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-primary">
+                  Calendar
+                </p>
+                <h2 className="mt-2 font-serif text-3xl font-semibold">
+                  History Of Your State
+                </h2>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Data below, meaning above.
+              </p>
+            </div>
+            <HistoryCalendar
+              items={checkIns}
+              selectedId={selectedCheckIn?.id}
+              onSelect={setSelectedCheckIn}
+            />
+            <SelectedPatternDay item={selectedCheckIn} />
+            <RecentPatternRecords items={checkIns} />
+          </section>
         </>
       )}
     </main>
+  );
+}
+
+function SelectedPatternDay({ item }: { item: CheckInResult | null }) {
+  if (!item) return null;
+
+  return (
+    <section className="aura-glass mt-8 rounded-lg p-5 md:p-6">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <div className="flex items-center gap-3">
+            <CalendarDays className="h-5 w-5 text-primary" aria-hidden />
+            <p className="text-xs uppercase tracking-[0.24em] text-primary">
+              Selected Day
+            </p>
+          </div>
+          <h2 className="mt-3 font-serif text-3xl font-semibold">
+            {new Date(item.createdAt).toLocaleDateString()}
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {item.stateLabel}
+          </p>
+        </div>
+        <Button asChild>
+          <Link href={`/results?id=${item.id}`}>View Detail</Link>
+        </Button>
+      </div>
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <MiniStat label="Score" value={item.beingScore.toFixed(1)} />
+        <MiniStat label="Thinking" value={String(item.thinkingScore)} />
+        <MiniStat label="Willing" value={String(item.willingScore)} />
+        <MiniStat label="Feeling" value={String(item.feelingScore)} />
+        <MiniStat label="Pattern" value={item.weakestPillar} />
+      </div>
+    </section>
+  );
+}
+
+function RecentPatternRecords({ items }: { items: CheckInResult[] }) {
+  return (
+    <section className="mt-8">
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <p className="text-xs uppercase tracking-[0.24em] text-primary">
+            Recent Records
+          </p>
+          <h2 className="mt-2 font-serif text-3xl font-semibold">
+            The Raw Signal
+          </h2>
+        </div>
+        <p className="hidden text-sm text-muted-foreground sm:block">
+          {items.length} total check-in{items.length === 1 ? "" : "s"}
+        </p>
+      </div>
+
+      <div className="aura-glass mt-5 overflow-hidden rounded-lg border border-border">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[760px] text-left text-sm">
+            <thead className="bg-accent/35 text-muted-foreground">
+              <tr>
+                <th className="px-4 py-3 font-medium">Date</th>
+                <th className="px-4 py-3 font-medium">Thinking</th>
+                <th className="px-4 py-3 font-medium">Willing</th>
+                <th className="px-4 py-3 font-medium">Feeling</th>
+                <th className="px-4 py-3 font-medium">Score</th>
+                <th className="px-4 py-3 font-medium">State</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr
+                  key={item.id}
+                  className="border-t border-border/55 transition hover:bg-accent/25"
+                >
+                  <td className="px-4 py-4">
+                    {new Date(item.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-4">{item.thinkingScore}</td>
+                  <td className="px-4 py-4">{item.willingScore}</td>
+                  <td className="px-4 py-4">{item.feelingScore}</td>
+                  <td className="px-4 py-4">{item.beingScore.toFixed(1)}</td>
+                  <td className="px-4 py-4 text-primary">{item.stateLabel}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <article className="rounded-md border border-border/70 bg-card/45 p-4">
+      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-2 text-xl font-medium text-foreground">{value}</p>
+    </article>
   );
 }
 

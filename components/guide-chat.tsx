@@ -20,17 +20,17 @@ const fallbackSuggestedPrompts = [
 
 const entryPaths = [
   {
-    label: "Work through a problem",
+    label: "Talk through today",
     prompt:
-      "Help me work through a problem I am facing and find the deeper pattern underneath it.",
+      "Help me talk through what is on my mind and find the deeper pattern underneath it.",
   },
   {
-    label: "Understand a desire",
+    label: "Understand what I want",
     prompt:
       "Help me understand what inner state or feeling is underneath something I want.",
   },
   {
-    label: "Find my next action",
+    label: "Find one next step",
     prompt:
       "Help me find the cleanest next action I can take from a steadier state.",
   },
@@ -138,14 +138,14 @@ export function GuideChat() {
       <div className="aura-glass flex min-h-[680px] flex-col rounded-lg">
         <div className="border-b border-border/60 p-5">
           <p className="text-xs uppercase tracking-[0.24em] text-primary">
-            Daily Guide
+            Guide
           </p>
           <h1 className="mt-2 font-serif text-4xl font-semibold">
-            Work Through A Challenge
+            Talk Through What&apos;s On Your Mind
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-            A reflective guide for daily challenges, drawing from spiritual
-            traditions, inner development, and nervous-system awareness.
+            Bring whatever feels present: a want, a mood, a decision, a delay,
+            or a thought that keeps repeating.
           </p>
         </div>
 
@@ -213,7 +213,7 @@ export function GuideChat() {
           <Textarea
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            placeholder="What challenge are you facing today?"
+            placeholder="What is on your mind?"
             rows={4}
           />
           <div className="mt-3 flex justify-end">

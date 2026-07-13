@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, CalendarCheck, NotebookPen, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DailyFlow } from "@/components/daily-flow";
 import { getCurrentAccount } from "@/lib/account-data";
 import { getCheckIns, getLatestCheckIn, getTodaysCheckIn } from "@/lib/alignment";
 import {
@@ -74,22 +75,22 @@ function PublicHomeHero() {
         ClearPth
       </p>
       <h1 className="font-serif text-5xl font-semibold leading-[0.96] text-foreground sm:text-7xl lg:text-8xl">
-        Close the gap between your current state and the life you want.
+        What do you want?
       </h1>
       <div className="aura-luxury-line mt-6 max-w-lg" />
       <p className="mt-6 max-w-2xl text-lg leading-8 text-foreground/86 sm:text-2xl sm:leading-9">
-        ClearPth helps you see the thoughts, feelings, and avoided actions
-        shaping your reality, then guides you into the identity and next step
-        that match what you want to create.
+        Say it plainly. ClearPth helps unpack the thoughts, feelings, and
+        avoided actions around it, then turns that desire into a clearer state
+        and next step.
       </p>
       <Button asChild size="lg" className="mt-8">
-        <Link href="/check-in">
-          Begin Alignment Check-In
+        <Link href="/onboarding">
+          Answer The Question
           <ArrowRight className="h-4 w-4" aria-hidden />
         </Link>
       </Button>
       <div className="mt-6 flex flex-wrap gap-2">
-        {["2-minute check-in", "Clear next step", "Pattern tracking"].map(
+        {["answer one question", "unpack the pattern", "choose the next step"].map(
           (item) => (
             <span
               key={item}
@@ -151,6 +152,14 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
           icon={<NotebookPen className="h-4 w-4" aria-hidden />}
           label="Journal"
           value={hasJournalToday ? "Written" : "Open"}
+        />
+      </div>
+
+      <div className="mt-5">
+        <DailyFlow
+          checkedIn={hasCheckedInToday}
+          readToday={hasCheckedInToday}
+          journaled={hasJournalToday}
         />
       </div>
 

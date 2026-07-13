@@ -2,9 +2,11 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Mic, MicOff, Save } from "lucide-react";
+import { DailyFlow } from "@/components/daily-flow";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { getCurrentAccount, saveJournalEntryToAccount } from "@/lib/account-data";
+import { getTodaysCheckIn } from "@/lib/alignment";
 import {
   createEmptyJournalEntry,
   getJournalEntries,
@@ -136,6 +138,7 @@ export default function RitualPage() {
   }
 
   const recentEntries = entries.filter((item) => item.id !== entry.id).slice(0, 4);
+  const checkedInToday = Boolean(getTodaysCheckIn());
   const wordCount = entry.content.trim()
     ? entry.content.trim().split(/\s+/).length
     : 0;
@@ -149,6 +152,13 @@ export default function RitualPage() {
           Write or speak one honest entry. ClearPth uses your saved journal
           history as additional context for wiser guidance and deeper analysis.
         </p>
+        <div className="mt-6">
+          <DailyFlow
+            checkedIn={checkedInToday}
+            readToday={checkedInToday}
+            journaled={Boolean(entry.content.trim())}
+          />
+        </div>
       </section>
 
       <section className="mx-auto mt-8 grid max-w-6xl gap-5 lg:grid-cols-[1fr_320px]">

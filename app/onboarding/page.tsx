@@ -71,7 +71,7 @@ export default function OnboardingPage() {
     event.preventDefault();
     const account = await getCurrentAccount();
     if (!account) {
-      setError("Sign in or create an account to save your setup profile.");
+      setError("Sign in or create an account to save what you want.");
       return;
     }
 
@@ -89,32 +89,32 @@ export default function OnboardingPage() {
   return (
     <main className="container py-8 md:py-12">
       <section className="mx-auto max-w-5xl">
-        <p className="clearpth-page-kicker">Personal Setup</p>
-        <h1 className="clearpth-page-title">Tune ClearPth To Your Path</h1>
+        <p className="clearpth-page-kicker">First Question</p>
+        <h1 className="clearpth-page-title">Start With What You Want</h1>
         <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
-          Answer these once so your check-ins, Guide responses, and analysis can
-          better understand what you are actually trying to change.
+          Say it plainly. ClearPth will help unpack the state, pattern, and next
+          step underneath it.
         </p>
       </section>
 
       <form className="mx-auto mt-8 grid max-w-5xl gap-5" onSubmit={submit}>
         <OnboardingField
-          label="What are you here to improve or understand?"
+          label="What do you want?"
           value={profile.primaryGoal}
           onChange={(value) => updateField("primaryGoal", value)}
-          placeholder="Example: discipline, confidence, emotional stability, direction, relationships, purpose..."
+          placeholder="Write it simply. Example: more money, a better relationship, confidence, direction, peace, discipline, a new life..."
         />
         <OnboardingField
-          label="What pattern or challenge keeps repeating?"
+          label="What seems to be in the way?"
           value={profile.currentChallenge}
           onChange={(value) => updateField("currentChallenge", value)}
-          placeholder="Name the recurring issue in plain language."
+          placeholder="Name the recurring pattern, fear, habit, delay, or situation in plain language."
         />
         <OnboardingField
-          label="What state are you trying to live from more often?"
+          label="Who would you need to become to meet it?"
           value={profile.desiredState}
           onChange={(value) => updateField("desiredState", value)}
-          placeholder="Example: calm authority, faith, self-respect, clarity, courage, grounded joy..."
+          placeholder="Example: calm, confident, disciplined, secure, open, honest, courageous, self-respecting..."
         />
 
         <section className="aura-glass rounded-lg p-5 md:p-6">
@@ -148,7 +148,7 @@ export default function OnboardingPage() {
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
-            Sign in to save this setup to your profile.
+            Sign in to save this to your profile.
           </p>
           <div className="flex items-center gap-3">
             {error ? <span className="text-sm text-primary">{error}</span> : null}
@@ -159,7 +159,7 @@ export default function OnboardingPage() {
               </span>
             ) : null}
             <Button type="submit" size="lg">
-              Continue To Check-In
+              Continue To Check In
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Button>
           </div>

@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScoreSlider } from "@/components/score-slider";
+import { DailyFlow } from "@/components/daily-flow";
 import { getCurrentAccount, saveCheckInToAccount } from "@/lib/account-data";
 import { buildResult, getTodaysCheckIn, saveCheckIn } from "@/lib/alignment";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
-import type { CheckInDraft, CheckInResult } from "@/lib/types";
+import type { CheckInDraft, CheckInResult, OnboardingProfile } from "@/lib/types";
 
 const initialDraft: CheckInDraft = {
   thinkingScore: 5,
@@ -32,11 +33,15 @@ export default function CheckInPage() {
   const [error, setError] = useState("");
   const [supportMessage, setSupportMessage] = useState(false);
   const [hasProfile, setHasProfile] = useState(true);
+  const [profile, setProfile] = useState<OnboardingProfile | null>(null);
   const [todaysCheckIn, setTodaysCheckIn] = useState<CheckInResult | null>(null);
+  const [showDeeperQuestions, setShowDeeperQuestions] = useState(false);
 
   useEffect(() => {
     queueMicrotask(() => {
-      setHasProfile(Boolean(getOnboardingProfile()));
+      const savedProfile = getOnboardingProfile();
+      setProfile(savedProfile);
+      setHasProfile(Boolean(savedProfile));
       setTodaysCheckIn(getTodaysCheckIn());
     });
   }, []);
@@ -72,7 +77,7 @@ export default function CheckInPage() {
       const existing = getTodaysCheckIn();
       if (existing) {
         setTodaysCheckIn(existing);
-        router.push(`/results?id=${existing.id}`);
+        router.push("/review");
         return;
       }
 
@@ -80,7 +85,7 @@ export default function CheckInPage() {
       await saveCheckInToAccount(result);
       saveCheckIn(result);
       setTodaysCheckIn(result);
-      router.push(`/results?id=${result.id}`);
+      router.push("/review");
     } catch {
       setError("Something interrupted the check-in. Please try again.");
     }
@@ -89,32 +94,50 @@ export default function CheckInPage() {
   return (
     <main className="container py-8 md:py-12">
       <div className="mx-auto max-w-5xl">
-        <p className="clearpth-page-kicker">Daily Alignment</p>
+        <p className="clearpth-page-kicker">Daily Check In</p>
         <h1 className="clearpth-page-title">
-          Move Through The Four Gates
+          What Is Between You And What You Want?
         </h1>
         <p className="mt-4 max-w-2xl text-muted-foreground">
-          Score each pillar, name the pattern underneath it, then choose the
-          Being you want to inhabit today.
+          ClearPth reads today through your thoughts, actions, and feelings,
+          then turns the pattern into one clearer next step.
         </p>
+        <div className="mt-6">
+          <DailyFlow
+            checkedIn={Boolean(todaysCheckIn)}
+            readToday={Boolean(todaysCheckIn)}
+            journaled={false}
+          />
+        </div>
+
+        {profile?.primaryGoal.trim() ? (
+          <section className="aura-glass mt-6 rounded-lg p-5">
+            <p className="text-xs uppercase tracking-[0.24em] text-primary">
+              What You Want
+            </p>
+            <p className="mt-3 font-serif text-2xl font-semibold leading-tight">
+              {profile.primaryGoal}
+            </p>
+          </section>
+        ) : null}
 
         {!hasProfile ? (
           <section className="aura-glass mt-6 rounded-lg p-5">
             <p className="text-xs uppercase tracking-[0.24em] text-primary">
-              First Time Setup
+              First Question
             </p>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-              ClearPth can give better guidance if it knows your main goal,
-              current pattern, desired state, and preferred tone first.
+              Start with one plain answer: what do you want? ClearPth will use
+              that to make the check-in more specific.
             </p>
             <Button asChild className="mt-4">
-              <Link href="/onboarding">Complete Setup</Link>
+              <Link href="/onboarding">Answer What You Want</Link>
             </Button>
           </section>
         ) : (
           <div className="mt-5">
             <Button asChild variant="secondary" size="sm">
-              <Link href="/onboarding">Update Setup</Link>
+              <Link href="/onboarding">Update What You Want</Link>
             </Button>
           </div>
         )}
@@ -122,7 +145,7 @@ export default function CheckInPage() {
         {todaysCheckIn ? (
           <section className="aura-glass mt-8 rounded-lg p-6 md:p-7">
             <p className="text-xs uppercase tracking-[0.24em] text-primary">
-              Today&apos;s Check-In Is Complete
+              Today&apos;s Check In Is Complete
             </p>
             <h2 className="mt-3 font-serif text-3xl font-semibold">
               One check-in per day keeps the signal clean.
@@ -150,71 +173,85 @@ export default function CheckInPage() {
         <form className="mt-8 space-y-5" onSubmit={submit}>
           <CheckInGate
             eyebrow="Gate 01"
-            title="Thinking"
-            description="What perception is organizing your inner world right now?"
+            title="Scores"
+            description="Rate how closely your inner and outer state are matching what you want."
             icon={<Brain className="h-5 w-5" aria-hidden />}
           >
             <ScoreSlider
-              label="Thinking score"
+              label="How well does your thinking align with what you want?"
               value={draft.thinkingScore}
               onChange={(value) => updateField("thinkingScore", value)}
             />
+            <ScoreSlider
+              label="How well do your actions align with what you want?"
+              value={draft.willingScore}
+              onChange={(value) => updateField("willingScore", value)}
+            />
+            <ScoreSlider
+              label="How well do your emotions align with what you want?"
+              value={draft.feelingScore}
+              onChange={(value) => updateField("feelingScore", value)}
+            />
             <TextAreaField
-              label="What thought has been dominating your mind?"
+              label="What feels most true right now?"
+              helper="Write the honest sentence underneath today. It could be a thought, mood, fear, desire, or pressure that feels most real in this moment."
+              placeholder="Example: I want to move forward, but I feel distracted and unsure what step actually matters."
               value={draft.dominantThought}
               onChange={(value) => updateField("dominantThought", value)}
             />
           </CheckInGate>
 
-          <CheckInGate
-            eyebrow="Gate 02"
-            title="Willing"
-            description="Where is your energy ready to move, and where is it delaying?"
-            icon={<Flame className="h-5 w-5" aria-hidden />}
-          >
-            <ScoreSlider
-              label="Willing score"
-              value={draft.willingScore}
-              onChange={(value) => updateField("willingScore", value)}
-            />
-            <TextAreaField
-              label="What action are you avoiding or being called to take?"
-              value={draft.avoidedAction}
-              onChange={(value) => updateField("avoidedAction", value)}
-            />
-          </CheckInGate>
+          {!showDeeperQuestions ? (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setShowDeeperQuestions(true)}
+            >
+              Add More Detail
+            </Button>
+          ) : (
+            <>
+              <CheckInGate
+                eyebrow="Detail 01"
+                title="Pattern"
+                description="Add the action or delay that seems connected to today's state."
+                icon={<Flame className="h-5 w-5" aria-hidden />}
+              >
+                <TextAreaField
+                  label="What action are you avoiding or being called to take?"
+                  value={draft.avoidedAction}
+                  onChange={(value) => updateField("avoidedAction", value)}
+                />
+              </CheckInGate>
 
-          <CheckInGate
-            eyebrow="Gate 03"
-            title="Feeling"
-            description="What emotional current is charging your identity today?"
-            icon={<Heart className="h-5 w-5" aria-hidden />}
-          >
-            <ScoreSlider
-              label="Feeling score"
-              value={draft.feelingScore}
-              onChange={(value) => updateField("feelingScore", value)}
-            />
-            <TextAreaField
-              label="What feeling is currently running your state?"
-              value={draft.currentFeeling}
-              onChange={(value) => updateField("currentFeeling", value)}
-            />
-          </CheckInGate>
+              <CheckInGate
+                eyebrow="Detail 02"
+                title="State"
+                description="Name the feeling underneath the day."
+                icon={<Heart className="h-5 w-5" aria-hidden />}
+              >
+                <TextAreaField
+                  label="What feeling is currently running your state?"
+                  value={draft.currentFeeling}
+                  onChange={(value) => updateField("currentFeeling", value)}
+                />
+              </CheckInGate>
 
-          <CheckInGate
-            eyebrow="Gate 04"
-            title="Being"
-            description="Name the integrated choice that thought, action, and feeling can serve."
-            icon={<Sparkles className="h-5 w-5" aria-hidden />}
-          >
-            <TextAreaField
-              label="What would your highest Being choose today?"
-              value={draft.highestBeingChoice}
-              onChange={(value) => updateField("highestBeingChoice", value)}
-              rows={5}
-            />
-          </CheckInGate>
+              <CheckInGate
+                eyebrow="Detail 03"
+                title="Next Step"
+                description="Name the choice that would close the gap by one step."
+                icon={<Sparkles className="h-5 w-5" aria-hidden />}
+              >
+                <TextAreaField
+                  label="What would the clearer version of you choose today?"
+                  value={draft.highestBeingChoice}
+                  onChange={(value) => updateField("highestBeingChoice", value)}
+                  rows={5}
+                />
+              </CheckInGate>
+            </>
+          )}
 
           {supportMessage ? (
             <div className="rounded-md border border-primary/35 bg-primary/10 p-4 text-sm leading-6 text-foreground">
@@ -287,11 +324,15 @@ function CheckInGate({
 
 function TextAreaField({
   label,
+  helper,
+  placeholder,
   value,
   onChange,
   rows = 4,
 }: {
   label: string;
+  helper?: string;
+  placeholder?: string;
   value: string;
   onChange: (value: string) => void;
   rows?: number;
@@ -299,9 +340,13 @@ function TextAreaField({
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
+      {helper ? (
+        <p className="text-sm leading-6 text-muted-foreground">{helper}</p>
+      ) : null}
       <Textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
         rows={rows}
       />
     </div>

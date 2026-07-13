@@ -66,7 +66,7 @@ export default function HistoryPage() {
             patterns over time.
           </p>
           <Button asChild className="mt-6">
-            <Link href="/check-in">Begin Check-In</Link>
+            <Link href="/check-in">Begin Check In</Link>
           </Button>
         </div>
       ) : (

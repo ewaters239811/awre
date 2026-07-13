@@ -5,20 +5,16 @@ import { usePathname } from "next/navigation";
 import { LogOut, Menu } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { getCurrentAccount, signOutOfAccount } from "@/lib/account-data";
 import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/", label: "Home" },
-  { href: "/check-in", label: "Check-In" },
+  { href: "/check-in", label: "Check In" },
   { href: "/review", label: "Today" },
   { href: "/ritual", label: "Journal" },
   { href: "/dashboard", label: "Patterns" },
-  { href: "/history", label: "History" },
   { href: "/guide", label: "Guide" },
-  { href: "/teachings", label: "Teachings" },
-  { href: "/about", label: "About" },
   { href: "/settings", label: "Settings" },
 ];
 
@@ -94,7 +90,6 @@ export function Navigation() {
         </div>
 
         <div className="flex items-center gap-2">
-          <ThemeToggle />
           {userEmail ? (
             <Button
               variant="secondary"
