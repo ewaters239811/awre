@@ -24,6 +24,7 @@ export type AiAlignment = AlignmentPrescription & {
 export type CheckInResult = CheckInDraft & {
   id: string;
   createdAt: string;
+  checkInDate?: string;
   beingScore: number;
   stateLabel: string;
   strongestPillar: PillarName;

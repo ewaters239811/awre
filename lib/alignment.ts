@@ -26,6 +26,7 @@ export function buildResult(draft: CheckInDraft): CheckInResult {
     ...draft,
     id: createId("check-in"),
     createdAt: new Date().toISOString(),
+    checkInDate: toDateKey(new Date()),
     beingScore,
     stateLabel: getStateLabel(beingScore),
     strongestPillar,
@@ -57,9 +58,9 @@ export function getCheckIns(): CheckInResult[] {
 
 export function saveCheckIn(result: CheckInResult) {
   if (!isBrowser()) return;
-  const resultDate = toDateKey(new Date(result.createdAt));
+  const resultDate = getCheckInDateKey(result);
   const existing = getCheckIns().filter(
-    (item) => toDateKey(new Date(item.createdAt)) !== resultDate,
+    (item) => getCheckInDateKey(item) !== resultDate,
   );
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify([result, ...existing]));
@@ -72,7 +73,7 @@ export function getCheckInById(id: string) {
 
 export function getCheckInForDate(date: string) {
   return (
-    getCheckIns().find((item) => toDateKey(new Date(item.createdAt)) === date) ??
+    getCheckIns().find((item) => getCheckInDateKey(item) === date) ??
     null
   );
 }
@@ -109,6 +110,10 @@ export function replaceCheckIns(results: CheckInResult[]) {
   );
   localStorage.setItem(STORAGE_KEY, JSON.stringify(sorted));
   emitStorageEvent(CHECK_INS_CHANGED_EVENT);
+}
+
+export function getCheckInDateKey(checkIn: CheckInResult) {
+  return checkIn.checkInDate ?? toDateKey(new Date(checkIn.createdAt));
 }
 
 function buildPrescription(

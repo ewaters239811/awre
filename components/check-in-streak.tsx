@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Flame, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getCheckIns } from "@/lib/alignment";
+import { getCheckInDateKey, getCheckIns } from "@/lib/alignment";
+import { toDateKey } from "@/lib/date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
 import type { CheckInResult } from "@/lib/types";
 
@@ -106,9 +107,7 @@ export function CheckInStreak() {
 }
 
 function buildStreakStats(checkIns: CheckInResult[], todayKey: string) {
-  const dates = new Set(
-    checkIns.map((item) => toDateKey(new Date(item.createdAt))),
-  );
+  const dates = new Set(checkIns.map((item) => getCheckInDateKey(item)));
   const checkedInToday = dates.has(todayKey);
   const cursor = new Date(`${todayKey}T12:00:00`);
   let currentStreak = 0;
@@ -123,11 +122,4 @@ function buildStreakStats(checkIns: CheckInResult[], todayKey: string) {
     checkedInToday,
     totalCheckIns: checkIns.length,
   };
-}
-
-function toDateKey(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
 }

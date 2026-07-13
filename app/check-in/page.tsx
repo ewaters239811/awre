@@ -12,8 +12,8 @@ import { DailyFlow } from "@/components/daily-flow";
 import { getCurrentAccount, saveCheckInToAccount } from "@/lib/account-data";
 import {
   buildResult,
+  CHECK_INS_CHANGED_EVENT,
   getCheckInForDate,
-  getTodaysCheckIn,
   saveCheckIn,
 } from "@/lib/alignment";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
@@ -49,14 +49,24 @@ export default function CheckInPage() {
       const savedProfile = getOnboardingProfile();
       setProfile(savedProfile);
       setHasProfile(Boolean(savedProfile));
-      setTodaysCheckIn(getTodaysCheckIn());
     });
   }, []);
 
   useEffect(() => {
-    queueMicrotask(() => {
+    const refreshTodaysCheckIn = () => {
       setTodaysCheckIn(getCheckInForDate(todayKey));
-    });
+    };
+
+    queueMicrotask(refreshTodaysCheckIn);
+    window.addEventListener(CHECK_INS_CHANGED_EVENT, refreshTodaysCheckIn);
+    window.addEventListener("focus", refreshTodaysCheckIn);
+    document.addEventListener("visibilitychange", refreshTodaysCheckIn);
+
+    return () => {
+      window.removeEventListener(CHECK_INS_CHANGED_EVENT, refreshTodaysCheckIn);
+      window.removeEventListener("focus", refreshTodaysCheckIn);
+      document.removeEventListener("visibilitychange", refreshTodaysCheckIn);
+    };
   }, [todayKey]);
 
   const updateField = <K extends keyof CheckInDraft>(
@@ -87,7 +97,7 @@ export default function CheckInPage() {
         return;
       }
 
-      const existing = getTodaysCheckIn();
+      const existing = getCheckInForDate(todayKey);
       if (existing) {
         setTodaysCheckIn(existing);
         router.push("/review");

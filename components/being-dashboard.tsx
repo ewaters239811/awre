@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HistoryCalendar } from "@/components/history-calendar";
-import { getCheckIns } from "@/lib/alignment";
+import { getCheckInDateKey, getCheckIns } from "@/lib/alignment";
 import { buildBeingDashboardData } from "@/lib/being-analysis";
 import { getJournalEntries } from "@/lib/journal-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
@@ -315,7 +315,7 @@ function SelectedPatternDay({ item }: { item: CheckInResult | null }) {
             </p>
           </div>
           <h2 className="mt-3 font-serif text-3xl font-semibold">
-            {new Date(item.createdAt).toLocaleDateString()}
+            {formatDateKey(getCheckInDateKey(item))}
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             {item.stateLabel}
@@ -360,7 +360,7 @@ function RecentPatternRecords({ items }: { items: CheckInResult[] }) {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="font-medium">
-                  {new Date(item.createdAt).toLocaleDateString()}
+                  {formatDateKey(getCheckInDateKey(item))}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {item.stateLabel}
@@ -399,7 +399,7 @@ function RecentPatternRecords({ items }: { items: CheckInResult[] }) {
                   className="border-t border-border/55 transition hover:bg-accent/25"
                 >
                   <td className="px-4 py-4">
-                    {new Date(item.createdAt).toLocaleDateString()}
+                    {formatDateKey(getCheckInDateKey(item))}
                   </td>
                   <td className="px-4 py-4">{item.thinkingScore}</td>
                   <td className="px-4 py-4">{item.willingScore}</td>
@@ -866,6 +866,10 @@ function formatShortDate(date: string) {
   }
 
   return date;
+}
+
+function formatDateKey(dateKey: string) {
+  return new Date(`${dateKey}T12:00:00`).toLocaleDateString();
 }
 
 function buildAnalysisSignature(

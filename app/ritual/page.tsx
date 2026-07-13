@@ -6,7 +6,7 @@ import { DailyFlow } from "@/components/daily-flow";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { getCurrentAccount, saveJournalEntryToAccount } from "@/lib/account-data";
-import { getTodaysCheckIn } from "@/lib/alignment";
+import { getCheckInForDate } from "@/lib/alignment";
 import {
   createEmptyJournalEntry,
   getJournalEntries,
@@ -137,7 +137,7 @@ export default function RitualPage() {
   }
 
   const recentEntries = entries.filter((item) => item.id !== entry.id).slice(0, 4);
-  const checkedInToday = Boolean(getTodaysCheckIn());
+  const checkedInToday = Boolean(getCheckInForDate(today));
   const wordCount = entry.content.trim()
     ? entry.content.trim().split(/\s+/).length
     : 0;

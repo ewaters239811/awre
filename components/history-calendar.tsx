@@ -3,6 +3,8 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { getCheckInDateKey } from "@/lib/alignment";
+import { toDateKey } from "@/lib/date-key";
 import { cn } from "@/lib/utils";
 import type { CheckInResult } from "@/lib/types";
 
@@ -28,7 +30,7 @@ export function HistoryCalendar({
     const grouped = new Map<string, CheckInResult[]>();
 
     for (const item of items) {
-      const key = toDateKey(new Date(item.createdAt));
+      const key = getCheckInDateKey(item);
       grouped.set(key, [...(grouped.get(key) ?? []), item]);
     }
 
@@ -172,13 +174,6 @@ function getScoreClass(score: number) {
   if (score < 7.5) return "border-teal-300/20 bg-teal-500/15 text-teal-100";
   if (score < 9) return "border-primary/30 bg-primary/20 text-primary";
   return "border-primary/45 bg-primary/35 text-primary-foreground";
-}
-
-function toDateKey(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
 }
 
 function Legend({ label, className }: { label: string; className: string }) {

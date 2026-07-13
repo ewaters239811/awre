@@ -6,7 +6,12 @@ import { ArrowRight, CalendarCheck, NotebookPen, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DailyFlow } from "@/components/daily-flow";
 import { getCurrentAccount } from "@/lib/account-data";
-import { getCheckIns, getLatestCheckIn, getTodaysCheckIn } from "@/lib/alignment";
+import {
+  CHECK_INS_CHANGED_EVENT,
+  getCheckInForDate,
+  getCheckIns,
+  getLatestCheckIn,
+} from "@/lib/alignment";
 import {
   getJournalEntries,
   getJournalEntryForDate,
@@ -44,20 +49,33 @@ export function HomeHero() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    queueMicrotask(() => {
+    let cancelled = false;
+
+    const refreshHomeState = () => {
       getCurrentAccount()
         .then((user) => {
+          if (cancelled) return;
           setState({
             user,
             latestCheckIn: getLatestCheckIn(),
-            todaysCheckIn: getTodaysCheckIn(),
+            todaysCheckIn: getCheckInForDate(today),
             todaysJournal: getJournalEntryForDate(today),
             totalCheckIns: getCheckIns().length,
             totalJournals: getJournalEntries().length,
           });
         })
-        .finally(() => setLoaded(true));
-    });
+        .finally(() => {
+          if (!cancelled) setLoaded(true);
+        });
+    };
+
+    queueMicrotask(refreshHomeState);
+    window.addEventListener(CHECK_INS_CHANGED_EVENT, refreshHomeState);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener(CHECK_INS_CHANGED_EVENT, refreshHomeState);
+    };
   }, [today]);
 
   if (!loaded || !state.user) {

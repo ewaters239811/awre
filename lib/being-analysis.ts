@@ -5,6 +5,7 @@ import type {
   JournalEntry,
   PillarName,
 } from "@/lib/types";
+import { getCheckInDateKey } from "@/lib/alignment";
 
 export type BeingDashboardData = {
   metrics: BeingMetric[];
@@ -75,7 +76,7 @@ export function buildBeingDashboardData(
     weakestPillar,
     strongestPillar,
     timeline: sorted.map((item) => ({
-      date: new Date(item.createdAt).toLocaleDateString(),
+      date: formatDateKey(getCheckInDateKey(item)),
       score: item.beingScore,
     })),
     localAnalysis: buildLocalAnalysis({
@@ -310,6 +311,10 @@ function standardDeviation(values: number[]) {
 
 function roundToTenth(value: number) {
   return Math.round(value * 10) / 10;
+}
+
+function formatDateKey(dateKey: string) {
+  return new Date(`${dateKey}T12:00:00`).toLocaleDateString();
 }
 
 function toDateKey(date: Date) {

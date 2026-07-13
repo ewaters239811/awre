@@ -8,8 +8,8 @@ import { DailyFlow } from "@/components/daily-flow";
 import { TeachingQuote } from "@/components/teaching-quote";
 import { Button } from "@/components/ui/button";
 import { saveCheckInToAccount } from "@/lib/account-data";
-import { getCheckIns, updateCheckIn } from "@/lib/alignment";
-import { getJournalEntries, toDateKey } from "@/lib/journal-storage";
+import { getCheckInDateKey, getCheckIns, updateCheckIn } from "@/lib/alignment";
+import { getJournalEntries } from "@/lib/journal-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
 import type { CheckInResult, JournalEntry, PillarName } from "@/lib/types";
@@ -31,7 +31,7 @@ export default function ReviewPage() {
   }, []);
 
   const todayCheckIns = checkIns.filter(
-    (item) => toDateKey(new Date(item.createdAt)) === todayKey,
+    (item) => getCheckInDateKey(item) === todayKey,
   );
   const latestTodayCheckIn = todayCheckIns[0] ?? null;
   const todayJournal = journalEntries.find((entry) => entry.date === todayKey);

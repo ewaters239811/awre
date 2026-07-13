@@ -2,6 +2,7 @@
 
 import {
   clearCheckIns,
+  getCheckInDateKey,
   replaceCheckIns,
 } from "@/lib/alignment";
 import {
@@ -160,7 +161,9 @@ export async function fetchRemoteCheckIns() {
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return ((data ?? []) as JsonRow<CheckInResult>[]).map((row) => row.data);
+  return ((data ?? []) as JsonRow<CheckInResult>[]).map((row) =>
+    normalizeCheckIn(row.data),
+  );
 }
 
 export async function fetchRemoteJournalEntries() {
@@ -207,4 +210,11 @@ async function getCurrentUserId() {
   const supabase = createSupabaseBrowserClient();
   const { data } = await supabase.auth.getUser();
   return data.user?.id ?? null;
+}
+
+function normalizeCheckIn(checkIn: CheckInResult): CheckInResult {
+  return {
+    ...checkIn,
+    checkInDate: getCheckInDateKey(checkIn),
+  };
 }

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { HistoryCalendar } from "@/components/history-calendar";
 import { PatternInsights } from "@/components/pattern-insights";
 import { clearRemoteCheckIns } from "@/lib/account-data";
-import { clearCheckIns, getCheckIns } from "@/lib/alignment";
+import { clearCheckIns, getCheckInDateKey, getCheckIns } from "@/lib/alignment";
 import type { CheckInResult } from "@/lib/types";
 
 export default function HistoryPage() {
@@ -135,7 +135,7 @@ function SelectedDayCard({ item }: { item: CheckInResult | null }) {
             </p>
           </div>
           <h2 className="mt-3 font-serif text-3xl font-semibold">
-            {new Date(item.createdAt).toLocaleDateString()}
+            {formatDateKey(getCheckInDateKey(item))}
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             {item.stateLabel}
@@ -194,7 +194,7 @@ function RecentEntries({ items }: { items: CheckInResult[] }) {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="font-medium">
-                  {new Date(item.createdAt).toLocaleDateString()}
+                  {formatDateKey(getCheckInDateKey(item))}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {item.stateLabel}
@@ -237,7 +237,7 @@ function RecentEntries({ items }: { items: CheckInResult[] }) {
                   className="border-t border-border/55 transition hover:bg-accent/25"
                 >
                   <td className="px-4 py-4">
-                    {new Date(item.createdAt).toLocaleDateString()}
+                    {formatDateKey(getCheckInDateKey(item))}
                   </td>
                   <td className="px-4 py-4">{item.thinkingScore}</td>
                   <td className="px-4 py-4">{item.willingScore}</td>
@@ -264,9 +264,7 @@ function RecentEntries({ items }: { items: CheckInResult[] }) {
 
 function buildHistoryStats(items: CheckInResult[]) {
   const scores = items.map((item) => item.beingScore);
-  const uniqueDays = new Set(
-    items.map((item) => new Date(item.createdAt).toLocaleDateString()),
-  );
+  const uniqueDays = new Set(items.map((item) => getCheckInDateKey(item)));
 
   return {
     totalDays: uniqueDays.size,
@@ -274,6 +272,10 @@ function buildHistoryStats(items: CheckInResult[]) {
     highestScore: Math.max(...scores).toFixed(1),
     lowestScore: Math.min(...scores).toFixed(1),
   };
+}
+
+function formatDateKey(dateKey: string) {
+  return new Date(`${dateKey}T12:00:00`).toLocaleDateString();
 }
 
 function average(values: number[]) {
