@@ -58,6 +58,19 @@ supabase/schema.sql
 4. Restart the dev server.
 5. Open `/login` and create an account.
 
+For email confirmations to work on phones and other devices, set these in
+Supabase under **Authentication -> URL Configuration**:
+
+```txt
+Site URL: https://www.clearpth.io
+Redirect URLs:
+https://www.clearpth.io/auth/callback
+http://localhost:3000/auth/callback
+```
+
+The app sends new account confirmation emails to `/auth/callback`, where
+ClearPth completes the Supabase session and returns the user to Home.
+
 Personal records are account-first. Check-ins, journal entries, and setup
 profiles are saved only for signed-in users. Guest sessions can explore the app,
 but personal records are not saved.

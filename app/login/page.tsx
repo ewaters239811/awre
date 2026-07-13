@@ -54,6 +54,7 @@ export default function LoginPage() {
               email,
               password,
               options: {
+                emailRedirectTo: `${window.location.origin}/auth/callback`,
                 data: {
                   full_name: name.trim(),
                 },
@@ -67,7 +68,7 @@ export default function LoginPage() {
 
       if (mode === "sign-up" && !response.data.session) {
         setStatus(
-          "Account created. Check your email and click the Supabase confirmation link before signing in.",
+          "Account created. Check your email on this device and tap the confirmation link. It will bring you back to ClearPth.",
         );
         setMode("sign-in");
         setPassword("");
