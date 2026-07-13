@@ -43,7 +43,9 @@ export function saveJournalEntry(entry: JournalEntry) {
   };
   const next = [
     updated,
-    ...getJournalEntries().filter((item) => item.id !== entry.id),
+    ...getJournalEntries().filter(
+      (item) => item.id !== entry.id && item.date !== updated.date,
+    ),
   ].sort((a, b) => b.date.localeCompare(a.date));
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(next));

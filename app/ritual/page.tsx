@@ -47,6 +47,7 @@ export default function RitualPage() {
   const today = useCurrentDateKey();
   const checkInToday = useCurrentCheckInDateKey();
   const [entry, setEntry] = useState<JournalEntry | null>(null);
+  const [draftContent, setDraftContent] = useState("");
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [saved, setSaved] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -57,7 +58,8 @@ export default function RitualPage() {
 
   useEffect(() => {
     queueMicrotask(() => {
-      setEntry(getJournalEntryForDate(today) ?? createEmptyJournalEntry());
+      setEntry(getJournalEntryForDate(today) ?? createEmptyJournalEntry(today));
+      setDraftContent("");
       setEntries(getJournalEntries());
       const speechWindow = window as SpeechWindow;
       setSpeechSupported(
@@ -72,12 +74,13 @@ export default function RitualPage() {
   const updateContent = (content: string) => {
     setSaved(false);
     setError("");
-    setEntry((current) => (current ? { ...current, content } : current));
+    setDraftContent(content);
   };
 
   const saveEntry = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!entry || !entry.content.trim()) return;
+    const content = draftContent.trim();
+    if (!entry || !content) return;
 
     const account = await getCurrentAccount();
     if (!account) {
@@ -85,8 +88,20 @@ export default function RitualPage() {
       return;
     }
 
-    await saveJournalEntryToAccount(entry);
-    saveJournalEntry(entry);
+    const existingEntry = getJournalEntryForDate(today);
+    const nextEntry: JournalEntry = {
+      ...(existingEntry ?? entry),
+      date: today,
+      content: existingEntry?.content.trim()
+        ? `${existingEntry.content.trim()}\n\n${content}`
+        : content,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await saveJournalEntryToAccount(nextEntry);
+    saveJournalEntry(nextEntry);
+    setEntry(nextEntry);
+    setDraftContent("");
     setEntries(getJournalEntries());
     setSaved(true);
   };
@@ -110,7 +125,7 @@ export default function RitualPage() {
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = "en-US";
-    speechBaseRef.current = entry.content.trim();
+    speechBaseRef.current = draftContent.trim();
     recognition.onresult = (event) => {
       let transcript = "";
 
@@ -118,14 +133,7 @@ export default function RitualPage() {
         transcript += event.results[index][0].transcript;
       }
 
-      setEntry((current) =>
-        current
-          ? {
-              ...current,
-              content: `${speechBaseRef.current} ${transcript}`.trim(),
-            }
-          : current,
-      );
+      setDraftContent(`${speechBaseRef.current} ${transcript}`.trim());
       setSaved(false);
     };
     recognition.onend = () => setIsListening(false);
@@ -138,10 +146,15 @@ export default function RitualPage() {
     return <main className="container py-12">Loading journal...</main>;
   }
 
-  const recentEntries = entries.filter((item) => item.id !== entry.id).slice(0, 4);
+  const savedTodayEntry = entries.find(
+    (item) => item.date === today && item.content.trim(),
+  );
+  const recentEntries = entries
+    .filter((item) => item.id !== savedTodayEntry?.id)
+    .slice(0, 4);
   const checkedInToday = Boolean(getCheckInForDate(checkInToday));
-  const wordCount = entry.content.trim()
-    ? entry.content.trim().split(/\s+/).length
+  const wordCount = draftContent.trim()
+    ? draftContent.trim().split(/\s+/).length
     : 0;
 
   return (
@@ -157,7 +170,7 @@ export default function RitualPage() {
           <DailyFlow
             checkedIn={checkedInToday}
             readToday={checkedInToday}
-            journaled={Boolean(entry.content.trim())}
+            journaled={Boolean(savedTodayEntry || draftContent.trim())}
           />
         </div>
       </section>
@@ -196,7 +209,7 @@ export default function RitualPage() {
 
           <Textarea
             className="mt-5 min-h-[260px] md:min-h-[360px]"
-            value={entry.content}
+            value={draftContent}
             onChange={(event) => updateContent(event.target.value)}
             placeholder="What happened today? What did it reveal about your thinking, willing, feeling, or identity? Where did you gather power, and where did you leak it?"
           />
@@ -208,7 +221,7 @@ export default function RitualPage() {
             <div className="flex items-center gap-3">
               {saved ? <p className="text-sm text-muted-foreground">Saved.</p> : null}
               {error ? <p className="text-sm text-primary">{error}</p> : null}
-              <Button type="submit" disabled={!entry.content.trim()}>
+              <Button type="submit" disabled={!draftContent.trim()}>
                 <Save className="h-4 w-4" aria-hidden />
                 Save Journal
               </Button>
@@ -222,9 +235,25 @@ export default function RitualPage() {
           </p>
           <div className="mt-5 grid gap-3">
             <JournalStat label="Saved entries" value={String(entries.length)} />
-            <JournalStat label="Today" value={entry.content.trim() ? "Open" : "Blank"} />
+            <JournalStat
+              label="Today"
+              value={savedTodayEntry ? "Saved" : draftContent.trim() ? "Open" : "Blank"}
+            />
             <JournalStat label="Voice input" value={speechSupported ? "Ready" : "Unavailable"} />
           </div>
+
+          {savedTodayEntry ? (
+            <div className="mt-6 border-t border-border/60 pt-5">
+              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                Saved Today
+              </p>
+              <article className="mt-4 rounded-md border border-border/70 bg-card p-3">
+                <p className="line-clamp-4 text-sm leading-6">
+                  {savedTodayEntry.content}
+                </p>
+              </article>
+            </div>
+          ) : null}
 
           <div className="mt-6 border-t border-border/60 pt-5">
             <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
