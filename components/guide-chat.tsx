@@ -101,19 +101,22 @@ export function GuideChat() {
         }),
       });
       const payload = (await response.json()) as {
+        enabled?: boolean;
         data?: string;
         suggestions?: string[];
       };
-      const nextSuggestions = normalizeSuggestions(payload.suggestions);
+      const reply = payload.data?.trim();
 
+      if (!response.ok || !payload.enabled || !reply) {
+        throw new Error("Guide response unavailable.");
+      }
+
+      const nextSuggestions = normalizeSuggestions(payload.suggestions, reply);
       persistConversation({
         ...conversationWithUserMessage,
         messages: [
           ...conversationWithUserMessage.messages,
-          createAssistantMessage(
-            payload.data ??
-              "Name the challenge in one sentence, then choose one step that restores inner order.",
-          ),
+          createAssistantMessage(reply),
         ],
       });
       setSuggestedPrompts(nextSuggestions);
@@ -238,13 +241,16 @@ export function GuideChat() {
   );
 }
 
-function normalizeSuggestions(suggestions?: string[]) {
+function normalizeSuggestions(suggestions?: string[], reply?: string) {
   const clean = (suggestions ?? [])
     .map((suggestion) => suggestion.trim())
     .filter(Boolean)
     .slice(0, 3);
 
-  return clean.length === 3 ? clean : fallbackSuggestedPrompts;
+  if (clean.length === 3) return clean;
+  if (reply) return buildLocalSuggestions(reply);
+
+  return fallbackSuggestedPrompts;
 }
 
 function getSuggestionsForConversation(conversation: GuideConversation) {

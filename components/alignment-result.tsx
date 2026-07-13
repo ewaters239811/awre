@@ -10,9 +10,11 @@ export function AlignmentResult({
   result: CheckInResult;
   aiStatus?: "idle" | "loading" | "ready" | "unavailable";
 }) {
+  const isWaitingForPersonalizedResult =
+    !result.aiAlignment && (aiStatus === "idle" || aiStatus === "loading");
   const activePrescription = result.aiAlignment ?? result.prescription;
   const signature = buildBeingSignature(result);
-  const prescription = [
+  const prescription: Array<[string, string]> = [
     ["Thought correction", activePrescription.thoughtCorrection],
     ["Action step", activePrescription.actionStep],
     ["Feeling practice", activePrescription.embodimentPractice],
@@ -71,6 +73,20 @@ export function AlignmentResult({
                   {result.aiAlignment.summary}
                 </p>
               </article>
+            ) : isWaitingForPersonalizedResult ? (
+              <article className="rounded-md border border-border/55 bg-card/55 p-5">
+                <div className="flex items-center gap-3">
+                  <Compass className="h-5 w-5 text-primary" aria-hidden />
+                  <p className="text-xs uppercase tracking-[0.22em] text-primary">
+                    Reading
+                  </p>
+                </div>
+                <div className="mt-4 space-y-3">
+                  <div className="h-3 w-5/6 animate-pulse rounded-full bg-muted" />
+                  <div className="h-3 w-full animate-pulse rounded-full bg-muted" />
+                  <div className="h-3 w-2/3 animate-pulse rounded-full bg-muted" />
+                </div>
+              </article>
             ) : null}
           </aside>
 
@@ -81,17 +97,34 @@ export function AlignmentResult({
                 Alignment Prescription
               </h2>
             </div>
-            {prescription.map(([label, body]) => (
-              <article
-                key={label}
-                className="rounded-md border border-border/55 bg-card/55 p-5"
-              >
-                <p className="text-xs uppercase tracking-[0.22em] text-primary">
-                  {label}
-                </p>
-                <p className="mt-2 leading-7 text-muted-foreground">{body}</p>
-              </article>
-            ))}
+            {isWaitingForPersonalizedResult
+              ? prescription.map(([label]) => (
+                  <article
+                    key={label}
+                    className="rounded-md border border-border/55 bg-card/55 p-5"
+                  >
+                    <p className="text-xs uppercase tracking-[0.22em] text-primary">
+                      {label}
+                    </p>
+                    <div className="mt-4 space-y-3">
+                      <div className="h-3 w-full animate-pulse rounded-full bg-muted" />
+                      <div className="h-3 w-4/5 animate-pulse rounded-full bg-muted" />
+                    </div>
+                  </article>
+                ))
+              : prescription.map(([label, body]) => (
+                  <article
+                    key={label}
+                    className="rounded-md border border-border/55 bg-card/55 p-5"
+                  >
+                    <p className="text-xs uppercase tracking-[0.22em] text-primary">
+                      {label}
+                    </p>
+                    <p className="mt-2 leading-7 text-muted-foreground">
+                      {body}
+                    </p>
+                  </article>
+                ))}
           </div>
         </div>
       </div>
@@ -137,6 +170,14 @@ function AiStatus({
     return (
       <p className="mt-4 rounded-md border border-border/70 bg-card/45 px-4 py-3 text-sm text-muted-foreground">
         Reading your alignment...
+      </p>
+    );
+  }
+
+  if (status === "idle" && !hasAi) {
+    return (
+      <p className="mt-4 rounded-md border border-border/70 bg-card/45 px-4 py-3 text-sm text-muted-foreground">
+        Preparing your reading...
       </p>
     );
   }

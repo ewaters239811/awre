@@ -189,7 +189,10 @@ export default function ReviewPage() {
           </section>
 
           <section className="mt-8">
-            <AlignmentResult result={latestTodayCheckIn} aiStatus={aiStatus} />
+            <AlignmentResult
+              result={latestTodayCheckIn}
+              aiStatus={latestTodayCheckIn.aiAlignment ? "ready" : aiStatus}
+            />
           </section>
         </>
       )}

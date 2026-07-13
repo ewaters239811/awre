@@ -53,7 +53,7 @@ export async function createJsonWithOpenAI<T>({
   const text = extractOutputText(result);
   const parsed = parseJson<T>(text);
 
-  return { enabled: true, data: parsed ?? fallback };
+  return { enabled: Boolean(parsed), data: parsed ?? fallback };
 }
 
 export async function createTextWithOpenAI({

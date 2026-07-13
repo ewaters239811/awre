@@ -27,8 +27,9 @@ export function ResultsContent() {
   useEffect(() => {
     queueMicrotask(() => {
       const id = searchParams.get("id");
-      setResult(id ? getCheckInById(id) : getLatestCheckIn());
-      setAiStatus("idle");
+      const savedResult = id ? getCheckInById(id) : getLatestCheckIn();
+      setResult(savedResult);
+      setAiStatus(savedResult?.aiAlignment ? "ready" : "loading");
       setLoaded(true);
     });
   }, [searchParams]);
@@ -39,7 +40,7 @@ export function ResultsContent() {
     }
 
     requestedAiFor.current = result.id;
-    queueMicrotask(() => setAiStatus("loading"));
+    setAiStatus("loading");
 
     fetch("/api/personalize", {
       method: "POST",
