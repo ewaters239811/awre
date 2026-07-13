@@ -33,6 +33,7 @@ export type CheckInResult = CheckInDraft & {
   aiAlignment?: AiAlignment;
   aiQuote?: string;
   aiGeneratedAt?: string;
+  aiContextSignature?: string;
 };
 
 export type GuideMessage = {

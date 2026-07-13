@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { AlignmentResult } from "@/components/alignment-result";
 import { Button } from "@/components/ui/button";
 import { saveCheckInToAccount } from "@/lib/account-data";
+import { buildAiReadingSignature } from "@/lib/ai-reading-signature";
 import {
   getCheckInById,
   getLatestCheckIn,
@@ -35,11 +36,31 @@ export function ResultsContent() {
   }, [searchParams]);
 
   useEffect(() => {
-    if (!result || result.aiAlignment || requestedAiFor.current === result.id) {
+    if (!result) {
       return;
     }
 
-    requestedAiFor.current = result.id;
+    const onboardingProfile = getOnboardingProfile();
+    const recentJournalEntries = getJournalEntries().slice(0, 8);
+    const contextSignature = buildAiReadingSignature({
+      result,
+      onboardingProfile,
+      journalEntries: recentJournalEntries,
+    });
+    const shouldGenerate =
+      !result.aiAlignment ||
+      Boolean(
+        result.aiContextSignature &&
+          result.aiContextSignature !== contextSignature,
+      );
+    const requestKey = `${result.id}:${contextSignature}`;
+
+    if (!shouldGenerate || requestedAiFor.current === requestKey) {
+      setAiStatus(result.aiAlignment ? "ready" : "unavailable");
+      return;
+    }
+
+    requestedAiFor.current = requestKey;
     setAiStatus("loading");
 
     fetch("/api/personalize", {
@@ -47,8 +68,8 @@ export function ResultsContent() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         result,
-        onboardingProfile: getOnboardingProfile(),
-        recentJournalEntries: getJournalEntries().slice(0, 8).map((entry) => ({
+        onboardingProfile,
+        recentJournalEntries: recentJournalEntries.map((entry) => ({
           date: entry.date,
           content: entry.content,
         })),
@@ -69,6 +90,7 @@ export function ResultsContent() {
             ...result,
             aiAlignment: payload.data,
             aiGeneratedAt: new Date().toISOString(),
+            aiContextSignature: contextSignature,
           };
           saveCheckInToAccount(updated)
             .then(() => updateCheckIn(updated))

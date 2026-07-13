@@ -8,6 +8,7 @@ import { DailyFlow } from "@/components/daily-flow";
 import { TeachingQuote } from "@/components/teaching-quote";
 import { Button } from "@/components/ui/button";
 import { saveCheckInToAccount } from "@/lib/account-data";
+import { buildAiReadingSignature } from "@/lib/ai-reading-signature";
 import { getCheckInDateKey, getCheckIns, updateCheckIn } from "@/lib/alignment";
 import { getJournalEntries } from "@/lib/journal-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
@@ -38,15 +39,31 @@ export default function ReviewPage() {
   const report = buildTodayReport(latestTodayCheckIn, todayJournal);
 
   useEffect(() => {
-    if (
-      !latestTodayCheckIn ||
-      latestTodayCheckIn.aiAlignment ||
-      requestedAiFor.current === latestTodayCheckIn.id
-    ) {
+    if (!latestTodayCheckIn) {
       return;
     }
 
-    requestedAiFor.current = latestTodayCheckIn.id;
+    const onboardingProfile = getOnboardingProfile();
+    const recentJournalEntries = getJournalEntries().slice(0, 8);
+    const contextSignature = buildAiReadingSignature({
+      result: latestTodayCheckIn,
+      onboardingProfile,
+      journalEntries: recentJournalEntries,
+    });
+    const shouldGenerate =
+      !latestTodayCheckIn.aiAlignment ||
+      Boolean(
+        latestTodayCheckIn.aiContextSignature &&
+          latestTodayCheckIn.aiContextSignature !== contextSignature,
+      );
+    const requestKey = `${latestTodayCheckIn.id}:${contextSignature}`;
+
+    if (!shouldGenerate || requestedAiFor.current === requestKey) {
+      setAiStatus(latestTodayCheckIn.aiAlignment ? "ready" : "unavailable");
+      return;
+    }
+
+    requestedAiFor.current = requestKey;
     setAiStatus("loading");
 
     fetch("/api/personalize", {
@@ -54,8 +71,8 @@ export default function ReviewPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         result: latestTodayCheckIn,
-        onboardingProfile: getOnboardingProfile(),
-        recentJournalEntries: getJournalEntries().slice(0, 8).map((entry) => ({
+        onboardingProfile,
+        recentJournalEntries: recentJournalEntries.map((entry) => ({
           date: entry.date,
           content: entry.content,
         })),
@@ -76,6 +93,7 @@ export default function ReviewPage() {
             ...latestTodayCheckIn,
             aiAlignment: payload.data,
             aiGeneratedAt: new Date().toISOString(),
+            aiContextSignature: contextSignature,
           };
           saveCheckInToAccount(updated)
             .then(() => updateCheckIn(updated))
