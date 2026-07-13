@@ -2,10 +2,12 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { Save, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { LogOut, Save, ShieldCheck, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   getCurrentAccount,
+  signOutOfAccount,
   syncLocalDataToAccount,
   updateAccountName,
 } from "@/lib/account-data";
@@ -23,6 +25,7 @@ type AccountUser = {
 };
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [user, setUser] = useState<AccountUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
@@ -78,6 +81,12 @@ export default function SettingsPage() {
     }
   };
 
+  const signOut = async () => {
+    await signOutOfAccount();
+    setUser(null);
+    router.push("/");
+  };
+
   if (loading) {
     return <main className="container py-12">Loading settings...</main>;
   }
@@ -93,9 +102,17 @@ export default function SettingsPage() {
           <p className="mt-4 leading-7 text-muted-foreground">
             Your profile settings are available after you sign in.
           </p>
-          <Button asChild className="mt-6">
-            <Link href="/login">Sign In</Link>
-          </Button>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <Button asChild>
+              <Link href="/login">Sign In</Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link href="/login?mode=sign-up">
+                <UserPlus className="h-4 w-4" aria-hidden />
+                Create Account
+              </Link>
+            </Button>
+          </div>
         </section>
       </main>
     );
@@ -180,6 +197,10 @@ export default function SettingsPage() {
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild variant="secondary">
               <Link href="/onboarding">Update What You Want</Link>
+            </Button>
+            <Button variant="secondary" onClick={signOut}>
+              <LogOut className="h-4 w-4" aria-hidden />
+              Sign Out
             </Button>
           </div>
         </div>

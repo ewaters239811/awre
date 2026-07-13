@@ -27,7 +27,7 @@ const benefits = [
 export default function HomePage() {
   return (
     <main>
-      <section className="container grid min-h-[calc(100vh-5rem)] items-center gap-10 py-8 md:grid-cols-[1.05fr_0.95fr] md:gap-12 md:py-16">
+      <section className="container grid min-h-[calc(100dvh-9rem)] items-center gap-8 py-6 md:min-h-[calc(100vh-5rem)] md:grid-cols-[1.05fr_0.95fr] md:gap-12 md:py-16">
         <HomeHero />
 
         <div className="aura-glass rounded-lg p-5 md:p-6">

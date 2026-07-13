@@ -27,7 +27,7 @@ export function AlignmentResult({
             Today&apos;s Result
           </p>
           <div className="mt-6 flex items-end justify-center gap-3">
-            <span className="font-serif text-8xl font-semibold leading-none text-primary sm:text-9xl">
+            <span className="font-serif text-6xl font-semibold leading-none text-primary sm:text-9xl">
               {result.beingScore}
             </span>
             <span className="pb-4 text-xl text-muted-foreground">/ 10</span>

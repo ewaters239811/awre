@@ -194,7 +194,7 @@ export default function RitualPage() {
           </div>
 
           <Textarea
-            className="mt-5 min-h-[360px]"
+            className="mt-5 min-h-[260px] md:min-h-[360px]"
             value={entry.content}
             onChange={(event) => updateContent(event.target.value)}
             placeholder="What happened today? What did it reveal about your thinking, willing, feeling, or identity? Where did you gather power, and where did you leak it?"

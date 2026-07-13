@@ -134,13 +134,13 @@ export function GuideChat() {
   };
 
   return (
-    <section className="mx-auto mt-8 max-w-5xl">
-      <div className="aura-glass flex min-h-[680px] flex-col rounded-lg">
-        <div className="border-b border-border/60 p-5">
+    <section className="mx-auto mt-4 max-w-5xl md:mt-8">
+      <div className="aura-glass flex min-h-[calc(100dvh-12rem)] flex-col rounded-lg md:min-h-[680px]">
+        <div className="border-b border-border/60 p-4 md:p-5">
           <p className="text-xs uppercase tracking-[0.24em] text-primary">
             Guide
           </p>
-          <h1 className="mt-2 font-serif text-4xl font-semibold">
+          <h1 className="mt-2 font-serif text-3xl font-semibold md:text-4xl">
             Talk Through What&apos;s On Your Mind
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
@@ -149,7 +149,7 @@ export function GuideChat() {
           </p>
         </div>
 
-        <div className="max-h-[58vh] min-h-[420px] flex-1 space-y-4 overflow-y-auto p-5">
+        <div className="min-h-[320px] flex-1 space-y-4 overflow-y-auto p-4 md:max-h-[58vh] md:min-h-[420px] md:p-5">
           {activeConversation?.messages.map((message) => (
             <div
               key={message.createdAt}
@@ -160,7 +160,7 @@ export function GuideChat() {
             >
               <div
                 className={cn(
-                  "max-w-[85%] rounded-md border px-4 py-3 text-sm leading-6 shadow-sm",
+                  "max-w-[92%] rounded-md border px-4 py-3 text-sm leading-6 shadow-sm sm:max-w-[85%]",
                   message.role === "user"
                     ? "border-foreground/25 bg-foreground text-background"
                     : "border-border/70 bg-card text-muted-foreground",
@@ -171,7 +171,7 @@ export function GuideChat() {
             </div>
           ))}
           {isSending ? (
-            <div className="max-w-[85%] rounded-md border border-border/70 bg-card px-4 py-3 text-sm text-muted-foreground">
+            <div className="max-w-[92%] rounded-md border border-border/70 bg-card px-4 py-3 text-sm text-muted-foreground sm:max-w-[85%]">
               Thinking with you...
             </div>
           ) : null}
@@ -207,7 +207,7 @@ export function GuideChat() {
         </div>
 
         <form
-          className="border-t border-border/60 bg-card/40 p-5"
+          className="border-t border-border/60 bg-card/40 p-4 md:p-5"
           onSubmit={sendMessage}
         >
           <Textarea

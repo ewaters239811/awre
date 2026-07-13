@@ -44,18 +44,18 @@ export function HistoryCalendar({
   };
 
   return (
-    <section className="aura-glass mt-8 rounded-lg p-5 md:p-6">
-      <div className="flex items-center justify-between gap-4">
+    <section className="aura-glass mt-8 rounded-lg p-4 md:p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.24em] text-primary">
-            Being Calendar
+            Score Calendar
           </p>
-          <h2 className="mt-2 font-serif text-3xl font-semibold">
+          <h2 className="mt-2 font-serif text-2xl font-semibold sm:text-3xl">
             {monthLabel}
           </h2>
           <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-            Each day shows the Being score recorded for that date. Select a day
-            to inspect the full record.
+            Each day shows the score recorded for that date. Tap a day to
+            inspect it.
           </p>
         </div>
         <div className="flex gap-2">
@@ -78,7 +78,7 @@ export function HistoryCalendar({
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-7 gap-2 text-center text-xs text-muted-foreground">
+      <div className="mt-5 grid grid-cols-7 gap-1 text-center text-[11px] text-muted-foreground sm:gap-2 sm:text-xs">
         {weekdays.map((day) => (
           <div key={day} className="py-2">
             {day}
@@ -86,7 +86,7 @@ export function HistoryCalendar({
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2">
         {days.map((day) => {
           const key = toDateKey(day.date);
           const checkIns = scoresByDate.get(key) ?? [];
@@ -111,7 +111,7 @@ export function HistoryCalendar({
                   : "No check-in recorded"
               }
               className={cn(
-                "flex aspect-square min-h-14 flex-col items-center justify-center rounded-md border border-border/50 bg-card/55 p-1 text-sm transition duration-200 hover:-translate-y-0.5 hover:border-primary/25 disabled:hover:translate-y-0",
+                "flex aspect-square min-h-11 flex-col items-center justify-center rounded-md border border-border/50 bg-card/55 p-1 text-xs transition duration-200 hover:-translate-y-0.5 hover:border-primary/25 disabled:hover:translate-y-0 sm:min-h-14 sm:text-sm",
                 !isCurrentMonth && "opacity-35",
                 score && getScoreClass(score),
                 isSelected && "ring-2 ring-primary ring-offset-2 ring-offset-background",
@@ -121,7 +121,7 @@ export function HistoryCalendar({
                 {day.date.getDate()}
               </span>
               {score ? (
-                <span className="mt-1 font-serif text-xl font-semibold">
+                <span className="mt-0.5 font-serif text-base font-semibold sm:mt-1 sm:text-xl">
                   {score.toFixed(1)}
                 </span>
               ) : (

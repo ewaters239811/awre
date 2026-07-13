@@ -74,6 +74,13 @@ body {
   background-size: auto;
 }
 
+@media (max-width: 1023px) {
+  body {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+    background-attachment: scroll;
+  }
+}
+
 html.light body {
   background:
     linear-gradient(135deg, rgba(125, 145, 93, 0.18) 0%, transparent 34%),

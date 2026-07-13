@@ -177,7 +177,7 @@ export function BeingDashboard() {
                 </p>
               </div>
               <div className="mt-6 flex items-end gap-3">
-                <span className="font-serif text-8xl font-semibold leading-none text-primary">
+                <span className="font-serif text-6xl font-semibold leading-none text-primary sm:text-8xl">
                   {dashboard.latestScore?.toFixed(1) ?? "-"}
                 </span>
                 <span className="pb-3 text-xl text-muted-foreground">/ 10</span>
@@ -354,7 +354,32 @@ function RecentPatternRecords({ items }: { items: CheckInResult[] }) {
         </p>
       </div>
 
-      <div className="aura-glass mt-5 overflow-hidden rounded-lg border border-border">
+      <div className="mt-5 grid gap-3 md:hidden">
+        {items.slice(0, 8).map((item) => (
+          <article key={item.id} className="aura-glass rounded-lg p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="font-medium">
+                  {new Date(item.createdAt).toLocaleDateString()}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {item.stateLabel}
+                </p>
+              </div>
+              <p className="font-serif text-3xl font-semibold">
+                {item.beingScore.toFixed(1)}
+              </p>
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              <MiniStat label="Think" value={String(item.thinkingScore)} />
+              <MiniStat label="Act" value={String(item.willingScore)} />
+              <MiniStat label="Feel" value={String(item.feelingScore)} />
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="aura-glass mt-5 hidden overflow-hidden rounded-lg border border-border md:block">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] text-left text-sm">
             <thead className="bg-accent/35 text-muted-foreground">
@@ -660,10 +685,12 @@ function ScoreTrendChart({
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <MobileScoreTrend timeline={timeline} />
+
+        <div className="hidden lg:block">
           <svg
             viewBox="0 0 720 280"
-            className="min-h-[260px] min-w-[640px] text-foreground"
+            className="h-auto min-h-[260px] w-full text-foreground"
             role="img"
             aria-label="Being score line graph over time"
           >
@@ -742,7 +769,7 @@ function ScoreTrendChart({
         </div>
       </div>
 
-      <div className="rounded-md border border-border/70 bg-card/45 p-4">
+      <div className="hidden rounded-md border border-border/70 bg-card/45 p-4 lg:block">
         <p className="text-sm font-medium text-foreground">Recent Scores</p>
         <div className="mt-4 divide-y divide-border/60">
           {timeline
@@ -761,6 +788,38 @@ function ScoreTrendChart({
             ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+function MobileScoreTrend({
+  timeline,
+}: {
+  timeline: Array<{ date: string; score: number }>;
+}) {
+  const recent = timeline.slice(-7).reverse();
+
+  return (
+    <div className="grid gap-3 lg:hidden">
+      {recent.map((point, index) => (
+        <div
+          key={`${point.date}-${index}`}
+          className="rounded-md border border-border/70 bg-background/35 p-3"
+        >
+          <div className="flex items-center justify-between gap-3 text-sm">
+            <span className="text-muted-foreground">{point.date}</span>
+            <span className="font-serif text-2xl font-semibold">
+              {point.score.toFixed(1)}
+            </span>
+          </div>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-primary"
+              style={{ width: `${Math.min(point.score * 10, 100)}%` }}
+            />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

@@ -74,11 +74,11 @@ function PublicHomeHero() {
       <p className="mb-4 text-xs uppercase tracking-[0.24em] text-primary sm:text-sm sm:tracking-[0.28em]">
         ClearPth
       </p>
-      <h1 className="font-serif text-5xl font-semibold leading-[0.96] text-foreground sm:text-7xl lg:text-8xl">
+      <h1 className="font-serif text-4xl font-semibold leading-[1.02] text-foreground sm:text-7xl lg:text-8xl">
         What do you want?
       </h1>
       <div className="aura-luxury-line mt-6 max-w-lg" />
-      <p className="mt-6 max-w-2xl text-lg leading-8 text-foreground/86 sm:text-2xl sm:leading-9">
+      <p className="mt-5 max-w-2xl text-base leading-7 text-foreground/86 sm:mt-6 sm:text-2xl sm:leading-9">
         Say it plainly. ClearPth helps unpack the thoughts, feelings, and
         avoided actions around it, then turns that desire into a clearer state
         and next step.
@@ -125,11 +125,11 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
       <p className="mb-4 text-xs uppercase tracking-[0.24em] text-primary sm:text-sm sm:tracking-[0.28em]">
         Welcome Back
       </p>
-      <h1 className="font-serif text-4xl font-semibold leading-[1.02] text-foreground sm:text-6xl lg:text-7xl">
+      <h1 className="font-serif text-4xl font-semibold leading-[1.04] text-foreground sm:text-6xl lg:text-7xl">
         Hi {firstName}. Good to see you.
       </h1>
       <div className="aura-luxury-line mt-6 max-w-lg" />
-      <p className="mt-6 max-w-2xl text-lg leading-8 text-foreground/86 sm:text-2xl sm:leading-9">
+      <p className="mt-5 max-w-2xl text-base leading-7 text-foreground/86 sm:mt-6 sm:text-2xl sm:leading-9">
         {buildHomeMessage(state)}
       </p>
 

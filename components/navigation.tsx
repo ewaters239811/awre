@@ -2,10 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, Menu } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  BarChart3,
+  Compass,
+  Home,
+  MessageCircle,
+  PenLine,
+  Settings,
+  NotebookPen,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getCurrentAccount, signOutOfAccount } from "@/lib/account-data";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -15,34 +22,44 @@ const links = [
   { href: "/ritual", label: "Journal" },
   { href: "/dashboard", label: "Patterns" },
   { href: "/guide", label: "Guide" },
-  { href: "/settings", label: "Settings" },
+];
+
+const mobileLinks = [
+  { href: "/", label: "Home", icon: Home },
+  { href: "/check-in", label: "Check", icon: PenLine },
+  { href: "/review", label: "Today", icon: Compass },
+  { href: "/ritual", label: "Journal", icon: NotebookPen },
+  { href: "/dashboard", label: "Patterns", icon: BarChart3 },
+  { href: "/guide", label: "Guide", icon: MessageCircle },
 ];
 
 export function Navigation() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const router = useRouter();
+  const isSettings = pathname === "/settings";
 
-  useEffect(() => {
-    queueMicrotask(() => {
-      getCurrentAccount().then((user) => setUserEmail(user?.email ?? null));
-    });
-  }, [pathname]);
+  const openSettingsOrGoBack = () => {
+    if (isSettings) {
+      if (window.history.length > 1) {
+        router.back();
+      } else {
+        router.push("/");
+      }
+      return;
+    }
 
-  const signOut = async () => {
-    await signOutOfAccount();
-    setUserEmail(null);
-    setOpen(false);
+    router.push("/settings");
   };
 
   return (
+    <>
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/70 backdrop-blur-2xl">
-      <nav className="container flex h-20 items-center justify-between">
+      <nav className="container flex h-16 items-center justify-between lg:h-20">
         <Link href="/" className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-foreground text-background">
+          <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-foreground text-background lg:h-9 lg:w-9">
             <svg
               viewBox="0 0 36 36"
-              className="h-6 w-6"
+              className="h-5 w-5 lg:h-6 lg:w-6"
               fill="none"
               aria-hidden
             >
@@ -68,7 +85,7 @@ export function Navigation() {
               <circle cx="18" cy="18" r="2.2" fill="currentColor" />
             </svg>
           </span>
-          <span className="text-xl font-semibold tracking-normal text-foreground">
+          <span className="text-lg font-semibold tracking-normal text-foreground lg:text-xl">
             ClearPth
           </span>
         </Link>
@@ -90,64 +107,57 @@ export function Navigation() {
         </div>
 
         <div className="flex items-center gap-2">
-          {userEmail ? (
-            <Button
-              variant="secondary"
-              size="sm"
-              className="hidden lg:inline-flex"
-              onClick={signOut}
-            >
-              <LogOut className="h-4 w-4" aria-hidden />
-              Sign Out
-            </Button>
-          ) : (
-            <Button asChild size="sm" className="hidden lg:inline-flex">
-              <Link href="/login">Sign In</Link>
-            </Button>
-          )}
+          <Button
+            variant="secondary"
+            size="sm"
+            className="hidden lg:inline-flex"
+            onClick={openSettingsOrGoBack}
+          >
+            <Settings className="h-4 w-4" aria-hidden />
+            {isSettings ? "Back" : "Settings"}
+          </Button>
           <Button
             variant="ghost"
             size="icon"
             className="lg:hidden"
-            onClick={() => setOpen((value) => !value)}
-            aria-label="Open navigation"
+            aria-label={isSettings ? "Go back" : "Open settings"}
+            onClick={openSettingsOrGoBack}
           >
-            <Menu className="h-5 w-5" />
+            <Settings className="h-5 w-5" aria-hidden />
           </Button>
         </div>
       </nav>
-      {open ? (
-        <div className="container grid max-h-[calc(100dvh-5rem)] gap-1 overflow-y-auto pb-4 lg:hidden">
-          {links.map((link) => (
+    </header>
+    <MobileTabBar pathname={pathname} />
+    </>
+  );
+}
+
+function MobileTabBar({ pathname }: { pathname: string }) {
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/88 px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 backdrop-blur-2xl lg:hidden">
+      <div className="mx-auto grid max-w-md grid-cols-6 gap-1 rounded-xl border border-border/60 bg-card/70 p-1 shadow-lg">
+        {mobileLinks.map((link) => {
+          const Icon = link.icon;
+          const active =
+            pathname === link.href ||
+            (link.href !== "/" && pathname.startsWith(link.href));
+
+          return (
             <Link
               key={link.href}
               href={link.href}
-              onClick={() => setOpen(false)}
               className={cn(
-                "rounded-md px-3 py-3 text-sm text-muted-foreground transition hover:bg-accent/70 hover:text-foreground",
-                pathname === link.href &&
-                  "bg-foreground text-background hover:bg-foreground hover:text-background",
+                "flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg px-1 py-2 text-[10px] leading-none text-muted-foreground transition",
+                active && "bg-foreground text-background",
               )}
             >
-              {link.label}
+              <Icon className="h-4 w-4" aria-hidden />
+              <span>{link.label}</span>
             </Link>
-          ))}
-          <div className="mt-2 border-t border-border/60 pt-3">
-            {userEmail ? (
-              <Button variant="secondary" className="w-full" onClick={signOut}>
-                <LogOut className="h-4 w-4" aria-hidden />
-                Sign Out
-              </Button>
-            ) : (
-              <Button asChild className="w-full">
-                <Link href="/login" onClick={() => setOpen(false)}>
-                  Sign In
-                </Link>
-              </Button>
-            )}
-          </div>
-        </div>
-      ) : null}
-    </header>
+          );
+        })}
+      </div>
+    </nav>
   );
 }
