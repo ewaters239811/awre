@@ -22,6 +22,7 @@ export default function LoginPage() {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -54,7 +55,7 @@ export default function LoginPage() {
               email,
               password,
               options: {
-                emailRedirectTo: `${window.location.origin}/auth/callback`,
+                emailRedirectTo: "https://clearpth.io/auth/callback",
                 data: {
                   full_name: name.trim(),
                 },
@@ -86,6 +87,47 @@ export default function LoginPage() {
       setError("Something went wrong while connecting your account.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const resendConfirmation = async () => {
+    setError("");
+    setStatus("");
+
+    if (!isSupabaseConfigured()) {
+      setError("Supabase is not configured yet.");
+      return;
+    }
+
+    if (!email.trim()) {
+      setError("Enter the email address first.");
+      return;
+    }
+
+    setResending(true);
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { error: resendError } = await supabase.auth.resend({
+        type: "signup",
+        email: email.trim(),
+        options: {
+          emailRedirectTo: "https://clearpth.io/auth/callback",
+        },
+      });
+
+      if (resendError) {
+        setError(resendError.message);
+        return;
+      }
+
+      setStatus(
+        "Confirmation email sent. Open it on this device and tap the link to return to ClearPth.",
+      );
+    } catch {
+      setError("Could not resend the confirmation email. Please try again.");
+    } finally {
+      setResending(false);
     }
   };
 
@@ -188,6 +230,16 @@ export default function LoginPage() {
                 ? "Sign In"
                 : "Create Account"}
             <ArrowRight className="h-4 w-4" aria-hidden />
+          </Button>
+
+          <Button
+            type="button"
+            variant="secondary"
+            className="mt-3 w-full"
+            disabled={resending || loading}
+            onClick={resendConfirmation}
+          >
+            {resending ? "Sending..." : "Resend Confirmation Email"}
           </Button>
 
           <Button asChild variant="secondary" className="mt-3 w-full">

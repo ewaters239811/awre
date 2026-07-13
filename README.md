@@ -64,8 +64,7 @@ Supabase under **Authentication -> URL Configuration**:
 ```txt
 Site URL: https://www.clearpth.io
 Redirect URLs:
-https://www.clearpth.io/auth/callback
-http://localhost:3000/auth/callback
+https://clearpth.io/auth/callback
 ```
 
 The app sends new account confirmation emails to `/auth/callback`, where
