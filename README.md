@@ -62,7 +62,7 @@ For email confirmations to work on phones and other devices, set these in
 Supabase under **Authentication -> URL Configuration**:
 
 ```txt
-Site URL: https://www.clearpth.io
+Site URL: https://clearpth.io
 Redirect URLs:
 https://clearpth.io/auth/callback
 ```

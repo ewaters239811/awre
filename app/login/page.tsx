@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { syncLocalDataToAccount } from "@/lib/account-data";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
+const CONFIRMATION_REDIRECT_URL = "https://clearpth.io/auth/callback";
+
 export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState<"sign-in" | "sign-up">(() =>
@@ -23,6 +25,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
+  const [confirmationEmail, setConfirmationEmail] = useState("");
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -55,7 +58,7 @@ export default function LoginPage() {
               email,
               password,
               options: {
-                emailRedirectTo: "https://clearpth.io/auth/callback",
+                emailRedirectTo: CONFIRMATION_REDIRECT_URL,
                 data: {
                   full_name: name.trim(),
                 },
@@ -68,9 +71,7 @@ export default function LoginPage() {
       }
 
       if (mode === "sign-up" && !response.data.session) {
-        setStatus(
-          "Account created. Check your email on this device and tap the confirmation link. It will bring you back to ClearPth.",
-        );
+        setConfirmationEmail(email.trim());
         setMode("sign-in");
         setPassword("");
         return;
@@ -112,7 +113,7 @@ export default function LoginPage() {
         type: "signup",
         email: email.trim(),
         options: {
-          emailRedirectTo: "https://clearpth.io/auth/callback",
+          emailRedirectTo: CONFIRMATION_REDIRECT_URL,
         },
       });
 
@@ -130,6 +131,53 @@ export default function LoginPage() {
       setResending(false);
     }
   };
+
+  const editConfirmationEmail = () => {
+    setConfirmationEmail("");
+    setStatus("");
+    setError("");
+    setMode("sign-in");
+  };
+
+  if (confirmationEmail) {
+    return (
+      <main className="container flex min-h-[calc(100dvh-9rem)] items-center py-8 md:min-h-[calc(100vh-5rem)] md:py-12">
+        <section className="aura-glass mx-auto max-w-xl rounded-lg p-6 md:p-8">
+          <p className="clearpth-page-kicker">Confirm Your Email</p>
+          <h1 className="mt-3 font-serif text-4xl font-semibold leading-tight">
+            One last step.
+          </h1>
+          <p className="mt-4 leading-7 text-muted-foreground">
+            We sent a confirmation link to {confirmationEmail}. Open that email
+            and tap the link to activate your account.
+          </p>
+
+          {error ? <p className="mt-4 text-sm text-primary">{error}</p> : null}
+          {status ? (
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">
+              {status}
+            </p>
+          ) : null}
+
+          <div className="mt-6 grid gap-3">
+            <Button
+              type="button"
+              disabled={resending}
+              onClick={resendConfirmation}
+            >
+              {resending ? "Sending..." : "Resend Confirmation Email"}
+            </Button>
+            <Button type="button" variant="secondary" onClick={editConfirmationEmail}>
+              Change Email Or Sign In
+            </Button>
+            <Button asChild variant="secondary">
+              <Link href="/">Return Home</Link>
+            </Button>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="container py-8 md:py-12">
