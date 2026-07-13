@@ -10,8 +10,8 @@ import { getCheckIns, getLatestCheckIn, getTodaysCheckIn } from "@/lib/alignment
 import {
   getJournalEntries,
   getJournalEntryForDate,
-  toDateKey,
 } from "@/lib/journal-storage";
+import { useCurrentDateKey } from "@/lib/use-current-date-key";
 import type { CheckInResult, JournalEntry } from "@/lib/types";
 
 type AccountUser = {
@@ -32,6 +32,7 @@ type HomeState = {
 };
 
 export function HomeHero() {
+  const today = useCurrentDateKey();
   const [state, setState] = useState<HomeState>({
     user: null,
     latestCheckIn: null,
@@ -44,8 +45,6 @@ export function HomeHero() {
 
   useEffect(() => {
     queueMicrotask(() => {
-      const today = toDateKey(new Date());
-
       getCurrentAccount()
         .then((user) => {
           setState({
@@ -59,7 +58,7 @@ export function HomeHero() {
         })
         .finally(() => setLoaded(true));
     });
-  }, []);
+  }, [today]);
 
   if (!loaded || !state.user) {
     return <PublicHomeHero />;

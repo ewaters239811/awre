@@ -5,18 +5,23 @@ import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Flame, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getCheckIns } from "@/lib/alignment";
+import { useCurrentDateKey } from "@/lib/use-current-date-key";
 import type { CheckInResult } from "@/lib/types";
 
 const milestones = [3, 7, 14, 30];
 
 export function CheckInStreak() {
+  const todayKey = useCurrentDateKey();
   const [checkIns, setCheckIns] = useState<CheckInResult[]>([]);
 
   useEffect(() => {
     queueMicrotask(() => setCheckIns(getCheckIns()));
   }, []);
 
-  const stats = useMemo(() => buildStreakStats(checkIns), [checkIns]);
+  const stats = useMemo(
+    () => buildStreakStats(checkIns, todayKey),
+    [checkIns, todayKey],
+  );
   const nextMilestone =
     milestones.find((milestone) => milestone > stats.currentStreak) ??
     milestones[milestones.length - 1];
@@ -100,13 +105,12 @@ export function CheckInStreak() {
   );
 }
 
-function buildStreakStats(checkIns: CheckInResult[]) {
+function buildStreakStats(checkIns: CheckInResult[], todayKey: string) {
   const dates = new Set(
     checkIns.map((item) => toDateKey(new Date(item.createdAt))),
   );
-  const today = new Date();
-  const checkedInToday = dates.has(toDateKey(today));
-  const cursor = new Date(today);
+  const checkedInToday = dates.has(todayKey);
+  const cursor = new Date(`${todayKey}T12:00:00`);
   let currentStreak = 0;
 
   while (dates.has(toDateKey(cursor))) {

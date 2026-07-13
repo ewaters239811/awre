@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CalendarDays, CheckCircle2, NotebookPen, Target } from "lucide-react";
 import { AlignmentResult } from "@/components/alignment-result";
 import { DailyFlow } from "@/components/daily-flow";
@@ -11,6 +11,7 @@ import { saveCheckInToAccount } from "@/lib/account-data";
 import { getCheckIns, updateCheckIn } from "@/lib/alignment";
 import { getJournalEntries, toDateKey } from "@/lib/journal-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
+import { useCurrentDateKey } from "@/lib/use-current-date-key";
 import type { CheckInResult, JournalEntry, PillarName } from "@/lib/types";
 
 type AiStatus = "idle" | "loading" | "ready" | "unavailable";
@@ -20,7 +21,7 @@ export default function ReviewPage() {
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [aiStatus, setAiStatus] = useState<AiStatus>("idle");
   const requestedAiFor = useRef<string | null>(null);
-  const todayKey = useMemo(() => toDateKey(new Date()), []);
+  const todayKey = useCurrentDateKey();
 
   useEffect(() => {
     queueMicrotask(() => {

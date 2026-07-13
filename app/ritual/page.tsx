@@ -12,11 +12,9 @@ import {
   getJournalEntries,
   getJournalEntryForDate,
   saveJournalEntry,
-  toDateKey,
 } from "@/lib/journal-storage";
+import { useCurrentDateKey } from "@/lib/use-current-date-key";
 import type { JournalEntry } from "@/lib/types";
-
-const today = toDateKey(new Date());
 
 type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
 
@@ -45,6 +43,7 @@ type SpeechWindow = Window & {
 };
 
 export default function RitualPage() {
+  const today = useCurrentDateKey();
   const [entry, setEntry] = useState<JournalEntry | null>(null);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [saved, setSaved] = useState(false);
@@ -66,7 +65,7 @@ export default function RitualPage() {
         ),
       );
     });
-  }, []);
+  }, [today]);
 
   const updateContent = (content: string) => {
     setSaved(false);

@@ -1,5 +1,6 @@
 import type { CheckInDraft, CheckInResult, PillarName } from "@/lib/types";
 import { createId } from "@/lib/id";
+import { toDateKey } from "@/lib/date-key";
 
 const STORAGE_KEY = "aura.checkIns.v1";
 export const CHECK_INS_CHANGED_EVENT = "clearpth:check-ins-changed";
@@ -153,13 +154,6 @@ function buildPrescription(
 
 function roundToTenth(value: number) {
   return Math.round(value * 10) / 10;
-}
-
-export function toDateKey(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
 }
 
 function isBrowser() {
