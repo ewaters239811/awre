@@ -1,6 +1,6 @@
 import type { CheckInDraft, CheckInResult, PillarName } from "@/lib/types";
 import { createId } from "@/lib/id";
-import { toDateKey } from "@/lib/date-key";
+import { toCheckInDateKey } from "@/lib/date-key";
 
 const STORAGE_KEY = "aura.checkIns.v1";
 export const CHECK_INS_CHANGED_EVENT = "clearpth:check-ins-changed";
@@ -26,7 +26,7 @@ export function buildResult(draft: CheckInDraft): CheckInResult {
     ...draft,
     id: createId("check-in"),
     createdAt: new Date().toISOString(),
-    checkInDate: toDateKey(new Date()),
+    checkInDate: toCheckInDateKey(new Date()),
     beingScore,
     stateLabel: getStateLabel(beingScore),
     strongestPillar,
@@ -79,7 +79,7 @@ export function getCheckInForDate(date: string) {
 }
 
 export function getTodaysCheckIn() {
-  return getCheckInForDate(toDateKey(new Date()));
+  return getCheckInForDate(toCheckInDateKey(new Date()));
 }
 
 export function getLatestCheckIn() {
@@ -116,10 +116,10 @@ export function getCheckInDateKey(checkIn: CheckInResult) {
   const createdAtDate = new Date(checkIn.createdAt);
 
   if (!Number.isNaN(createdAtDate.getTime())) {
-    return toDateKey(createdAtDate);
+    return toCheckInDateKey(createdAtDate);
   }
 
-  return checkIn.checkInDate ?? toDateKey(new Date());
+  return checkIn.checkInDate ?? toCheckInDateKey(new Date());
 }
 
 function buildPrescription(
