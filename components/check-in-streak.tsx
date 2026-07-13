@@ -6,13 +6,13 @@ import { CheckCircle2, Flame, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getCheckInDateKey, getCheckIns } from "@/lib/alignment";
 import { toDateKey } from "@/lib/date-key";
-import { useCurrentDateKey } from "@/lib/use-current-date-key";
+import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import type { CheckInResult } from "@/lib/types";
 
 const milestones = [3, 7, 14, 30];
 
 export function CheckInStreak() {
-  const todayKey = useCurrentDateKey();
+  const todayKey = useCurrentCheckInDateKey();
   const [checkIns, setCheckIns] = useState<CheckInResult[]>([]);
 
   useEffect(() => {

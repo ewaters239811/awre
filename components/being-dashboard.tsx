@@ -118,14 +118,17 @@ export function BeingDashboard() {
       signal: controller.signal,
     })
       .then((response) => response.json())
-      .then((payload: { data?: BeingDashboardAnalysis }) => {
+      .then((payload: { enabled?: boolean; data?: BeingDashboardAnalysis }) => {
         const nextAnalysis = payload.data ?? dashboard.localAnalysis;
         setAnalysis(nextAnalysis);
-        saveCachedAnalysis({
-          signature,
-          analysis: nextAnalysis,
-          createdAt: new Date().toISOString(),
-        });
+
+        if (payload.enabled !== false && payload.data) {
+          saveCachedAnalysis({
+            signature,
+            analysis: nextAnalysis,
+            createdAt: new Date().toISOString(),
+          });
+        }
       })
       .catch(() => setAnalysis(dashboard.localAnalysis))
       .finally(() => setIsReading(false));
@@ -895,7 +898,7 @@ function buildAnalysisSignature(
   const journalSignal = journalEntries
     .slice(0, 12)
     .map((entry) =>
-      [entry.id, entry.date, entry.updatedAt, entry.content.trim()].join("|"),
+      [entry.id, entry.date, entry.content.trim()].join("|"),
     )
     .join("::");
   const profileSignal = onboardingProfile
@@ -907,7 +910,6 @@ function buildAnalysisSignature(
         onboardingProfile.spiritualOpenness,
         onboardingProfile.commitmentLevel,
         onboardingProfile.guidanceTone,
-        onboardingProfile.updatedAt,
       ].join("|")
     : "no-profile";
 

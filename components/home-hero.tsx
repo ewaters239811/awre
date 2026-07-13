@@ -16,6 +16,7 @@ import {
   getJournalEntries,
   getJournalEntryForDate,
 } from "@/lib/journal-storage";
+import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
 import type { CheckInResult, JournalEntry } from "@/lib/types";
 
@@ -37,7 +38,8 @@ type HomeState = {
 };
 
 export function HomeHero() {
-  const today = useCurrentDateKey();
+  const checkInToday = useCurrentCheckInDateKey();
+  const calendarToday = useCurrentDateKey();
   const [state, setState] = useState<HomeState>({
     user: null,
     latestCheckIn: null,
@@ -58,8 +60,8 @@ export function HomeHero() {
           setState({
             user,
             latestCheckIn: getLatestCheckIn(),
-            todaysCheckIn: getCheckInForDate(today),
-            todaysJournal: getJournalEntryForDate(today),
+            todaysCheckIn: getCheckInForDate(checkInToday),
+            todaysJournal: getJournalEntryForDate(calendarToday),
             totalCheckIns: getCheckIns().length,
             totalJournals: getJournalEntries().length,
           });
@@ -76,7 +78,7 @@ export function HomeHero() {
       cancelled = true;
       window.removeEventListener(CHECK_INS_CHANGED_EVENT, refreshHomeState);
     };
-  }, [today]);
+  }, [checkInToday, calendarToday]);
 
   if (!loaded || !state.user) {
     return <PublicHomeHero />;

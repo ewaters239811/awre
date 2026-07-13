@@ -12,6 +12,7 @@ import { buildAiReadingSignature } from "@/lib/ai-reading-signature";
 import { getCheckInDateKey, getCheckIns, updateCheckIn } from "@/lib/alignment";
 import { getJournalEntries } from "@/lib/journal-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
+import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
 import type { CheckInResult, JournalEntry, PillarName } from "@/lib/types";
 
@@ -22,7 +23,8 @@ export default function ReviewPage() {
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [aiStatus, setAiStatus] = useState<AiStatus>("idle");
   const requestedAiFor = useRef<string | null>(null);
-  const todayKey = useCurrentDateKey();
+  const checkInTodayKey = useCurrentCheckInDateKey();
+  const calendarTodayKey = useCurrentDateKey();
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -32,10 +34,12 @@ export default function ReviewPage() {
   }, []);
 
   const todayCheckIns = checkIns.filter(
-    (item) => getCheckInDateKey(item) === todayKey,
+    (item) => getCheckInDateKey(item) === checkInTodayKey,
   );
   const latestTodayCheckIn = todayCheckIns[0] ?? null;
-  const todayJournal = journalEntries.find((entry) => entry.date === todayKey);
+  const todayJournal = journalEntries.find(
+    (entry) => entry.date === calendarTodayKey,
+  );
   const report = buildTodayReport(latestTodayCheckIn, todayJournal);
 
   useEffect(() => {

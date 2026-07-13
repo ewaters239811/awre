@@ -13,6 +13,7 @@ import {
   getJournalEntryForDate,
   saveJournalEntry,
 } from "@/lib/journal-storage";
+import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
 import type { JournalEntry } from "@/lib/types";
 
@@ -44,6 +45,7 @@ type SpeechWindow = Window & {
 
 export default function RitualPage() {
   const today = useCurrentDateKey();
+  const checkInToday = useCurrentCheckInDateKey();
   const [entry, setEntry] = useState<JournalEntry | null>(null);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [saved, setSaved] = useState(false);
@@ -137,7 +139,7 @@ export default function RitualPage() {
   }
 
   const recentEntries = entries.filter((item) => item.id !== entry.id).slice(0, 4);
-  const checkedInToday = Boolean(getCheckInForDate(today));
+  const checkedInToday = Boolean(getCheckInForDate(checkInToday));
   const wordCount = entry.content.trim()
     ? entry.content.trim().split(/\s+/).length
     : 0;

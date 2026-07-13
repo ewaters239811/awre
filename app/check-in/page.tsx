@@ -17,7 +17,7 @@ import {
   saveCheckIn,
 } from "@/lib/alignment";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
-import { useCurrentDateKey } from "@/lib/use-current-date-key";
+import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import type { CheckInDraft, CheckInResult, OnboardingProfile } from "@/lib/types";
 
 const initialDraft: CheckInDraft = {
@@ -35,7 +35,7 @@ const crisisPattern =
 
 export default function CheckInPage() {
   const router = useRouter();
-  const todayKey = useCurrentDateKey();
+  const todayKey = useCurrentCheckInDateKey();
   const [draft, setDraft] = useState<CheckInDraft>(initialDraft);
   const [error, setError] = useState("");
   const [supportMessage, setSupportMessage] = useState(false);

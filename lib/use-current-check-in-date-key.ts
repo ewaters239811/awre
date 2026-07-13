@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { toDateKey } from "@/lib/date-key";
+import { toCheckInDateKey } from "@/lib/date-key";
 
-export function useCurrentDateKey() {
-  const [dateKey, setDateKey] = useState(() => toDateKey(new Date()));
+export function useCurrentCheckInDateKey() {
+  const [dateKey, setDateKey] = useState(() => toCheckInDateKey(new Date()));
 
   useEffect(() => {
-    const refreshDateKey = () => setDateKey(toDateKey(new Date()));
+    const refreshDateKey = () => setDateKey(toCheckInDateKey(new Date()));
     const intervalId = window.setInterval(refreshDateKey, 60_000);
 
     window.addEventListener("focus", refreshDateKey);

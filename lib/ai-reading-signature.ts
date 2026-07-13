@@ -25,7 +25,7 @@ export function buildAiReadingSignature({
   const journalSignal = journalEntries
     .slice(0, 8)
     .map((entry) =>
-      [entry.id, entry.date, entry.updatedAt, entry.content.trim()].join("|"),
+      [entry.id, entry.date, entry.content.trim()].join("|"),
     )
     .join("::");
 
@@ -38,7 +38,6 @@ export function buildAiReadingSignature({
         onboardingProfile.spiritualOpenness,
         onboardingProfile.commitmentLevel,
         onboardingProfile.guidanceTone,
-        onboardingProfile.updatedAt,
       ].join("|")
     : "no-profile";
 
