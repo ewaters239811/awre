@@ -52,26 +52,26 @@ export function AmbientNoise() {
 
     const context = new AudioContextConstructor();
     const masterGain = context.createGain();
-    masterGain.gain.value = 0.055;
+    masterGain.gain.value = 0.026;
     masterGain.connect(context.destination);
 
     const padGain = context.createGain();
-    padGain.gain.value = 0.56;
+    padGain.gain.value = 0.48;
     padGain.connect(masterGain);
 
     const shimmerGain = context.createGain();
-    shimmerGain.gain.value = 0.16;
+    shimmerGain.gain.value = 0.055;
     shimmerGain.connect(masterGain);
 
     const airGain = context.createGain();
-    airGain.gain.value = 0.045;
+    airGain.gain.value = 0.018;
     airGain.connect(masterGain);
 
     const breathLfo = context.createOscillator();
     const breathGain = context.createGain();
     breathLfo.type = "sine";
     breathLfo.frequency.value = 0.045;
-    breathGain.gain.value = 0.006;
+    breathGain.gain.value = 0.0025;
     breathLfo.connect(breathGain);
     breathGain.connect(masterGain.gain);
     breathLfo.start();
@@ -90,7 +90,7 @@ export function AmbientNoise() {
     const output = buffer.getChannelData(0);
 
     for (let index = 0; index < bufferSize; index += 1) {
-      output[index] = (Math.random() * 2 - 1) * 0.09;
+      output[index] = (Math.random() * 2 - 1) * 0.045;
     }
 
     const airSource = context.createBufferSource();
@@ -110,7 +110,7 @@ export function AmbientNoise() {
 
       oscillator.type = "sine";
       oscillator.frequency.value = frequency;
-      toneGain.gain.value = index === 0 ? 0.26 : 0.13;
+      toneGain.gain.value = index === 0 ? 0.18 : 0.08;
       lfo.type = "sine";
       lfo.frequency.value = 0.035 + index * 0.012;
       lfoGain.gain.value = 0.035;
@@ -138,8 +138,8 @@ export function AmbientNoise() {
       oscillator.frequency.value = frequency;
       toneGain.gain.setValueAtTime(0.0001, context.currentTime);
       toneGain.gain.linearRampToValueAtTime(
-        index === 0 ? 0.055 : 0.035,
-        context.currentTime + 5,
+        index === 0 ? 0.024 : 0.014,
+        context.currentTime + 8,
       );
       oscillator.connect(toneGain);
       toneGain.connect(shimmerGain);
@@ -160,22 +160,22 @@ export function AmbientNoise() {
         oscillator.frequency.value = frequency;
         chimeGain.gain.setValueAtTime(0.0001, context.currentTime);
         chimeGain.gain.exponentialRampToValueAtTime(
-          index === 0 ? 0.07 : 0.035,
-          context.currentTime + 0.08,
+          index === 0 ? 0.022 : 0.011,
+          context.currentTime + 0.35,
         );
         chimeGain.gain.exponentialRampToValueAtTime(
           0.0001,
-          context.currentTime + 4.2,
+          context.currentTime + 7.8,
         );
         oscillator.connect(chimeGain);
         chimeGain.connect(shimmerGain);
         oscillator.start();
-        oscillator.stop(context.currentTime + 4.4);
+        oscillator.stop(context.currentTime + 8);
       });
     };
 
-    const chimeIntroTimer = window.setTimeout(playChime, 900);
-    const chimeTimer = window.setInterval(playChime, 14000);
+    const chimeIntroTimer = window.setTimeout(playChime, 18000);
+    const chimeTimer = window.setInterval(playChime, 52000);
 
     audioContext.current = context;
     stopHandles.current.push(() => {
@@ -213,7 +213,7 @@ export function AmbientNoise() {
   useEffect(() => {
     const savedChoice = localStorage.getItem(AUDIO_CHOICE_KEY);
 
-    if (savedChoice === "false") {
+    if (savedChoice !== "true") {
       queueMicrotask(() => setAudioState("muted"));
       return undefined;
     }
@@ -223,7 +223,7 @@ export function AmbientNoise() {
     });
 
     const unlockAudio = () => {
-      if (localStorage.getItem(AUDIO_CHOICE_KEY) !== "false") {
+      if (localStorage.getItem(AUDIO_CHOICE_KEY) === "true") {
         void startNoise();
       }
     };
@@ -249,8 +249,8 @@ export function AmbientNoise() {
           size="icon"
           className="h-11 w-11 rounded-full border border-primary/25 bg-background/75 shadow-2xl backdrop-blur-xl"
           onClick={muteNoise}
-          title="Mute meditation music"
-          aria-label="Mute meditation music"
+          title="Mute ambient sound"
+          aria-label="Mute ambient sound"
         >
           <Volume2 className="h-4 w-4 text-primary" />
         </Button>
@@ -258,13 +258,13 @@ export function AmbientNoise() {
         <Button
           type="button"
           variant="secondary"
-          className="h-11 rounded-full border border-primary/25 bg-background/75 px-4 text-xs uppercase tracking-[0.18em] shadow-2xl backdrop-blur-xl"
+          className="h-11 w-11 rounded-full border border-primary/25 bg-background/75 px-0 text-xs uppercase tracking-[0.18em] shadow-2xl backdrop-blur-xl lg:w-auto lg:px-4"
           onClick={enableNoise}
-          title="Enable meditation music"
-          aria-label="Enable meditation music"
+          title="Enable ambient sound"
+          aria-label="Enable ambient sound"
         >
-          <VolumeX className="mr-2 h-4 w-4 text-primary" />
-          Sound
+          <VolumeX className="h-4 w-4 text-primary lg:mr-2" />
+          <span className="hidden lg:inline">Ambient</span>
         </Button>
       )}
     </div>

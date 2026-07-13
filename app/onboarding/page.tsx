@@ -2,9 +2,8 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   getCurrentAccount,
@@ -44,11 +43,77 @@ const guidanceTones = [
   "Practical and concise",
 ];
 
+const steps = [
+  {
+    id: "primaryGoal",
+    kicker: "Question 01",
+    title: "What do you want?",
+    description:
+      "Write it plainly. It can be material, emotional, relational, spiritual, practical, or hard to explain.",
+  },
+  {
+    id: "currentChallenge",
+    kicker: "Question 02",
+    title: "What seems to be in the way?",
+    description:
+      "Name the pattern, pressure, fear, habit, delay, or situation that keeps appearing.",
+  },
+  {
+    id: "desiredState",
+    kicker: "Question 03",
+    title: "Who would you need to become to meet it?",
+    description:
+      "Think less about perfection and more about the state that could hold what you want.",
+  },
+  {
+    id: "practiceStyle",
+    kicker: "Question 04",
+    title: "How should the practice feel?",
+    description: "Choose the rhythm that would make this app easier to return to.",
+  },
+  {
+    id: "spiritualOpenness",
+    kicker: "Question 05",
+    title: "How mystical should the language feel?",
+    description:
+      "ClearPth can stay grounded, go deeper, or sit somewhere in between.",
+  },
+  {
+    id: "commitmentLevel",
+    kicker: "Question 06",
+    title: "What commitment level feels honest?",
+    description: "Choose what you can actually live with right now.",
+  },
+  {
+    id: "guidanceTone",
+    kicker: "Final Question",
+    title: "What tone helps you most?",
+    description:
+      "This shapes how direct, gentle, concise, or challenging the guidance feels.",
+  },
+] as const;
+
+type StepId = (typeof steps)[number]["id"];
+
+const placeholders: Record<
+  Extract<StepId, "primaryGoal" | "currentChallenge" | "desiredState">,
+  string
+> = {
+  primaryGoal:
+    "Example: more money, a better relationship, confidence, direction, peace, discipline, a new life...",
+  currentChallenge:
+    "Example: I keep delaying, I do not trust myself yet, I feel distracted, I am scared to ask...",
+  desiredState:
+    "Example: calm, confident, disciplined, secure, open, honest, courageous, self-respecting...",
+};
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<OnboardingProfile>(
     createEmptyOnboardingProfile(),
   );
+  const [stepIndex, setStepIndex] = useState(0);
+  const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
 
@@ -86,139 +151,174 @@ export default function OnboardingPage() {
     router.push("/check-in");
   };
 
+  const step = steps[stepIndex];
+  const isFinalStep = stepIndex === steps.length - 1;
+  const progress = ((stepIndex + 1) / steps.length) * 100;
+
+  const goNext = () => {
+    if (isFinalStep) return;
+    setError("");
+    setDirection("forward");
+    setStepIndex((current) => Math.min(current + 1, steps.length - 1));
+  };
+
+  const goBack = () => {
+    setError("");
+    setDirection("back");
+    setStepIndex((current) => Math.max(current - 1, 0));
+  };
+
   return (
-    <main className="container py-8 md:py-12">
-      <section className="mx-auto max-w-5xl">
-        <p className="clearpth-page-kicker">First Question</p>
+    <main className="container flex min-h-[calc(100dvh-10rem)] items-center py-6 md:min-h-[calc(100vh-5rem)] md:py-12">
+      <section className="mx-auto w-full max-w-3xl">
+        <p className="clearpth-page-kicker">Your Desired Reality</p>
         <h1 className="clearpth-page-title">Start With What You Want</h1>
         <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
           Say it plainly. ClearPth will help unpack the state, pattern, and next
           step underneath it.
         </p>
-      </section>
+        <form className="mt-8" onSubmit={submit}>
+          <section className="aura-glass overflow-hidden rounded-lg p-5 md:p-7">
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-xs uppercase tracking-[0.24em] text-primary">
+                {step.kicker}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {stepIndex + 1} / {steps.length}
+              </p>
+            </div>
 
-      <form className="mx-auto mt-8 grid max-w-5xl gap-5" onSubmit={submit}>
-        <OnboardingField
-          label="What do you want?"
-          value={profile.primaryGoal}
-          onChange={(value) => updateField("primaryGoal", value)}
-          placeholder="Write it simply. Example: more money, a better relationship, confidence, direction, peace, discipline, a new life..."
-        />
-        <OnboardingField
-          label="What seems to be in the way?"
-          value={profile.currentChallenge}
-          onChange={(value) => updateField("currentChallenge", value)}
-          placeholder="Name the recurring pattern, fear, habit, delay, or situation in plain language."
-        />
-        <OnboardingField
-          label="Who would you need to become to meet it?"
-          value={profile.desiredState}
-          onChange={(value) => updateField("desiredState", value)}
-          placeholder="Example: calm, confident, disciplined, secure, open, honest, courageous, self-respecting..."
-        />
+            <div className="mt-4 h-1 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
 
-        <section className="aura-glass rounded-lg p-5 md:p-6">
-          <div className="grid gap-5 md:grid-cols-2">
-            <SelectField
-              label="How should the practice feel?"
-              value={profile.practiceStyle}
-              options={practiceStyles}
-              onChange={(value) => updateField("practiceStyle", value)}
-            />
-            <SelectField
-              label="How much mystical language should it use?"
-              value={profile.spiritualOpenness}
-              options={spiritualOpenness}
-              onChange={(value) => updateField("spiritualOpenness", value)}
-            />
-            <SelectField
-              label="What commitment level feels honest?"
-              value={profile.commitmentLevel}
-              options={commitmentLevels}
-              onChange={(value) => updateField("commitmentLevel", value)}
-            />
-            <SelectField
-              label="What tone helps you most?"
-              value={profile.guidanceTone}
-              options={guidanceTones}
-              onChange={(value) => updateField("guidanceTone", value)}
-            />
+            <div
+              key={step.id}
+              className={`mt-8 animate-onboarding-${direction}`}
+            >
+              <h2 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">
+                {step.title}
+              </h2>
+              <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
+                {step.description}
+              </p>
+
+              <div className="mt-7">
+                <StepInput
+                  stepId={step.id}
+                  profile={profile}
+                  updateField={updateField}
+                />
+              </div>
+            </div>
+          </section>
+
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={stepIndex === 0}
+              onClick={goBack}
+            >
+              <ArrowLeft className="h-4 w-4" aria-hidden />
+              Back
+            </Button>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              {error ? <span className="text-sm text-primary">{error}</span> : null}
+              {saved ? (
+                <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                  <CheckCircle2 className="h-4 w-4" aria-hidden />
+                  Saved
+                </span>
+              ) : null}
+              {isFinalStep ? (
+                <Button type="submit" size="lg">
+                  Continue To Check In
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </Button>
+              ) : (
+                <Button type="button" size="lg" onClick={goNext}>
+                  Next
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </Button>
+              )}
+            </div>
           </div>
-        </section>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-muted-foreground">
+          <p className="mt-4 text-sm text-muted-foreground">
             Sign in to save this to your profile.
           </p>
-          <div className="flex items-center gap-3">
-            {error ? <span className="text-sm text-primary">{error}</span> : null}
-            {saved ? (
-              <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="h-4 w-4" aria-hidden />
-                Saved
-              </span>
-            ) : null}
-            <Button type="submit" size="lg">
-              Continue To Check In
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </Button>
-          </div>
-        </div>
-      </form>
+        </form>
+      </section>
     </main>
   );
 }
 
-function OnboardingField({
-  label,
-  value,
-  onChange,
-  placeholder,
+function StepInput({
+  stepId,
+  profile,
+  updateField,
 }: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
+  stepId: StepId;
+  profile: OnboardingProfile;
+  updateField: <K extends keyof OnboardingProfile>(
+    field: K,
+    value: OnboardingProfile[K],
+  ) => void;
 }) {
-  return (
-    <section className="aura-glass rounded-lg p-5 md:p-6">
-      <Label>{label}</Label>
+  if (
+    stepId === "primaryGoal" ||
+    stepId === "currentChallenge" ||
+    stepId === "desiredState"
+  ) {
+    return (
       <Textarea
-        className="mt-3"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        rows={3}
+        className="min-h-[180px] text-lg leading-8 md:min-h-[220px]"
+        value={profile[stepId]}
+        onChange={(event) => updateField(stepId, event.target.value)}
+        placeholder={placeholders[stepId]}
+        rows={5}
+        autoFocus
       />
-    </section>
-  );
-}
+    );
+  }
 
-function SelectField({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  options: string[];
-  onChange: (value: string) => void;
-}) {
+  const optionsByStep = {
+    practiceStyle: practiceStyles,
+    spiritualOpenness,
+    commitmentLevel: commitmentLevels,
+    guidanceTone: guidanceTones,
+  };
+
   return (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      <select
-        className="h-12 w-full rounded-md border border-input bg-card px-4 text-base text-foreground outline-none transition focus:ring-2 focus:ring-ring md:text-sm"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      >
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
+    <div className="grid gap-3">
+      {optionsByStep[stepId].map((option) => {
+        const selected = profile[stepId] === option;
+
+        return (
+          <button
+            key={option}
+            type="button"
+            onClick={() => updateField(stepId, option)}
+            className={`rounded-md border px-4 py-4 text-left text-base transition ${
+              selected
+                ? "border-primary/55 bg-primary/15 text-foreground"
+                : "border-border/70 bg-card/45 text-muted-foreground hover:border-foreground/35 hover:text-foreground"
+            }`}
+          >
+            <span className="flex items-center justify-between gap-3">
+              {option}
+              {selected ? (
+                <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden />
+              ) : null}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }

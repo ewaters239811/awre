@@ -245,6 +245,14 @@ textarea {
   background: linear-gradient(180deg, hsl(var(--primary)), rgba(184, 119, 79, 0.65), hsl(var(--primary)));
 }
 
+.animate-onboarding-forward {
+  animation: onboarding-forward 420ms ease both;
+}
+
+.animate-onboarding-back {
+  animation: onboarding-back 420ms ease both;
+}
+
 @keyframes aura-drift {
   0% {
     transform: translate3d(-4%, -2%, 0) rotate(-3deg) scale(1);
@@ -260,5 +268,27 @@ textarea {
   }
   100% {
     transform: translate3d(-5%, -2%, 0) rotate(-2deg) scale(1);
+  }
+}
+
+@keyframes onboarding-forward {
+  0% {
+    opacity: 0;
+    transform: translateX(18px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes onboarding-back {
+  0% {
+    opacity: 0;
+    transform: translateX(-18px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
   }
 }
