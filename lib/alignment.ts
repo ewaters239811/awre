@@ -113,7 +113,13 @@ export function replaceCheckIns(results: CheckInResult[]) {
 }
 
 export function getCheckInDateKey(checkIn: CheckInResult) {
-  return checkIn.checkInDate ?? toDateKey(new Date(checkIn.createdAt));
+  const createdAtDate = new Date(checkIn.createdAt);
+
+  if (!Number.isNaN(createdAtDate.getTime())) {
+    return toDateKey(createdAtDate);
+  }
+
+  return checkIn.checkInDate ?? toDateKey(new Date());
 }
 
 function buildPrescription(

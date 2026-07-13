@@ -213,8 +213,10 @@ async function getCurrentUserId() {
 }
 
 function normalizeCheckIn(checkIn: CheckInResult): CheckInResult {
+  const checkInDate = getCheckInDateKey(checkIn);
+
   return {
     ...checkIn,
-    checkInDate: getCheckInDateKey(checkIn),
+    checkInDate,
   };
 }
