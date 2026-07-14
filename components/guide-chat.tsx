@@ -9,6 +9,7 @@ import {
   createConversation,
   createUserMessage,
 } from "@/lib/guide-storage";
+import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import type { GuideConversation } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -98,6 +99,7 @@ export function GuideChat() {
             role: message.role,
             content: message.content,
           })),
+          onboardingProfile: getOnboardingProfile(),
         }),
       });
       const payload = (await response.json()) as {

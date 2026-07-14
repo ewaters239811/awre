@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { buildPersonalizationLens } from "@/lib/personalization-lens";
 import { createJsonWithOpenAI } from "@/lib/server/openai";
 import type {
   BeingDashboardAnalysis,
@@ -33,6 +34,8 @@ const fallback: BeingDashboardAnalysis = {
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as AnalysisRequest;
+    const onboardingProfile = body.onboardingProfile ?? null;
+    const personalizationLens = buildPersonalizationLens(onboardingProfile);
 
     const response = await createJsonWithOpenAI<BeingDashboardAnalysis>({
       fallback,
@@ -40,6 +43,7 @@ export async function POST(request: Request) {
         "You write for ClearPth, a self-reflection and personal growth app.",
         "Create a depth analysis of the user's Being using their check-ins, journal entries, and computed metrics.",
         "If an onboarding profile is provided, use it to interpret the user's stated goal, repeated challenge, desired state, preferred tone, commitment level, and spiritual openness.",
+        "If a private personalization lens is provided, use it only to subtly tune rhythm, growth edge, and practice style. Never mention numbers, calculations, birthdays, numerology, or that a hidden lens is being used.",
         "You are grounded in anthroposophy, esotericism, Christian mysticism, theosophy, Rosicrucianism, and neuroscience, but you must avoid inflated claims.",
         "Use Jungian psychology as a practical depth lens: notice shadow patterns, projection, persona maintenance, repeated emotional charges, and what wants integration.",
         "When reading goals or repeated frustrations, infer the deeper feeling, identity, or inner state the user may be seeking beneath the outer circumstance.",
@@ -59,7 +63,8 @@ export async function POST(request: Request) {
       ].join(" "),
       user: {
         metrics: body.metrics,
-        onboardingProfile: body.onboardingProfile ?? null,
+        onboardingProfile,
+        personalizationLens,
         recentCheckIns: (body.checkIns ?? []).slice(0, 12).map((item) => ({
           createdAt: item.createdAt,
           thinkingScore: item.thinkingScore,

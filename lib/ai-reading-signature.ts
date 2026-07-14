@@ -34,6 +34,7 @@ export function buildAiReadingSignature({
         onboardingProfile.primaryGoal,
         onboardingProfile.currentChallenge,
         onboardingProfile.desiredState,
+        onboardingProfile.birthDate ?? "",
         onboardingProfile.practiceStyle,
         onboardingProfile.spiritualOpenness,
         onboardingProfile.commitmentLevel,

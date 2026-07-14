@@ -906,6 +906,7 @@ function buildAnalysisSignature(
         onboardingProfile.primaryGoal,
         onboardingProfile.currentChallenge,
         onboardingProfile.desiredState,
+        onboardingProfile.birthDate ?? "",
         onboardingProfile.practiceStyle,
         onboardingProfile.spiritualOpenness,
         onboardingProfile.commitmentLevel,

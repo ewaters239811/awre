@@ -75,6 +75,7 @@ export type OnboardingProfile = {
   primaryGoal: string;
   currentChallenge: string;
   desiredState: string;
+  birthDate?: string;
   practiceStyle: string;
   spiritualOpenness: string;
   commitmentLevel: string;

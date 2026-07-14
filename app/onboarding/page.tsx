@@ -66,21 +66,28 @@ const steps = [
       "Think less about perfection and more about the state that could hold what you want.",
   },
   {
-    id: "practiceStyle",
+    id: "birthDate",
     kicker: "Question 04",
+    title: "When were you born?",
+    description:
+      "This helps ClearPth tune the rhythm of your reflections. You can leave it blank if you prefer.",
+  },
+  {
+    id: "practiceStyle",
+    kicker: "Question 05",
     title: "How should the practice feel?",
     description: "Choose the rhythm that would make this app easier to return to.",
   },
   {
     id: "spiritualOpenness",
-    kicker: "Question 05",
+    kicker: "Question 06",
     title: "How mystical should the language feel?",
     description:
       "ClearPth can stay grounded, go deeper, or sit somewhere in between.",
   },
   {
     id: "commitmentLevel",
-    kicker: "Question 06",
+    kicker: "Question 07",
     title: "What commitment level feels honest?",
     description: "Choose what you can actually live with right now.",
   },
@@ -116,6 +123,7 @@ export default function OnboardingPage() {
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const [finalChoiceConfirmed, setFinalChoiceConfirmed] = useState(false);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -129,11 +137,20 @@ export default function OnboardingPage() {
   ) => {
     setSaved(false);
     setError("");
+    if (field === "guidanceTone") {
+      setFinalChoiceConfirmed(true);
+    }
     setProfile((current) => ({ ...current, [field]: value }));
   };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (!finalChoiceConfirmed) {
+      setError("Choose the tone that helps you most before continuing.");
+      return;
+    }
+
     const account = await getCurrentAccount();
     if (!account) {
       setError("Sign in or create an account to save what you want.");
@@ -165,6 +182,7 @@ export default function OnboardingPage() {
   const goBack = () => {
     setError("");
     setDirection("back");
+    setFinalChoiceConfirmed(false);
     setStepIndex((current) => Math.max(current - 1, 0));
   };
 
@@ -236,7 +254,11 @@ export default function OnboardingPage() {
                 </span>
               ) : null}
               {isFinalStep ? (
-                <Button type="submit" size="lg">
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={!finalChoiceConfirmed}
+                >
                   Continue To Check In
                   <ArrowRight className="h-4 w-4" aria-hidden />
                 </Button>
@@ -284,6 +306,20 @@ function StepInput({
         rows={5}
         autoFocus
       />
+    );
+  }
+
+  if (stepId === "birthDate") {
+    return (
+      <label className="block text-sm font-medium text-muted-foreground">
+        Birthday
+        <input
+          className="mt-3 h-14 w-full rounded-md border border-input bg-card px-4 text-base text-foreground outline-none transition focus:ring-2 focus:ring-ring"
+          type="date"
+          value={profile.birthDate ?? ""}
+          onChange={(event) => updateField("birthDate", event.target.value)}
+        />
+      </label>
     );
   }
 

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { buildPersonalizationLens } from "@/lib/personalization-lens";
 import { createJsonWithOpenAI } from "@/lib/server/openai";
 import type { AiAlignment, CheckInResult, OnboardingProfile } from "@/lib/types";
 
@@ -34,6 +35,7 @@ export async function POST(request: Request) {
       "recentJournalEntries" in body ? body.recentJournalEntries ?? [] : [];
     const onboardingProfile =
       "onboardingProfile" in body ? body.onboardingProfile ?? null : null;
+    const personalizationLens = buildPersonalizationLens(onboardingProfile);
 
     if (!result) {
       return NextResponse.json(
@@ -52,6 +54,7 @@ export async function POST(request: Request) {
         "Look for the root issue beneath the user's surface answers: the desired feeling, identity, shadow pattern, projection, unmet need, or avoided inner shift.",
         "If recent journal entries are provided, use them as private context for repeated patterns, emotional charges, avoided actions, and root issue clues.",
         "If an onboarding profile is provided, use it to calibrate the user's goal, preferred tone, commitment level, desired state, and comfort with mystical language.",
+        "If a private personalization lens is provided, use it only to subtly tune rhythm, growth edge, and practice style. Never mention numbers, calculations, birthdays, numerology, or that a hidden lens is being used.",
         "Do not quote journal entries at length. Distill them into the current check-in reading.",
         "Use Jungian psychology lightly as a lens for integration, shadow, persona, projection, and self-recognition without sounding academic.",
         "Frame manifestation as becoming emotionally independent from outer confirmation: the user practices the state they seek before reality visibly changes.",
@@ -77,6 +80,7 @@ export async function POST(request: Request) {
         currentFeeling: result.currentFeeling,
         highestBeingChoice: result.highestBeingChoice,
         onboardingProfile,
+        personalizationLens,
         recentJournalEntries: recentJournalEntries
           .filter((entry) => entry.content.trim())
           .slice(0, 8),

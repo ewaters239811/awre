@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { buildPersonalizationLens } from "@/lib/personalization-lens";
 import { createJsonWithOpenAI } from "@/lib/server/openai";
+import type { OnboardingProfile } from "@/lib/types";
 
 type ChatMessage = {
   role: "user" | "assistant";
@@ -8,6 +10,7 @@ type ChatMessage = {
 
 type GuideRequest = {
   messages?: ChatMessage[];
+  onboardingProfile?: OnboardingProfile | null;
 };
 
 type GuideResponse = {
@@ -37,6 +40,9 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as GuideRequest;
     const messages = body.messages ?? [];
+    const personalizationLens = buildPersonalizationLens(
+      body.onboardingProfile ?? null,
+    );
     const latestUserMessage =
       [...messages].reverse().find((message) => message.role === "user")
         ?.content ?? "";
@@ -83,7 +89,8 @@ export async function POST(request: Request) {
         "If the user is simply greeting you, respond warmly and naturally like a normal conversation. Do not analyze, prescribe, or force the ClearPth model until the user names something real they want help with.",
         "If the user's message is casual, unclear, or very short, ask a gentle conversational question before giving advice.",
         "Use only the current chat conversation as user-specific context.",
-        "Do not use, mention, or infer details from check-ins, journal entries, onboarding answers, saved history, or any private profile context.",
+        "Do not use, mention, or infer details from check-ins, journal entries, saved history, goals, or onboarding answers in the chat.",
+        "If a private personalization lens is provided, use it only to subtly tune rhythm, growth edge, and practice style. Never mention numbers, calculations, birthdays, numerology, or that a hidden lens is being used.",
         "Do not introduce personal facts, relationships, plans, events, or previous situations unless the user explicitly wrote them in the current chat.",
         "If the user's prompt is broad, respond to the broad prompt. Ask one natural question if more context would help.",
         "When the user names an external desire, problem, or goal, look beneath it for the inner state, unmet feeling, identity shift, projection, or shadow pattern that may be driving it.",
@@ -107,6 +114,7 @@ export async function POST(request: Request) {
       ].join(" "),
       user: {
         conversation: messages.slice(-10),
+        personalizationLens,
       },
     });
 

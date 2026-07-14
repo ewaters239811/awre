@@ -10,6 +10,7 @@ export function createEmptyOnboardingProfile(): OnboardingProfile {
     primaryGoal: "",
     currentChallenge: "",
     desiredState: "",
+    birthDate: "",
     practiceStyle: "Balanced reflection and action",
     spiritualOpenness: "Open, but keep it grounded",
     commitmentLevel: "A few minutes most days",
