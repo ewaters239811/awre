@@ -76,7 +76,7 @@ body {
 
 @media (max-width: 1023px) {
   body {
-    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(5.75rem + env(safe-area-inset-bottom));
     background-attachment: scroll;
   }
 }
@@ -179,7 +179,18 @@ html.light .aura-glass::before {
 }
 
 .clearpth-page-title {
-  @apply mt-3 font-serif text-3xl font-semibold leading-[1.08] tracking-normal sm:text-5xl;
+  @apply mt-3 font-serif text-[2.35rem] font-semibold leading-[1.02] tracking-normal sm:text-5xl;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .aura-glass {
+    box-shadow: 0 18px 46px rgba(34, 36, 25, 0.13);
+  }
 }
 
 input,

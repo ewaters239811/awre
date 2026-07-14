@@ -89,26 +89,26 @@ export function HomeHero() {
 
 function PublicHomeHero() {
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-3xl pt-2 md:pt-0">
       <p className="mb-4 text-xs uppercase tracking-[0.24em] text-primary sm:text-sm sm:tracking-[0.28em]">
         ClearPth
       </p>
-      <h1 className="font-serif text-4xl font-semibold leading-[1.02] text-foreground sm:text-7xl lg:text-8xl">
+      <h1 className="font-serif text-5xl font-semibold leading-[0.98] text-foreground sm:text-7xl lg:text-8xl">
         What do you want?
       </h1>
       <div className="aura-luxury-line mt-6 max-w-lg" />
-      <p className="mt-5 max-w-2xl text-base leading-7 text-foreground/86 sm:mt-6 sm:text-2xl sm:leading-9">
+      <p className="mt-5 max-w-2xl text-[15px] leading-7 text-foreground/86 sm:mt-6 sm:text-2xl sm:leading-9">
         Say it plainly. ClearPth helps unpack the thoughts, feelings, and
         avoided actions around it, then turns that desire into a clearer state
         and next step.
       </p>
-      <Button asChild size="lg" className="mt-8">
+      <Button asChild size="lg" className="mt-7 w-full sm:w-auto">
         <Link href="/onboarding">
           Answer The Question
           <ArrowRight className="h-4 w-4" aria-hidden />
         </Link>
       </Button>
-      <div className="mt-6 flex flex-wrap gap-2">
+      <div className="mt-5 flex flex-wrap gap-2">
         {["answer one question", "unpack the pattern", "choose the next step"].map(
           (item) => (
             <span
@@ -140,19 +140,19 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
     : "Begin Today";
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-3xl pt-2 md:pt-0">
       <p className="mb-4 text-xs uppercase tracking-[0.24em] text-primary sm:text-sm sm:tracking-[0.28em]">
         Welcome Back
       </p>
-      <h1 className="font-serif text-4xl font-semibold leading-[1.04] text-foreground sm:text-6xl lg:text-7xl">
+      <h1 className="font-serif text-4xl font-semibold leading-[1.02] text-foreground sm:text-6xl lg:text-7xl">
         Hi {firstName}. Good to see you.
       </h1>
       <div className="aura-luxury-line mt-6 max-w-lg" />
-      <p className="mt-5 max-w-2xl text-base leading-7 text-foreground/86 sm:mt-6 sm:text-2xl sm:leading-9">
+      <p className="mt-5 max-w-2xl text-[15px] leading-7 text-foreground/86 sm:mt-6 sm:text-2xl sm:leading-9">
         {buildHomeMessage(state)}
       </p>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-3">
+      <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
         <PersonalStat
           icon={<Sparkles className="h-4 w-4" aria-hidden />}
           label="Last score"
@@ -183,13 +183,13 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
       </div>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <Button asChild size="lg">
+        <Button asChild size="lg" className="w-full sm:w-auto">
           <Link href={nextHref}>
             {nextLabel}
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </Button>
-        <Button asChild variant="secondary" size="lg">
+        <Button asChild variant="secondary" size="lg" className="w-full sm:w-auto">
           <Link href="/dashboard">See Patterns</Link>
         </Button>
       </div>
@@ -217,12 +217,16 @@ function PersonalStat({
   value: string;
 }) {
   return (
-    <article className="rounded-md border border-border/70 bg-card/55 p-4">
+    <article className="rounded-lg border border-border/70 bg-card/55 p-3 sm:p-4">
       <div className="flex items-center gap-2 text-muted-foreground">
         {icon}
-        <p className="text-xs uppercase tracking-[0.18em]">{label}</p>
+        <p className="text-[10px] uppercase tracking-[0.14em] sm:text-xs sm:tracking-[0.18em]">
+          {label}
+        </p>
       </div>
-      <p className="mt-3 text-lg font-medium text-foreground">{value}</p>
+      <p className="mt-2 text-sm font-medium text-foreground sm:mt-3 sm:text-lg">
+        {value}
+      </p>
     </article>
   );
 }

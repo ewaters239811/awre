@@ -28,8 +28,8 @@ export function AuthChoicePrompt() {
   if (!showPrompt || pathname === "/login") return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-24 z-[60] px-4 sm:bottom-6 lg:bottom-4">
-      <section className="aura-glass mx-auto max-w-2xl rounded-lg p-4 shadow-2xl sm:p-5">
+    <div className="fixed inset-x-0 top-20 z-[60] px-4 sm:bottom-6 sm:top-auto lg:bottom-4">
+      <section className="aura-glass mx-auto max-w-2xl rounded-2xl p-4 shadow-2xl sm:rounded-lg sm:p-5">
         <p className="text-xs uppercase tracking-[0.24em] text-primary">
           Begin Your Record
         </p>

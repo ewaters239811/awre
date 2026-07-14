@@ -241,7 +241,7 @@ export function AmbientNoise() {
   }, [startNoise, stopNoise]);
 
   return (
-    <div className="fixed bottom-24 right-4 z-30 lg:bottom-4 lg:z-50">
+    <div className="fixed right-16 top-2.5 z-50 lg:bottom-4 lg:right-4 lg:top-auto">
       {audioState === "playing" ? (
         <Button
           type="button"

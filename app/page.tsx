@@ -27,16 +27,16 @@ const benefits = [
 export default function HomePage() {
   return (
     <main>
-      <section className="container grid min-h-[calc(100dvh-9rem)] items-center gap-8 py-6 md:min-h-[calc(100vh-5rem)] md:grid-cols-[1.05fr_0.95fr] md:gap-12 md:py-16">
+      <section className="container grid min-h-[calc(100dvh-8rem)] items-start gap-5 py-5 md:min-h-[calc(100vh-5rem)] md:grid-cols-[1.05fr_0.95fr] md:items-center md:gap-12 md:py-16">
         <HomeHero />
 
-        <div className="aura-glass rounded-lg p-5 md:p-6">
+        <div className="aura-glass rounded-xl p-4 md:rounded-lg md:p-6">
           <div className="relative overflow-hidden rounded-md border border-border bg-card p-5">
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-[#c48b5f] to-primary" />
             <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
               How It Works
             </p>
-            <p className="mt-2 font-serif text-4xl font-semibold leading-tight text-foreground">
+            <p className="mt-2 font-serif text-3xl font-semibold leading-tight text-foreground md:text-4xl">
               Want becomes direction.
             </p>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -58,14 +58,14 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-          <div className="mt-5 grid gap-4">
+          <div className="mt-4 grid gap-3 md:mt-5 md:gap-4">
             {benefits.map((benefit) => (
               <BenefitCard key={benefit.title} {...benefit} />
             ))}
           </div>
         </div>
       </section>
-      <section className="container pb-12">
+      <section className="container pb-8 md:pb-12">
         <CheckInStreak />
       </section>
     </main>

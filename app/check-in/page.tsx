@@ -115,17 +115,17 @@ export default function CheckInPage() {
   };
 
   return (
-    <main className="container py-8 md:py-12">
+    <main className="container py-5 md:py-12">
       <div className="mx-auto max-w-5xl">
         <p className="clearpth-page-kicker">Daily Check In</p>
         <h1 className="clearpth-page-title">
           What Is Between You And What You Want?
         </h1>
-        <p className="mt-4 max-w-2xl text-muted-foreground">
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:mt-4 md:text-base">
           ClearPth reads today through your thoughts, actions, and feelings,
           then turns the pattern into one clearer next step.
         </p>
-        <div className="mt-6">
+        <div className="mt-5 md:mt-6">
           <DailyFlow
             checkedIn={Boolean(todaysCheckIn)}
             readToday={Boolean(todaysCheckIn)}
@@ -134,7 +134,7 @@ export default function CheckInPage() {
         </div>
 
         {profile?.primaryGoal.trim() ? (
-          <section className="aura-glass mt-6 rounded-lg p-5">
+          <section className="aura-glass mt-5 rounded-xl p-4 md:mt-6 md:rounded-lg md:p-5">
             <p className="text-xs uppercase tracking-[0.24em] text-primary">
               What You Want
             </p>
@@ -145,7 +145,7 @@ export default function CheckInPage() {
         ) : null}
 
         {!hasProfile ? (
-          <section className="aura-glass mt-6 rounded-lg p-5">
+          <section className="aura-glass mt-5 rounded-xl p-4 md:mt-6 md:rounded-lg md:p-5">
             <p className="text-xs uppercase tracking-[0.24em] text-primary">
               First Question
             </p>
@@ -193,7 +193,7 @@ export default function CheckInPage() {
             </div>
           </section>
         ) : (
-        <form className="mt-8 space-y-5" onSubmit={submit}>
+        <form className="mt-6 space-y-4 md:mt-8 md:space-y-5" onSubmit={submit}>
           <CheckInGate
             eyebrow="Gate 01"
             title="Scores"
@@ -296,9 +296,9 @@ export default function CheckInPage() {
             <p className="text-sm text-muted-foreground">
               Sign in to save your check-in to your profile.
             </p>
-            <Button type="submit" size="lg" className="w-full sm:w-auto">
-              Reveal My Alignment
-            </Button>
+              <Button type="submit" size="lg" className="w-full sm:w-auto">
+                Reveal My Alignment
+              </Button>
           </div>
         </form>
         )}
@@ -321,8 +321,8 @@ function CheckInGate({
   children: ReactNode;
 }) {
   return (
-    <section className="aura-glass rounded-lg p-5 md:p-6">
-      <div className="grid gap-5 md:grid-cols-[0.75fr_1.25fr] md:items-start">
+    <section className="aura-glass rounded-xl p-4 md:rounded-lg md:p-6">
+      <div className="grid gap-4 md:grid-cols-[0.75fr_1.25fr] md:items-start md:gap-5">
         <div>
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-md border border-primary/25 bg-primary/10 text-primary">
@@ -332,12 +332,14 @@ function CheckInGate({
               {eyebrow}
             </p>
           </div>
-          <h2 className="mt-4 font-serif text-3xl font-semibold">{title}</h2>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+          <h2 className="mt-3 font-serif text-2xl font-semibold md:mt-4 md:text-3xl">
+            {title}
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground md:mt-3">
             {description}
           </p>
         </div>
-        <div className="rounded-md border border-border/55 bg-card/55 p-4">
+        <div className="rounded-lg border border-border/55 bg-card/55 p-3 sm:p-4">
           {children}
         </div>
       </div>
