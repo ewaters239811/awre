@@ -140,21 +140,20 @@ export function GuideChat() {
 
   return (
     <section className="mx-auto max-w-5xl md:mt-8">
-      <div className="flex min-h-[calc(100dvh-9.5rem)] flex-col overflow-hidden rounded-none border-border/60 bg-transparent md:aura-glass md:min-h-[680px] md:rounded-lg">
-        <div className="border-b border-border/60 px-1 py-4 md:p-5">
-          <p className="text-xs uppercase tracking-[0.24em] text-primary">
+      <div className="flex min-h-[calc(100dvh-8.75rem)] flex-col overflow-hidden rounded-none border-border/60 bg-transparent md:aura-glass md:min-h-[680px] md:rounded-lg">
+        <div className="border-b border-border/60 pb-4 pt-2 md:p-5">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
             Guide
           </p>
-          <h1 className="mt-2 font-serif text-2xl font-semibold md:text-4xl">
-            Talk Through What&apos;s On Your Mind
+          <h1 className="mt-1 font-serif text-[2rem] font-semibold leading-tight md:mt-2 md:text-4xl">
+            What&apos;s on your mind?
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Bring whatever feels present: a want, a mood, a decision, a delay,
-            or a thought that keeps repeating.
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground md:mt-3">
+            Talk through a want, mood, decision, delay, or repeating thought.
           </p>
         </div>
 
-        <div className="min-h-[320px] flex-1 space-y-4 overflow-y-auto px-1 py-4 md:max-h-[58vh] md:min-h-[420px] md:p-5">
+        <div className="min-h-[300px] flex-1 space-y-3 overflow-y-auto py-4 md:max-h-[58vh] md:min-h-[420px] md:space-y-4 md:p-5">
           {activeConversation?.messages.map((message) => (
             <div
               key={message.createdAt}
@@ -165,7 +164,7 @@ export function GuideChat() {
             >
               <div
                 className={cn(
-                  "max-w-[92%] rounded-2xl border px-4 py-3 text-sm leading-6 shadow-sm sm:max-w-[85%] md:rounded-md",
+                  "max-w-[94%] rounded-2xl border px-4 py-3 text-[15px] leading-7 shadow-sm sm:max-w-[85%] md:rounded-md md:text-sm md:leading-6",
                   message.role === "user"
                     ? "border-foreground/25 bg-foreground text-background"
                     : "border-border/70 bg-card text-muted-foreground",
@@ -176,7 +175,7 @@ export function GuideChat() {
             </div>
           ))}
           {isSending ? (
-            <div className="max-w-[92%] rounded-2xl border border-border/70 bg-card px-4 py-3 text-sm text-muted-foreground sm:max-w-[85%] md:rounded-md">
+            <div className="max-w-[94%] rounded-2xl border border-border/70 bg-card px-4 py-3 text-sm text-muted-foreground sm:max-w-[85%] md:rounded-md">
               Thinking with you...
             </div>
           ) : null}
@@ -187,7 +186,7 @@ export function GuideChat() {
                   key={path.label}
                   type="button"
                   onClick={() => setInput(path.prompt)}
-                  className="rounded-md border border-border bg-card px-4 py-3 text-left text-sm leading-5 text-foreground transition hover:border-foreground/35 hover:bg-accent"
+                  className="rounded-2xl border border-border bg-card px-4 py-3 text-left text-sm leading-5 text-foreground transition hover:border-foreground/35 hover:bg-accent md:rounded-md"
                 >
                   {path.label}
                 </button>
@@ -195,13 +194,13 @@ export function GuideChat() {
             </div>
           ) : null}
           {shouldShowSuggestions ? (
-            <div className="flex flex-wrap gap-2 pt-1">
+            <div className="flex gap-2 overflow-x-auto pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {suggestedPrompts.map((prompt) => (
                 <button
                   key={prompt}
                   type="button"
                   onClick={() => setInput(prompt)}
-                  className="rounded-full border border-border bg-card px-3 py-2 text-left text-xs leading-5 text-foreground transition hover:border-foreground/35 hover:bg-accent"
+                  className="min-w-[13rem] rounded-full border border-border bg-card px-3 py-2 text-left text-xs leading-5 text-foreground transition hover:border-foreground/35 hover:bg-accent md:min-w-0"
                 >
                   {prompt}
                 </button>
@@ -212,15 +211,15 @@ export function GuideChat() {
         </div>
 
         <form
-          className="sticky bottom-0 border-t border-border/60 bg-background/92 px-1 py-3 backdrop-blur-xl md:bg-card/40 md:p-5"
+          className="sticky bottom-0 border-t border-border/60 bg-background/94 py-3 backdrop-blur-xl md:bg-card/40 md:p-5"
           onSubmit={sendMessage}
         >
           <Textarea
-            className="min-h-24 rounded-2xl md:rounded-md"
+            className="min-h-20 rounded-2xl text-[16px] leading-6 md:min-h-24 md:rounded-md"
             value={input}
             onChange={(event) => setInput(event.target.value)}
             placeholder="What is on your mind?"
-            rows={4}
+            rows={3}
           />
           <div className="mt-3 flex justify-end">
             <Button
@@ -234,7 +233,7 @@ export function GuideChat() {
               <Send className="h-4 w-4" aria-hidden />
             </Button>
           </div>
-          <p className="mt-3 text-xs leading-5 text-muted-foreground">
+          <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
             ClearPth is for reflection and personal growth, not crisis care,
             medical advice, therapy, or diagnosis.
           </p>

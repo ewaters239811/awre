@@ -112,17 +112,17 @@ export default function ReviewPage() {
   }, [latestTodayCheckIn]);
 
   return (
-    <main className="container py-8 md:py-12">
+    <main className="container py-6 md:py-12">
       <section className="mx-auto max-w-6xl">
-        <div className="flex flex-col gap-5 border-b border-border/60 pb-7 md:flex-row md:items-end md:justify-between">
+        <div className="flex flex-col gap-4 border-b border-border/60 pb-5 md:flex-row md:items-end md:justify-between md:pb-7">
           <div>
             <p className="clearpth-page-kicker">Today</p>
-            <h1 className="clearpth-page-title">Your Next Step Today</h1>
-            <p className="mt-4 max-w-2xl text-muted-foreground">
-              Close the gap between your current state and the life you want.
+            <h1 className="clearpth-page-title">Today&apos;s Gap</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:mt-4 md:text-base">
+              See how today&apos;s state relates to the life you already named.
             </p>
           </div>
-          <div className="flex items-center gap-3 rounded-md border border-border/60 bg-card/35 px-4 py-3 text-sm text-muted-foreground">
+          <div className="flex w-fit items-center gap-3 rounded-full border border-border/60 bg-card/45 px-4 py-2 text-xs text-muted-foreground md:rounded-md md:py-3 md:text-sm">
             <CalendarDays className="h-4 w-4 text-primary" aria-hidden />
             <span>{new Date().toLocaleDateString()}</span>
           </div>
@@ -137,8 +137,8 @@ export default function ReviewPage() {
         />
       </section>
 
-      <section className="mx-auto mt-6 max-w-6xl rounded-md border border-border/70 bg-card/30">
-        <div className="grid divide-y divide-border/60 md:grid-cols-4 md:divide-x md:divide-y-0">
+      <section className="mx-auto mt-5 max-w-6xl overflow-hidden rounded-2xl border border-border/70 bg-card/35 md:mt-6 md:rounded-md">
+        <div className="grid grid-cols-2 md:grid-cols-4">
           <ReviewStat
             label="Score Today"
             value={latestTodayCheckIn?.beingScore.toFixed(1) ?? "-"}
@@ -160,7 +160,7 @@ export default function ReviewPage() {
           <p className="text-xs uppercase tracking-[0.24em] text-primary">
             No check-in today
           </p>
-          <h2 className="mt-3 font-serif text-4xl font-semibold">
+            <h2 className="mt-3 font-serif text-3xl font-semibold md:text-4xl">
             Today has not been measured yet.
           </h2>
           <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
@@ -179,32 +179,32 @@ export default function ReviewPage() {
       ) : (
         <>
           <section className="mx-auto mt-8 grid max-w-6xl gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-            <article className="rounded-md border border-foreground/20 bg-card p-6 md:p-7">
+            <article className="rounded-2xl border border-foreground/20 bg-card p-5 md:rounded-md md:p-7">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden />
-                <p className="text-xs uppercase tracking-[0.24em] text-primary">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
                   Primary Signal
                 </p>
               </div>
-              <h2 className="mt-4 font-serif text-4xl font-semibold">
+              <h2 className="mt-3 font-serif text-3xl font-semibold leading-tight md:mt-4 md:text-4xl">
                 {report.primaryTitle}
               </h2>
-              <p className="mt-4 max-w-3xl leading-7 text-muted-foreground">
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground md:mt-4 md:text-base md:leading-7">
                 {report.primaryDetail}
               </p>
             </article>
 
-            <article className="rounded-md border border-border/70 bg-card/30 p-6 md:p-7">
+            <article className="rounded-2xl border border-border/70 bg-card/35 p-5 md:rounded-md md:p-7">
               <div className="flex items-center gap-3">
                 <Target className="h-5 w-5 text-primary" aria-hidden />
-                <p className="text-xs uppercase tracking-[0.24em] text-primary">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
                   Next Step
                 </p>
               </div>
-              <p className="mt-4 font-serif text-3xl font-semibold">
+              <p className="mt-3 font-serif text-2xl font-semibold leading-tight md:mt-4 md:text-3xl">
                 {report.correctionTitle}
               </p>
-              <p className="mt-4 leading-7 text-muted-foreground">
+              <p className="mt-3 text-sm leading-6 text-muted-foreground md:mt-4 md:text-base md:leading-7">
                 {report.correctionDetail}
               </p>
             </article>
@@ -230,8 +230,8 @@ export default function ReviewPage() {
         </div>
         <div className="px-5 py-4">
           <p className="text-sm leading-7 text-muted-foreground">
-            What pattern did today reveal, and what is one cleaner step you can
-            take before the day ends?
+            What did today reveal about the gap, and what is one cleaner step
+            you can take before the day ends?
           </p>
           <Button asChild className="mt-4" variant="secondary">
             <Link href="/ritual">Open Journal</Link>
@@ -264,11 +264,11 @@ export default function ReviewPage() {
 
 function ReviewStat({ label, value }: { label: string; value: string }) {
   return (
-    <article className="p-5">
-      <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+    <article className="min-w-0 border-border/60 p-4 odd:border-r [&:nth-child(-n+2)]:border-b md:border-b-0 md:border-r md:p-5 md:last:border-r-0">
+      <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground md:text-xs md:tracking-[0.22em]">
         {label}
       </p>
-      <p className="mt-3 font-serif text-4xl font-semibold text-foreground">
+      <p className="mt-2 break-words font-serif text-[1.65rem] font-semibold leading-tight text-foreground md:mt-3 md:text-4xl">
         {value}
       </p>
     </article>

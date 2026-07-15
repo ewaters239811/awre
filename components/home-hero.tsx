@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, CalendarCheck, NotebookPen, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DailyFlow } from "@/components/daily-flow";
 import { getCurrentAccount } from "@/lib/account-data";
@@ -90,26 +90,25 @@ export function HomeHero() {
 function PublicHomeHero() {
   return (
     <div className="max-w-3xl pt-2 md:pt-0">
-      <p className="mb-4 text-xs uppercase tracking-[0.24em] text-primary sm:text-sm sm:tracking-[0.28em]">
+      <p className="mb-3 text-[11px] uppercase tracking-[0.18em] text-primary sm:mb-4 sm:text-sm sm:tracking-[0.28em]">
         ClearPth
       </p>
-      <h1 className="font-serif text-5xl font-semibold leading-[0.98] text-foreground sm:text-7xl lg:text-8xl">
-        What do you want?
+      <h1 className="font-serif text-[3.25rem] font-semibold leading-[0.98] text-foreground sm:text-7xl lg:text-8xl">
+        Close the gap.
       </h1>
       <div className="aura-luxury-line mt-6 max-w-lg" />
-      <p className="mt-5 max-w-2xl text-[15px] leading-7 text-foreground/86 sm:mt-6 sm:text-2xl sm:leading-9">
-        Say it plainly. ClearPth helps unpack the thoughts, feelings, and
-        avoided actions around it, then turns that desire into a clearer state
-        and next step.
+      <p className="mt-4 max-w-2xl text-[15px] leading-7 text-foreground/86 sm:mt-6 sm:text-2xl sm:leading-9">
+        Name what you want once. Then use ClearPth each day to see whether your
+        thoughts, actions, and emotions are becoming aligned enough to hold it.
       </p>
       <Button asChild size="lg" className="mt-7 w-full sm:w-auto">
         <Link href="/onboarding">
-          Answer The Question
+          Name What You Want
           <ArrowRight className="h-4 w-4" aria-hidden />
         </Link>
       </Button>
       <div className="mt-5 flex flex-wrap gap-2">
-        {["answer one question", "unpack the pattern", "choose the next step"].map(
+        {["name the desire", "measure the gap", "choose the next step"].map(
           (item) => (
             <span
               key={item}
@@ -141,40 +140,45 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
 
   return (
     <div className="max-w-3xl pt-2 md:pt-0">
-      <p className="mb-4 text-xs uppercase tracking-[0.24em] text-primary sm:text-sm sm:tracking-[0.28em]">
+      <p className="mb-3 text-[11px] uppercase tracking-[0.18em] text-primary sm:mb-4 sm:text-sm sm:tracking-[0.28em]">
         Welcome Back
       </p>
-      <h1 className="font-serif text-4xl font-semibold leading-[1.02] text-foreground sm:text-6xl lg:text-7xl">
-        Hi {firstName}. Good to see you.
+      <h1 className="max-w-2xl font-serif text-[2.65rem] font-semibold leading-[1.02] text-foreground sm:text-6xl lg:text-7xl">
+        Hi {firstName}. Let&apos;s close the gap.
       </h1>
-      <div className="aura-luxury-line mt-6 max-w-lg" />
-      <p className="mt-5 max-w-2xl text-[15px] leading-7 text-foreground/86 sm:mt-6 sm:text-2xl sm:leading-9">
+      <div className="aura-luxury-line mt-5 max-w-lg sm:mt-6" />
+      <p className="mt-4 max-w-2xl text-[15px] leading-7 text-foreground/86 sm:mt-6 sm:text-2xl sm:leading-9">
         {buildHomeMessage(state)}
       </p>
 
-      <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
-        <PersonalStat
-          icon={<Sparkles className="h-4 w-4" aria-hidden />}
-          label="Last score"
-          value={
-            state.latestCheckIn
-              ? state.latestCheckIn.beingScore.toFixed(1)
-              : "Open"
-          }
-        />
-        <PersonalStat
-          icon={<CalendarCheck className="h-4 w-4" aria-hidden />}
-          label="Today"
-          value={hasCheckedInToday ? "Checked in" : "Ready"}
-        />
-        <PersonalStat
-          icon={<NotebookPen className="h-4 w-4" aria-hidden />}
-          label="Journal"
-          value={hasJournalToday ? "Written" : "Open"}
-        />
+      <div className="mt-6 flex flex-col gap-3 sm:mt-7 sm:flex-row">
+        <Button asChild size="lg" className="w-full sm:w-auto">
+          <Link href={nextHref}>
+            {nextLabel}
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+        </Button>
       </div>
 
-      <div className="mt-5">
+      <div className="mt-5 rounded-2xl border border-border/60 bg-card/38 px-4 py-3 sm:mt-6 sm:max-w-xl">
+        <div className="grid grid-cols-3 gap-3 text-center">
+          <HomeStatus
+            label="Last"
+            value={
+              state.latestCheckIn
+                ? state.latestCheckIn.beingScore.toFixed(1)
+                : "Open"
+            }
+          />
+          <HomeStatus
+            label="Today"
+            value={hasCheckedInToday ? "Done" : "Ready"}
+          />
+          <HomeStatus label="Journal" value={hasJournalToday ? "Done" : "Open"} />
+        </div>
+      </div>
+
+      <div className="mt-4 sm:mt-5 sm:max-w-xl">
         <DailyFlow
           checkedIn={hasCheckedInToday}
           readToday={hasCheckedInToday}
@@ -182,52 +186,27 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
         />
       </div>
 
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <Button asChild size="lg" className="w-full sm:w-auto">
-          <Link href={nextHref}>
-            {nextLabel}
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
-        </Button>
-        <Button asChild variant="secondary" size="lg" className="w-full sm:w-auto">
-          <Link href="/dashboard">See Patterns</Link>
-        </Button>
-      </div>
-      <div className="mt-6 flex flex-wrap gap-2">
-        {["state", "journal", "next move"].map((item) => (
-          <span
-            key={item}
-            className="rounded-full border border-border bg-card/70 px-3 py-2 text-xs font-medium text-muted-foreground shadow-sm"
-          >
-            {item}
-          </span>
-        ))}
-      </div>
+      <Link
+        href="/dashboard"
+        className="mt-5 inline-flex text-sm font-medium text-muted-foreground transition hover:text-foreground"
+      >
+        View patterns
+        <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
+      </Link>
     </div>
   );
 }
 
-function PersonalStat({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
+function HomeStatus({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-lg border border-border/70 bg-card/55 p-3 sm:p-4">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        {icon}
-        <p className="text-[10px] uppercase tracking-[0.14em] sm:text-xs sm:tracking-[0.18em]">
-          {label}
-        </p>
-      </div>
-      <p className="mt-2 text-sm font-medium text-foreground sm:mt-3 sm:text-lg">
+    <div className="min-w-0">
+      <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1 truncate text-sm font-medium text-foreground">
         {value}
       </p>
-    </article>
+      </div>
   );
 }
 
@@ -243,20 +222,20 @@ function getFirstName(user: AccountUser | null) {
 
 function buildHomeMessage(state: HomeState) {
   if (!state.latestCheckIn) {
-    return "No pressure. Start with one honest check-in and let today become a little clearer.";
+    return "Start with one honest check-in. See how close today feels to the life you already named.";
   }
 
   if (!state.todaysCheckIn) {
     return `Your last recorded state was ${state.latestCheckIn.beingScore.toFixed(
       1,
-    )}/10. Come in gently today: notice what is true, then choose the next clean step.`;
+    )}/10. Measure today, notice the gap, then choose the next clean step.`;
   }
 
   if (!state.todaysJournal?.content.trim()) {
-    return `Today is already measured at ${state.todaysCheckIn.beingScore.toFixed(
+    return `Today is measured at ${state.todaysCheckIn.beingScore.toFixed(
       1,
-    )}/10. A few honest lines would give the day more texture.`;
+    )}/10. Write a few honest lines to complete the day.`;
   }
 
-  return `You have ${state.totalCheckIns} check-ins and ${state.totalJournals} journal entries in your record. Today has a shape now; let it support the next decision.`;
+  return `Today is complete. Let the pattern support your next decision.`;
 }

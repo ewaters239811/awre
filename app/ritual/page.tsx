@@ -158,15 +158,14 @@ export default function RitualPage() {
     : 0;
 
   return (
-    <main className="container py-8 md:py-12">
+    <main className="container py-6 md:py-12">
       <section className="mx-auto max-w-6xl">
-        <p className="clearpth-page-kicker">Daily Journal</p>
-        <h1 className="clearpth-page-title">Journal The Pattern Of The Day</h1>
-        <p className="mt-4 max-w-3xl text-muted-foreground">
-          Write or speak one honest entry. ClearPth uses your saved journal
-          history as additional context for wiser guidance and deeper analysis.
+        <p className="clearpth-page-kicker">Journal</p>
+        <h1 className="clearpth-page-title">Write It Out</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:mt-4 md:text-base">
+          One honest entry is enough. Name what the day revealed about the gap.
         </p>
-        <div className="mt-6">
+        <div className="mt-5 md:mt-6">
           <DailyFlow
             checkedIn={checkedInToday}
             readToday={checkedInToday}
@@ -175,17 +174,19 @@ export default function RitualPage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-8 grid max-w-6xl gap-5 lg:grid-cols-[1fr_320px]">
+      <section className="mx-auto mt-6 grid max-w-6xl gap-5 lg:mt-8 lg:grid-cols-[1fr_320px]">
         <form
-          className="aura-glass rounded-lg p-5 md:p-6"
+          className="aura-glass rounded-2xl p-4 md:rounded-lg md:p-6"
           onSubmit={saveEntry}
         >
-          <div className="flex flex-col gap-4 border-b border-border/60 pb-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 border-b border-border/60 pb-4 sm:flex-row sm:items-center sm:justify-between md:pb-5">
             <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground md:text-xs md:tracking-[0.24em]">
                 {entry.date}
               </p>
-              <h2 className="mt-2 text-2xl font-semibold">Today&apos;s Entry</h2>
+              <h2 className="mt-1 font-serif text-2xl font-semibold md:mt-2">
+                Today&apos;s Entry
+              </h2>
             </div>
             <Button
               type="button"
@@ -208,14 +209,14 @@ export default function RitualPage() {
           </div>
 
           <Textarea
-            className="mt-5 min-h-[260px] md:min-h-[360px]"
+            className="mt-5 min-h-[300px] rounded-2xl text-[16px] leading-7 md:min-h-[360px] md:rounded-md"
             value={draftContent}
             onChange={(event) => updateContent(event.target.value)}
-            placeholder="What happened today? What did it reveal about your thinking, willing, feeling, or identity? Where did you gather power, and where did you leak it?"
+            placeholder="What did today reveal about the gap?"
           />
 
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">
+          <div className="mt-4 flex flex-col gap-3 sm:mt-5 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-muted-foreground sm:text-sm">
               {wordCount} words recorded for today.
             </p>
             <div className="flex items-center gap-3">
@@ -229,8 +230,8 @@ export default function RitualPage() {
           </div>
         </form>
 
-        <aside className="aura-glass rounded-lg p-5">
-          <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+        <aside className="rounded-2xl border border-border/65 bg-card/35 p-4 md:aura-glass md:rounded-lg md:p-5">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground md:text-xs md:tracking-[0.24em]">
             Journal Signal
           </p>
           <div className="mt-5 grid gap-3">
@@ -256,7 +257,7 @@ export default function RitualPage() {
           ) : null}
 
           <div className="mt-6 border-t border-border/60 pt-5">
-            <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground md:text-xs md:tracking-[0.24em]">
               Recent Entries
             </p>
             <div className="mt-4 grid gap-3">

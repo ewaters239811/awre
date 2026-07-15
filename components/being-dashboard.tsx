@@ -142,13 +142,13 @@ export function BeingDashboard() {
   );
 
   return (
-    <main className="container py-8 md:py-12">
+    <main className="container py-6 md:py-12">
       <section className="mx-auto max-w-6xl">
-        <p className="clearpth-page-kicker">Pattern Intelligence</p>
-        <h1 className="clearpth-page-title">What Is Happening Over Time</h1>
-        <p className="mt-4 max-w-3xl text-muted-foreground">
-          A living read of your current score, pillar balance, journal rhythm,
-          integration debt, and the pattern shaping your state over time.
+        <p className="clearpth-page-kicker">Patterns</p>
+        <h1 className="clearpth-page-title">What Keeps Repeating?</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:mt-4 md:text-base">
+          The point is not more data. The point is seeing the pattern clearly
+          enough to move differently.
         </p>
       </section>
 
@@ -171,15 +171,15 @@ export function BeingDashboard() {
         </section>
       ) : (
         <>
-          <section className="mx-auto mt-8 grid max-w-6xl gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-            <div className="aura-glass rounded-lg p-6">
+          <section className="mx-auto mt-6 grid max-w-6xl gap-5 lg:mt-8 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="aura-glass rounded-2xl p-5 md:rounded-lg md:p-6">
               <div className="flex items-center gap-3">
                 <Gauge className="h-5 w-5 text-primary" aria-hidden />
-                <p className="text-xs uppercase tracking-[0.24em] text-primary">
-                  Current Being
+                <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
+                  Current Score
                 </p>
               </div>
-              <div className="mt-6 flex items-end gap-3">
+              <div className="mt-5 flex items-end gap-3 md:mt-6">
                 <span className="font-serif text-6xl font-semibold leading-none text-primary sm:text-8xl">
                   {dashboard.latestScore?.toFixed(1) ?? "-"}
                 </span>
@@ -199,8 +199,8 @@ export function BeingDashboard() {
                   value={dashboard.pillarAverages.Feeling}
                 />
               </div>
-              <div className="mt-6 rounded-md border border-primary/20 bg-primary/10 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-primary">
+              <div className="mt-6 rounded-2xl border border-primary/20 bg-primary/10 p-4 md:rounded-md">
+                <p className="text-[11px] uppercase tracking-[0.16em] text-primary md:text-xs md:tracking-[0.2em]">
                   Primary Signal
                 </p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -211,13 +211,13 @@ export function BeingDashboard() {
               </div>
             </div>
 
-            <div className="aura-glass rounded-lg p-6">
+            <div className="aura-glass rounded-2xl p-5 md:rounded-lg md:p-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.24em] text-primary">
-                  Pattern Reading
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
+                    Pattern Reading
                   </p>
-                  <h2 className="mt-2 font-serif text-3xl font-semibold">
+                  <h2 className="mt-2 font-serif text-3xl font-semibold leading-tight">
                     {analysis?.archetype ?? "Reading your pattern"}
                   </h2>
                 </div>
@@ -227,7 +227,7 @@ export function BeingDashboard() {
                   </span>
                 ) : null}
               </div>
-              <div className="mt-5 grid gap-4">
+              <div className="mt-5 grid gap-3 md:gap-4">
                 <AnalysisBlock label="Summary" body={analysis?.summary} />
                 <AnalysisBlock label="Root Cause" body={analysis?.rootCause} />
                 <AnalysisBlock label="Hidden Debt" body={analysis?.hiddenDebt} />
@@ -242,16 +242,16 @@ export function BeingDashboard() {
 
           <GapInsightCard insight={gapInsight} />
 
-          <section className="mx-auto mt-8 grid max-w-6xl gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <section className="mx-auto mt-8 grid max-w-6xl gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-4">
             {dashboard.metrics.map((metric) => (
-              <article key={metric.label} className="aura-glass rounded-lg p-5">
+              <article key={metric.label} className="rounded-2xl border border-border/65 bg-card/35 p-4 md:aura-glass md:rounded-lg md:p-5">
                 <div className="flex items-center gap-3">
                   <MetricIcon label={metric.label} />
-                  <p className="text-xs uppercase tracking-[0.22em] text-primary">
+                  <p className="text-[10px] uppercase tracking-[0.14em] text-primary md:text-xs md:tracking-[0.22em]">
                     {metric.label}
                   </p>
                 </div>
-                <p className="mt-3 font-serif text-4xl font-semibold">
+                <p className="mt-2 font-serif text-3xl font-semibold md:mt-3 md:text-4xl">
                   {metric.value}
                 </p>
                 <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -261,11 +261,11 @@ export function BeingDashboard() {
             ))}
           </section>
 
-          <section className="aura-glass mx-auto mt-8 max-w-6xl rounded-lg p-5">
+          <section className="mx-auto mt-8 max-w-6xl rounded-2xl border border-border/65 bg-card/35 p-4 md:aura-glass md:rounded-lg md:p-5">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <BarChart3 className="h-5 w-5 text-primary" aria-hidden />
-                <p className="text-xs uppercase tracking-[0.24em] text-primary">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
                   Score Over Time
                 </p>
               </div>
@@ -279,11 +279,11 @@ export function BeingDashboard() {
           <section className="mx-auto mt-8 max-w-6xl">
             <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-primary">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
                   Calendar
                 </p>
-                <h2 className="mt-2 font-serif text-3xl font-semibold">
-                  History Of Your State
+                <h2 className="mt-2 font-serif text-3xl font-semibold leading-tight">
+                  Your Recorded Days
                 </h2>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -308,12 +308,12 @@ function SelectedPatternDay({ item }: { item: CheckInResult | null }) {
   if (!item) return null;
 
   return (
-    <section className="aura-glass mt-8 rounded-lg p-5 md:p-6">
+    <section className="mt-8 rounded-2xl border border-border/65 bg-card/35 p-4 md:aura-glass md:rounded-lg md:p-6">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex items-center gap-3">
             <CalendarDays className="h-5 w-5 text-primary" aria-hidden />
-            <p className="text-xs uppercase tracking-[0.24em] text-primary">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
               Selected Day
             </p>
           </div>
@@ -329,7 +329,7 @@ function SelectedPatternDay({ item }: { item: CheckInResult | null }) {
         </Button>
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-6 sm:grid-cols-2 lg:grid-cols-5">
         <MiniStat label="Score" value={item.beingScore.toFixed(1)} />
         <MiniStat label="Thinking" value={String(item.thinkingScore)} />
         <MiniStat label="Willing" value={String(item.willingScore)} />
@@ -345,7 +345,7 @@ function RecentPatternRecords({ items }: { items: CheckInResult[] }) {
     <section className="mt-8">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-primary">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
             Recent Records
           </p>
           <h2 className="mt-2 font-serif text-3xl font-semibold">
@@ -359,7 +359,7 @@ function RecentPatternRecords({ items }: { items: CheckInResult[] }) {
 
       <div className="mt-5 grid gap-3 md:hidden">
         {items.slice(0, 8).map((item) => (
-          <article key={item.id} className="aura-glass rounded-lg p-4">
+          <article key={item.id} className="rounded-2xl border border-border/65 bg-card/35 p-4">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="font-medium">
@@ -421,11 +421,11 @@ function RecentPatternRecords({ items }: { items: CheckInResult[] }) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-md border border-border/70 bg-card/45 p-4">
-      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+    <article className="min-w-0 rounded-2xl border border-border/70 bg-card/45 p-3 md:rounded-md md:p-4">
+      <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground md:text-xs md:tracking-[0.18em]">
         {label}
       </p>
-      <p className="mt-2 text-xl font-medium text-foreground">{value}</p>
+      <p className="mt-2 truncate text-lg font-medium text-foreground md:text-xl">{value}</p>
     </article>
   );
 }
@@ -469,9 +469,9 @@ function AnalysisBlock({
   body?: string;
 }) {
   return (
-    <article className="rounded-md border border-border/55 bg-card/55 p-4">
-      <p className="text-xs uppercase tracking-[0.2em] text-primary">{label}</p>
-      <p className="mt-2 leading-7 text-muted-foreground">
+    <article className="rounded-2xl border border-border/55 bg-card/55 p-4 md:rounded-md">
+      <p className="text-[11px] uppercase tracking-[0.16em] text-primary md:text-xs md:tracking-[0.2em]">{label}</p>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground md:text-base md:leading-7">
         {body ?? "Reading the pattern..."}
       </p>
     </article>
@@ -480,26 +480,25 @@ function AnalysisBlock({
 
 function GapInsightCard({ insight }: { insight: GapInsight }) {
   return (
-    <section className="aura-glass mx-auto mt-8 max-w-6xl rounded-lg p-6 md:p-7">
+    <section className="aura-glass mx-auto mt-8 max-w-6xl rounded-2xl p-5 md:rounded-lg md:p-7">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div className="max-w-2xl">
           <div className="flex items-center gap-3">
             <Compass className="h-5 w-5 text-primary" aria-hidden />
-            <p className="text-xs uppercase tracking-[0.24em] text-primary">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
               The Gap To Fill
             </p>
           </div>
-          <h2 className="mt-4 font-serif text-4xl font-semibold">
+          <h2 className="mt-3 font-serif text-3xl font-semibold leading-tight md:mt-4 md:text-4xl">
             {insight.missingBridge}
           </h2>
-          <p className="mt-4 leading-7 text-muted-foreground">
-            The gap is the distance between the state you are currently
-            recording and the state you are trying to live from. Fill it by
-            bringing your weakest pillar into agreement with your strongest one.
+          <p className="mt-3 text-sm leading-6 text-muted-foreground md:mt-4 md:text-base md:leading-7">
+            Fill the gap by bringing your weakest pillar into agreement with
+            your strongest one.
           </p>
         </div>
 
-        <div className="w-full max-w-sm rounded-md border border-border/70 bg-card/45 p-4">
+        <div className="w-full max-w-sm rounded-2xl border border-border/70 bg-card/45 p-4 md:rounded-md">
           <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-muted-foreground">
             <span>Gap closed</span>
             <span>{insight.progress}%</span>
@@ -517,13 +516,13 @@ function GapInsightCard({ insight }: { insight: GapInsight }) {
       </div>
 
       <div className="mt-7 grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-stretch">
-        <GapState label="Current state" value={insight.currentState} />
+        <GapState label="Current" value={insight.currentState} />
         <div className="hidden items-center justify-center md:flex">
           <span className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card">
             <ArrowRight className="h-4 w-4 text-primary" aria-hidden />
           </span>
         </div>
-        <GapState label="Desired state" value={insight.desiredState} />
+        <GapState label="Desired" value={insight.desiredState} />
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-3">
@@ -557,11 +556,11 @@ function GapInsightCard({ insight }: { insight: GapInsight }) {
 
 function GapState({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-md border border-border/70 bg-card/45 p-5">
-      <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+    <article className="rounded-2xl border border-border/70 bg-card/45 p-4 md:rounded-md md:p-5">
+      <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground md:text-xs md:tracking-[0.22em]">
         {label}
       </p>
-      <p className="mt-3 font-serif text-3xl font-semibold text-foreground">
+      <p className="mt-2 font-serif text-2xl font-semibold leading-tight text-foreground md:mt-3 md:text-3xl">
         {value}
       </p>
     </article>
@@ -578,8 +577,8 @@ function GapDetail({
   detail: string;
 }) {
   return (
-    <article className="rounded-md border border-border/70 bg-card/35 p-4">
-      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+    <article className="rounded-2xl border border-border/70 bg-card/35 p-4 md:rounded-md">
+      <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground md:text-xs md:tracking-[0.2em]">
         {label}
       </p>
       <p className="mt-2 text-lg font-medium text-foreground">{value}</p>

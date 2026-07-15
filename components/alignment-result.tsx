@@ -23,21 +23,21 @@ export function AlignmentResult({
 
   return (
     <section className="mx-auto max-w-5xl">
-      <div className="aura-glass rounded-lg p-6 md:p-8">
+      <div className="aura-glass rounded-2xl p-5 md:rounded-lg md:p-8">
         <div className="text-center">
-          <p className="text-sm uppercase tracking-[0.28em] text-primary">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-sm md:tracking-[0.28em]">
             Today&apos;s Result
           </p>
-          <div className="mt-6 flex items-end justify-center gap-3">
+          <div className="mt-5 flex items-end justify-center gap-3 md:mt-6">
             <span className="font-serif text-6xl font-semibold leading-none text-primary sm:text-9xl">
               {result.beingScore}
             </span>
             <span className="pb-4 text-xl text-muted-foreground">/ 10</span>
           </div>
-          <h1 className="mt-3 font-serif text-4xl font-semibold leading-tight sm:text-5xl">
+          <h1 className="mt-3 font-serif text-3xl font-semibold leading-tight sm:text-5xl">
             {result.stateLabel}
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:mt-4 md:text-base">
             {signature}
           </p>
           <AiStatus status={aiStatus} hasAi={Boolean(result.aiAlignment)} />
@@ -45,12 +45,12 @@ export function AlignmentResult({
 
         <div className="aura-luxury-line my-8" />
 
-        <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <aside className="space-y-4">
-            <article className="rounded-md border border-primary/25 bg-primary/10 p-5">
+        <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr] lg:gap-6">
+          <aside className="space-y-3 md:space-y-4">
+            <article className="rounded-2xl border border-primary/25 bg-primary/10 p-4 md:rounded-md md:p-5">
               <div className="flex items-center gap-3">
                 <Sparkles className="h-5 w-5 text-primary" aria-hidden />
-                <p className="text-xs uppercase tracking-[0.22em] text-primary">
+                <p className="text-[11px] uppercase tracking-[0.16em] text-primary md:text-xs md:tracking-[0.22em]">
                   State Signal
                 </p>
               </div>
@@ -62,22 +62,22 @@ export function AlignmentResult({
             </article>
 
             {result.aiAlignment?.summary ? (
-              <article className="rounded-md border border-border/55 bg-card/55 p-5">
+              <article className="rounded-2xl border border-border/55 bg-card/55 p-4 md:rounded-md md:p-5">
                 <div className="flex items-center gap-3">
                   <Compass className="h-5 w-5 text-primary" aria-hidden />
-                  <p className="text-xs uppercase tracking-[0.22em] text-primary">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-primary md:text-xs md:tracking-[0.22em]">
                     Reading
                   </p>
                 </div>
-                <p className="mt-3 leading-7 text-muted-foreground">
+                <p className="mt-3 text-sm leading-6 text-muted-foreground md:text-base md:leading-7">
                   {result.aiAlignment.summary}
                 </p>
               </article>
             ) : isWaitingForPersonalizedResult ? (
-              <article className="rounded-md border border-border/55 bg-card/55 p-5">
+              <article className="rounded-2xl border border-border/55 bg-card/55 p-4 md:rounded-md md:p-5">
                 <div className="flex items-center gap-3">
                   <Compass className="h-5 w-5 text-primary" aria-hidden />
-                  <p className="text-xs uppercase tracking-[0.22em] text-primary">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-primary md:text-xs md:tracking-[0.22em]">
                     Reading
                   </p>
                 </div>
@@ -93,17 +93,17 @@ export function AlignmentResult({
           <div className="grid gap-4">
             <div className="flex items-center gap-3">
               <Flame className="h-5 w-5 text-primary" aria-hidden />
-              <h2 className="font-serif text-3xl font-semibold">
-                Alignment Prescription
+              <h2 className="font-serif text-2xl font-semibold md:text-3xl">
+                Your Next Alignment
               </h2>
             </div>
             {isWaitingForPersonalizedResult
               ? prescription.map(([label]) => (
                   <article
                     key={label}
-                    className="rounded-md border border-border/55 bg-card/55 p-5"
+                    className="rounded-2xl border border-border/55 bg-card/55 p-4 md:rounded-md md:p-5"
                   >
-                    <p className="text-xs uppercase tracking-[0.22em] text-primary">
+                    <p className="text-[11px] uppercase tracking-[0.16em] text-primary md:text-xs md:tracking-[0.22em]">
                       {label}
                     </p>
                     <div className="mt-4 space-y-3">
@@ -115,12 +115,12 @@ export function AlignmentResult({
               : prescription.map(([label, body]) => (
                   <article
                     key={label}
-                    className="rounded-md border border-border/55 bg-card/55 p-5"
+                    className="rounded-2xl border border-border/55 bg-card/55 p-4 md:rounded-md md:p-5"
                   >
-                    <p className="text-xs uppercase tracking-[0.22em] text-primary">
+                    <p className="text-[11px] uppercase tracking-[0.16em] text-primary md:text-xs md:tracking-[0.22em]">
                       {label}
                     </p>
-                    <p className="mt-2 leading-7 text-muted-foreground">
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground md:text-base md:leading-7">
                       {body}
                     </p>
                   </article>
@@ -195,9 +195,9 @@ function AiStatus({
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between rounded-md border border-border/55 bg-card/55 px-4 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-border/55 bg-card/55 px-3 py-3 md:rounded-md md:px-4">
       <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium text-foreground">{value}</span>
+      <span className="text-right font-medium text-foreground">{value}</span>
     </div>
   );
 }

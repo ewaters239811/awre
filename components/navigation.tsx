@@ -51,13 +51,13 @@ export function Navigation() {
 
   return (
     <>
-    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/78 backdrop-blur-2xl">
-      <nav className="container flex h-14 items-center justify-between lg:h-20">
+    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/82 backdrop-blur-2xl">
+      <nav className="container flex h-12 items-center justify-between lg:h-20">
         <Link href="/" className="flex items-center gap-3">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-foreground text-background shadow-sm lg:h-9 lg:w-9">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-foreground text-background shadow-sm lg:h-9 lg:w-9">
             <svg
               viewBox="0 0 36 36"
-              className="h-5 w-5 lg:h-6 lg:w-6"
+              className="h-4 w-4 lg:h-6 lg:w-6"
               fill="none"
               aria-hidden
             >
@@ -83,7 +83,7 @@ export function Navigation() {
               <circle cx="18" cy="18" r="2.2" fill="currentColor" />
             </svg>
           </span>
-          <span className="text-base font-semibold tracking-normal text-foreground lg:text-xl">
+          <span className="text-sm font-semibold tracking-normal text-foreground lg:text-xl">
             ClearPth
           </span>
         </Link>
@@ -133,8 +133,8 @@ export function Navigation() {
 
 function MobileTabBar({ pathname }: { pathname: string }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/88 px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 backdrop-blur-2xl lg:hidden">
-      <div className="mx-auto grid max-w-sm grid-cols-5 gap-1 rounded-2xl border border-border/60 bg-card/82 p-1.5 shadow-2xl">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/90 px-3 pb-[calc(env(safe-area-inset-bottom)+0.65rem)] pt-2 backdrop-blur-2xl lg:hidden">
+      <div className="mx-auto grid max-w-[23rem] grid-cols-5 gap-1 rounded-[1.35rem] border border-border/60 bg-card/88 p-1.5 shadow-2xl">
         {mobileLinks.map((link) => {
           const Icon = link.icon;
           const active =
@@ -146,7 +146,7 @@ function MobileTabBar({ pathname }: { pathname: string }) {
               key={link.href}
               href={link.href}
               className={cn(
-                "flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[10px] font-medium leading-none text-muted-foreground transition",
+                "flex min-h-12 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-[10px] font-medium leading-none text-muted-foreground transition",
                 active && "bg-foreground text-background shadow-sm",
               )}
             >

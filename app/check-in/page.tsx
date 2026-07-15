@@ -119,11 +119,11 @@ export default function CheckInPage() {
       <div className="mx-auto max-w-5xl">
         <p className="clearpth-page-kicker">Daily Check In</p>
         <h1 className="clearpth-page-title">
-          What Is Between You And What You Want?
+          Measure Today&apos;s Gap
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:mt-4 md:text-base">
-          ClearPth reads today through your thoughts, actions, and feelings,
-          then turns the pattern into one clearer next step.
+          Score how your thoughts, actions, and emotions relate to the life you
+          already named. Today is about alignment, not choosing a new desire.
         </p>
         <div className="mt-5 md:mt-6">
           <DailyFlow
@@ -135,10 +135,10 @@ export default function CheckInPage() {
 
         {profile?.primaryGoal.trim() ? (
           <section className="aura-glass mt-5 rounded-xl p-4 md:mt-6 md:rounded-lg md:p-5">
-            <p className="text-xs uppercase tracking-[0.24em] text-primary">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
               What You Want
             </p>
-            <p className="mt-3 font-serif text-2xl font-semibold leading-tight">
+            <p className="mt-2 font-serif text-xl font-semibold leading-tight md:mt-3 md:text-2xl">
               {profile.primaryGoal}
             </p>
           </section>
@@ -197,7 +197,7 @@ export default function CheckInPage() {
           <CheckInGate
             eyebrow="Gate 01"
             title="Scores"
-            description="Rate how closely your inner and outer state are matching what you want."
+            description="Rate how closely today's inner and outer state match the life you already named."
             icon={<Brain className="h-5 w-5" aria-hidden />}
           >
             <ScoreSlider
@@ -215,10 +215,10 @@ export default function CheckInPage() {
               value={draft.feelingScore}
               onChange={(value) => updateField("feelingScore", value)}
             />
-            <TextAreaField
-              label="What feels most true right now?"
-              helper="Write the honest sentence underneath today. It could be a thought, mood, fear, desire, or pressure that feels most real in this moment."
-              placeholder="Example: I want to move forward, but I feel distracted and unsure what step actually matters."
+              <TextAreaField
+              label="What is the gap today?"
+              helper="Write the honest sentence between your current state and what you already want. It could be a thought, mood, fear, delay, or pressure."
+              placeholder="Example: I know what I want, but today I feel distracted and unsure what step actually matters."
               value={draft.dominantThought}
               onChange={(value) => updateField("dominantThought", value)}
             />
@@ -235,7 +235,7 @@ export default function CheckInPage() {
           ) : (
             <>
               <CheckInGate
-                eyebrow="Detail 01"
+                eyebrow="Optional"
                 title="Pattern"
                 description="Add the action or delay that seems connected to today's state."
                 icon={<Flame className="h-5 w-5" aria-hidden />}
@@ -248,7 +248,7 @@ export default function CheckInPage() {
               </CheckInGate>
 
               <CheckInGate
-                eyebrow="Detail 02"
+                eyebrow="Optional"
                 title="State"
                 description="Name the feeling underneath the day."
                 icon={<Heart className="h-5 w-5" aria-hidden />}
@@ -261,7 +261,7 @@ export default function CheckInPage() {
               </CheckInGate>
 
               <CheckInGate
-                eyebrow="Detail 03"
+                eyebrow="Optional"
                 title="Next Step"
                 description="Name the choice that would close the gap by one step."
                 icon={<Sparkles className="h-5 w-5" aria-hidden />}
@@ -293,7 +293,7 @@ export default function CheckInPage() {
           {error ? <p className="text-sm text-primary">{error}</p> : null}
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs leading-5 text-muted-foreground sm:text-sm">
               Sign in to save your check-in to your profile.
             </p>
               <Button type="submit" size="lg" className="w-full sm:w-auto">
@@ -321,25 +321,25 @@ function CheckInGate({
   children: ReactNode;
 }) {
   return (
-    <section className="aura-glass rounded-xl p-4 md:rounded-lg md:p-6">
+    <section className="aura-glass rounded-2xl p-4 md:rounded-lg md:p-6">
       <div className="grid gap-4 md:grid-cols-[0.75fr_1.25fr] md:items-start md:gap-5">
         <div>
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-md border border-primary/25 bg-primary/10 text-primary">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary md:h-10 md:w-10 md:rounded-md">
               {icon}
             </span>
-            <p className="text-xs uppercase tracking-[0.24em] text-primary">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
               {eyebrow}
             </p>
           </div>
-          <h2 className="mt-3 font-serif text-2xl font-semibold md:mt-4 md:text-3xl">
+          <h2 className="mt-3 font-serif text-[1.7rem] font-semibold leading-tight md:mt-4 md:text-3xl">
             {title}
           </h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground md:mt-3">
             {description}
           </p>
         </div>
-        <div className="rounded-lg border border-border/55 bg-card/55 p-3 sm:p-4">
+        <div className="md:rounded-lg md:border md:border-border/55 md:bg-card/55 md:p-4">
           {children}
         </div>
       </div>
@@ -363,10 +363,12 @@ function TextAreaField({
   rows?: number;
 }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       <Label>{label}</Label>
       {helper ? (
-        <p className="text-sm leading-6 text-muted-foreground">{helper}</p>
+        <p className="text-xs leading-5 text-muted-foreground sm:text-sm sm:leading-6">
+          {helper}
+        </p>
       ) : null}
       <Textarea
         value={value}
