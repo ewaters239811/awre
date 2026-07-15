@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Send } from "lucide-react";
+import { Send, Square, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -42,6 +42,10 @@ export function GuideChat() {
     useState<GuideConversation | null>(null);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(
+    null,
+  );
+  const [speechSupported, setSpeechSupported] = useState(false);
   const [suggestedPrompts, setSuggestedPrompts] = useState(
     fallbackSuggestedPrompts,
   );
@@ -52,7 +56,12 @@ export function GuideChat() {
       const initial = createConversation();
       setActiveConversation(initial);
       setSuggestedPrompts(getSuggestionsForConversation(initial));
+      setSpeechSupported("speechSynthesis" in window);
     });
+
+    return () => {
+      window.speechSynthesis?.cancel();
+    };
   }, []);
 
   useEffect(() => {
@@ -138,6 +147,32 @@ export function GuideChat() {
     }
   };
 
+  const toggleReadAloud = (messageId: string, content: string) => {
+    if (!speechSupported) return;
+
+    if (speakingMessageId === messageId) {
+      window.speechSynthesis.cancel();
+      setSpeakingMessageId(null);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(content);
+    const softVoice = getSoftFeminineVoice();
+    if (softVoice) {
+      utterance.voice = softVoice;
+    }
+    utterance.rate = 0.86;
+    utterance.pitch = 1.08;
+    utterance.volume = 0.95;
+    utterance.onend = () => setSpeakingMessageId(null);
+    utterance.onerror = () => setSpeakingMessageId(null);
+
+    setSpeakingMessageId(messageId);
+    window.speechSynthesis.speak(utterance);
+  };
+
   return (
     <section className="mx-auto max-w-5xl md:mt-8">
       <div className="flex min-h-[calc(100dvh-8.75rem)] flex-col overflow-hidden rounded-none border-border/60 bg-transparent md:aura-glass md:min-h-[680px] md:rounded-lg">
@@ -170,7 +205,30 @@ export function GuideChat() {
                     : "border-border/70 bg-card text-muted-foreground",
                 )}
               >
-                {message.content}
+                <p>{message.content}</p>
+                {message.role === "assistant" && speechSupported ? (
+                  <button
+                    type="button"
+                    className="mt-3 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/45 px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-foreground/35 hover:bg-accent"
+                    onClick={() =>
+                      toggleReadAloud(message.createdAt, message.content)
+                    }
+                    aria-label={
+                      speakingMessageId === message.createdAt
+                        ? "Stop reading response"
+                        : "Read response aloud"
+                    }
+                  >
+                    {speakingMessageId === message.createdAt ? (
+                      <Square className="h-3.5 w-3.5" aria-hidden />
+                    ) : (
+                      <Volume2 className="h-3.5 w-3.5" aria-hidden />
+                    )}
+                    {speakingMessageId === message.createdAt
+                      ? "Stop"
+                      : "Listen"}
+                  </button>
+                ) : null}
               </div>
             </div>
           ))}
@@ -253,6 +311,50 @@ function normalizeSuggestions(suggestions?: string[], reply?: string) {
   if (reply) return buildLocalSuggestions(reply);
 
   return fallbackSuggestedPrompts;
+}
+
+function getSoftFeminineVoice() {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+    return null;
+  }
+
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return null;
+
+  const preferredNames = [
+    "Samantha",
+    "Ava",
+    "Allison",
+    "Susan",
+    "Victoria",
+    "Karen",
+    "Moira",
+    "Tessa",
+    "Zira",
+    "Jenny",
+    "Aria",
+    "Michelle",
+    "Female",
+  ];
+
+  return (
+    preferredNames
+      .map((name) =>
+        voices.find((voice) =>
+          voice.name.toLowerCase().includes(name.toLowerCase()),
+        ),
+      )
+      .find(Boolean) ??
+    voices.find(
+      (voice) =>
+        voice.lang.toLowerCase().startsWith("en") &&
+        /female|woman|samantha|ava|allison|susan|victoria|zira|jenny|aria/i.test(
+          voice.name,
+        ),
+    ) ??
+    voices.find((voice) => voice.lang.toLowerCase().startsWith("en")) ??
+    voices[0]
+  );
 }
 
 function getSuggestionsForConversation(conversation: GuideConversation) {

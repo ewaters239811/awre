@@ -3,57 +3,57 @@
 @tailwind utilities;
 
 :root {
-  --background: 43 48% 94%;
-  --foreground: 38 18% 14%;
-  --card: 42 52% 97%;
-  --card-foreground: 38 18% 14%;
-  --primary: 88 18% 42%;
-  --primary-foreground: 43 48% 96%;
-  --secondary: 42 34% 88%;
-  --secondary-foreground: 38 18% 14%;
-  --muted: 42 31% 89%;
-  --muted-foreground: 43 8% 43%;
-  --accent: 85 22% 82%;
-  --accent-foreground: 38 18% 14%;
-  --border: 39 24% 78%;
-  --input: 39 18% 70%;
-  --ring: 88 18% 42%;
+  --background: 40 5% 4%;
+  --foreground: 40 43% 93%;
+  --card: 40 8% 8%;
+  --card-foreground: 40 43% 93%;
+  --primary: 42 40% 58%;
+  --primary-foreground: 40 9% 7%;
+  --secondary: 38 10% 14%;
+  --secondary-foreground: 40 36% 90%;
+  --muted: 38 9% 16%;
+  --muted-foreground: 34 10% 50%;
+  --accent: 38 16% 18%;
+  --accent-foreground: 40 43% 93%;
+  --border: 38 10% 15%;
+  --input: 38 10% 22%;
+  --ring: 42 40% 58%;
 }
 
 html.light {
-  --background: 43 48% 94%;
-  --foreground: 38 18% 14%;
-  --card: 42 52% 97%;
-  --card-foreground: 38 18% 14%;
-  --primary: 88 18% 42%;
-  --primary-foreground: 43 48% 96%;
-  --secondary: 42 34% 88%;
-  --secondary-foreground: 38 18% 14%;
-  --muted: 42 31% 89%;
-  --muted-foreground: 43 8% 43%;
-  --accent: 85 22% 82%;
-  --accent-foreground: 38 18% 14%;
-  --border: 39 24% 78%;
-  --input: 39 18% 70%;
-  --ring: 88 18% 42%;
+  --background: 40 5% 4%;
+  --foreground: 40 43% 93%;
+  --card: 40 8% 8%;
+  --card-foreground: 40 43% 93%;
+  --primary: 42 40% 58%;
+  --primary-foreground: 40 9% 7%;
+  --secondary: 38 10% 14%;
+  --secondary-foreground: 40 36% 90%;
+  --muted: 38 9% 16%;
+  --muted-foreground: 34 10% 50%;
+  --accent: 38 16% 18%;
+  --accent-foreground: 40 43% 93%;
+  --border: 38 10% 15%;
+  --input: 38 10% 22%;
+  --ring: 42 40% 58%;
 }
 
 html.dark {
-  --background: 70 10% 24%;
-  --foreground: 43 42% 94%;
-  --card: 70 9% 29%;
-  --card-foreground: 43 42% 94%;
-  --primary: 86 20% 74%;
-  --primary-foreground: 70 14% 18%;
-  --secondary: 67 8% 34%;
-  --secondary-foreground: 43 38% 92%;
-  --muted: 67 8% 33%;
-  --muted-foreground: 48 14% 78%;
-  --accent: 82 12% 40%;
-  --accent-foreground: 43 42% 94%;
-  --border: 64 9% 43%;
-  --input: 64 9% 46%;
-  --ring: 86 20% 74%;
+  --background: 40 5% 4%;
+  --foreground: 40 43% 93%;
+  --card: 40 8% 8%;
+  --card-foreground: 40 43% 93%;
+  --primary: 42 40% 58%;
+  --primary-foreground: 40 9% 7%;
+  --secondary: 38 10% 14%;
+  --secondary-foreground: 40 36% 90%;
+  --muted: 38 9% 16%;
+  --muted-foreground: 34 10% 50%;
+  --accent: 38 16% 18%;
+  --accent-foreground: 40 43% 93%;
+  --border: 38 10% 15%;
+  --input: 38 10% 22%;
+  --ring: 42 40% 58%;
 }
 
 * {
@@ -67,9 +67,8 @@ body {
   touch-action: manipulation;
   line-height: 1.6;
   background:
-    linear-gradient(135deg, rgba(125, 145, 93, 0.18) 0%, transparent 34%),
-    linear-gradient(225deg, rgba(184, 119, 79, 0.14) 0%, transparent 30%),
-    linear-gradient(180deg, #fff8ea 0%, #f2ead8 52%, #fbf2df 100%);
+    radial-gradient(circle at 50% 12%, rgba(191, 164, 106, 0.13), transparent 34%),
+    linear-gradient(180deg, #11100e 0%, #0b0b0a 48%, #151412 100%);
   background-attachment: fixed;
   background-size: auto;
 }
@@ -83,19 +82,20 @@ body {
 
 html.light body {
   background:
-    linear-gradient(135deg, rgba(125, 145, 93, 0.18) 0%, transparent 34%),
-    linear-gradient(225deg, rgba(184, 119, 79, 0.14) 0%, transparent 30%),
-    linear-gradient(180deg, #fff8ea 0%, #f2ead8 52%, #fbf2df 100%);
+    radial-gradient(circle at 50% 12%, rgba(191, 164, 106, 0.13), transparent 34%),
+    linear-gradient(180deg, #11100e 0%, #0b0b0a 48%, #151412 100%);
   background-attachment: fixed;
   background-size: auto;
 }
 
 html.dark body {
-  background: linear-gradient(180deg, #555844 0%, #484c3c 52%, #62644f 100%);
+  background:
+    radial-gradient(circle at 50% 12%, rgba(191, 164, 106, 0.13), transparent 34%),
+    linear-gradient(180deg, #11100e 0%, #0b0b0a 48%, #151412 100%);
 }
 
 ::selection {
-  background: rgba(168, 151, 108, 0.28);
+  background: rgba(191, 164, 106, 0.28);
 }
 
 ::-webkit-scrollbar {
@@ -104,51 +104,53 @@ html.dark body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(68, 56, 39, 0.04);
+  background: rgba(11, 11, 10, 0.4);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(145, 132, 96, 0.34);
-  border: 2px solid rgba(250, 244, 230, 0.9);
+  background: rgba(191, 164, 106, 0.34);
+  border: 2px solid rgba(11, 11, 10, 0.9);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(126, 113, 80, 0.48);
+  background: rgba(191, 164, 106, 0.52);
 }
 
 html.light ::-webkit-scrollbar-track {
-  background: rgba(68, 56, 39, 0.04);
+  background: rgba(11, 11, 10, 0.4);
 }
 
 html.light ::-webkit-scrollbar-thumb {
-  background: rgba(145, 132, 96, 0.34);
-  border-color: rgba(250, 244, 230, 0.9);
+  background: rgba(191, 164, 106, 0.34);
+  border-color: rgba(11, 11, 10, 0.9);
 }
 
 .aura-glass {
   position: relative;
   overflow: hidden;
   background:
-    linear-gradient(145deg, rgba(255, 253, 247, 0.86), rgba(246, 236, 214, 0.7)),
-    rgba(255, 250, 240, 0.76);
-  border: 1px solid rgba(88, 76, 53, 0.14);
-  box-shadow: 0 24px 70px rgba(99, 80, 48, 0.12);
+    linear-gradient(145deg, rgba(30, 28, 24, 0.88), rgba(16, 15, 13, 0.78)),
+    rgba(21, 20, 18, 0.82);
+  border: 1px solid rgba(191, 164, 106, 0.16);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
   backdrop-filter: blur(18px);
 }
 
 html.light .aura-glass {
   background:
-    linear-gradient(145deg, rgba(255, 253, 247, 0.86), rgba(246, 236, 214, 0.7)),
-    rgba(255, 250, 240, 0.76);
-  border-color: rgba(88, 76, 53, 0.13);
-  box-shadow: 0 24px 70px rgba(99, 80, 48, 0.12);
+    linear-gradient(145deg, rgba(30, 28, 24, 0.88), rgba(16, 15, 13, 0.78)),
+    rgba(21, 20, 18, 0.82);
+  border-color: rgba(191, 164, 106, 0.16);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
 }
 
 html.dark .aura-glass {
-  background: rgba(79, 82, 62, 0.72);
-  border-color: rgba(246, 239, 223, 0.16);
-  box-shadow: 0 22px 70px rgba(34, 36, 25, 0.16);
+  background:
+    linear-gradient(145deg, rgba(30, 28, 24, 0.88), rgba(16, 15, 13, 0.78)),
+    rgba(21, 20, 18, 0.82);
+  border-color: rgba(191, 164, 106, 0.16);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
 }
 
 .aura-glass::before {
@@ -156,12 +158,12 @@ html.dark .aura-glass {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.45), transparent 34%, rgba(126, 145, 93, 0.08));
-  opacity: 0.6;
+  background: linear-gradient(120deg, rgba(244, 239, 228, 0.08), transparent 34%, rgba(191, 164, 106, 0.08));
+  opacity: 1;
 }
 
 html.light .aura-glass::before {
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.45), transparent 34%, rgba(126, 145, 93, 0.08));
+  background: linear-gradient(120deg, rgba(244, 239, 228, 0.08), transparent 34%, rgba(191, 164, 106, 0.08));
 }
 
 .aura-glass > * {
@@ -171,7 +173,7 @@ html.light .aura-glass::before {
 
 .aura-luxury-line {
   height: 1px;
-  background: linear-gradient(90deg, transparent, hsl(var(--primary)), rgba(184, 119, 79, 0.45), transparent);
+  background: linear-gradient(90deg, transparent, hsl(var(--primary)), rgba(244, 239, 228, 0.18), transparent);
 }
 
 .clearpth-page-kicker {
@@ -189,7 +191,7 @@ html.light .aura-glass::before {
   }
 
   .aura-glass {
-    box-shadow: 0 18px 46px rgba(34, 36, 25, 0.13);
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.32);
   }
 
   .aura-luxury-line {
@@ -230,15 +232,15 @@ textarea {
 
 .aura-animated-backdrop::before {
   background:
-    linear-gradient(100deg, transparent 0 18%, rgba(130, 148, 96, 0.26) 26%, transparent 42%),
-    linear-gradient(150deg, transparent 0 44%, rgba(199, 143, 96, 0.2) 56%, transparent 70%);
+    linear-gradient(100deg, transparent 0 18%, rgba(191, 164, 106, 0.13) 26%, transparent 42%),
+    linear-gradient(150deg, transparent 0 44%, rgba(244, 239, 228, 0.06) 56%, transparent 70%);
   animation: aura-drift 18s ease-in-out infinite alternate;
 }
 
 .aura-animated-backdrop::after {
   background:
-    linear-gradient(24deg, transparent 0 36%, rgba(255, 255, 255, 0.42) 48%, transparent 58%),
-    linear-gradient(122deg, transparent 0 58%, rgba(120, 139, 94, 0.18) 68%, transparent 78%);
+    linear-gradient(24deg, transparent 0 36%, rgba(244, 239, 228, 0.08) 48%, transparent 58%),
+    linear-gradient(122deg, transparent 0 58%, rgba(191, 164, 106, 0.1) 68%, transparent 78%);
   animation: aura-drift-reverse 22s ease-in-out infinite alternate;
 }
 
@@ -252,12 +254,12 @@ textarea {
 
 .aura-float-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(88, 76, 53, 0.28);
-  box-shadow: 0 18px 46px rgba(88, 76, 53, 0.13);
+  border-color: rgba(191, 164, 106, 0.28);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.28);
 }
 
 .aura-path-line {
-  background: linear-gradient(180deg, hsl(var(--primary)), rgba(184, 119, 79, 0.65), hsl(var(--primary)));
+  background: linear-gradient(180deg, hsl(var(--primary)), rgba(244, 239, 228, 0.22), hsl(var(--primary)));
 }
 
 .animate-onboarding-forward {
@@ -316,10 +318,10 @@ textarea {
   0%,
   100% {
     transform: translateY(0);
-    text-shadow: 0 18px 48px rgba(34, 36, 25, 0.12);
+    text-shadow: 0 18px 48px rgba(0, 0, 0, 0.34);
   }
   50% {
     transform: translateY(-10px);
-    text-shadow: 0 28px 68px rgba(34, 36, 25, 0.18);
+    text-shadow: 0 28px 68px rgba(191, 164, 106, 0.16);
   }
 }

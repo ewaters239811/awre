@@ -32,7 +32,7 @@ export default function HomePage() {
 
         <div className="aura-glass hidden rounded-xl p-4 md:block md:rounded-lg md:p-6">
           <div className="relative overflow-hidden rounded-md border border-border bg-card p-5">
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-[#c48b5f] to-primary" />
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-[#bfa46a] to-primary" />
             <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
               How It Works
             </p>
@@ -47,7 +47,7 @@ export default function HomePage() {
               <div className="flex flex-col items-center">
                 <span className="h-3 w-3 rounded-full bg-primary" />
                 <span className="aura-path-line my-1 w-px flex-1 rounded-full" />
-                <span className="h-3 w-3 rounded-full bg-[#c48b5f]" />
+                <span className="h-3 w-3 rounded-full bg-[#bfa46a]" />
                 <span className="aura-path-line my-1 w-px flex-1 rounded-full" />
                 <span className="h-3 w-3 rounded-full bg-primary" />
               </div>

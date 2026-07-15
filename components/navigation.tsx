@@ -71,7 +71,7 @@ export function Navigation() {
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/82 backdrop-blur-2xl">
       <nav className="container flex h-12 items-center justify-between lg:h-20">
         <Link href="/" className="flex items-center gap-3">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-foreground text-background shadow-sm lg:h-9 lg:w-9">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-primary/20 bg-card/35 text-foreground shadow-sm lg:h-9 lg:w-9">
             <svg
               viewBox="0 0 36 36"
               className="h-4 w-4 lg:h-6 lg:w-6"

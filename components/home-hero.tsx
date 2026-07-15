@@ -106,7 +106,7 @@ export function HomeHero() {
 function PublicHomeHero() {
   return (
     <div className="flex min-h-[calc(100dvh-7rem)] max-w-4xl flex-col items-center justify-center text-center md:min-h-[calc(100vh-5rem)]">
-      <span className="mb-7 flex h-16 w-16 animate-cover-float items-center justify-center rounded-2xl border border-border bg-foreground text-background shadow-2xl sm:h-20 sm:w-20">
+      <span className="mb-7 flex h-16 w-16 animate-cover-float items-center justify-center rounded-2xl border border-primary/22 bg-card/30 text-foreground shadow-[0_18px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:h-20 sm:w-20">
         <svg
           viewBox="0 0 36 36"
           className="h-9 w-9 sm:h-11 sm:w-11"
@@ -135,9 +135,12 @@ function PublicHomeHero() {
           <circle cx="18" cy="18" r="2.2" fill="currentColor" />
         </svg>
       </span>
-      <h1 className="animate-cover-float font-serif text-[4.7rem] font-semibold leading-[0.88] text-foreground drop-shadow-sm sm:text-8xl lg:text-[8.5rem]">
-        ClearPth
-      </h1>
+      <div className="relative">
+        <div className="pointer-events-none absolute inset-x-[-16%] top-1/2 h-16 -translate-y-1/2 rounded-full bg-primary/18 blur-3xl sm:h-24" />
+        <h1 className="relative animate-cover-float font-serif text-[4.7rem] font-semibold leading-[0.88] text-foreground drop-shadow-[0_0_32px_rgba(191,164,106,0.26)] sm:text-8xl lg:text-[8.5rem]">
+          ClearPth
+        </h1>
+      </div>
       <div className="aura-luxury-line mx-auto mt-7 w-40 max-w-lg sm:mt-9 sm:w-64" />
       <p className="mt-7 max-w-xl text-xl leading-8 text-foreground/88 sm:mt-9 sm:text-3xl sm:leading-10">
         Become aligned with the life you want.
