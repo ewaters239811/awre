@@ -174,21 +174,21 @@ export function GuideChat() {
   };
 
   return (
-    <section className="mx-auto max-w-5xl md:mt-8">
+    <section className="mx-auto max-w-4xl md:mt-8">
       <div className="flex min-h-[calc(100dvh-8.75rem)] flex-col overflow-hidden rounded-none border-border/60 bg-transparent md:aura-glass md:min-h-[680px] md:rounded-lg">
-        <div className="border-b border-border/60 pb-4 pt-2 md:p-5">
+        <div className="border-b border-border/50 pb-5 pt-3 md:p-6">
           <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
             Guide
           </p>
           <h1 className="mt-1 font-serif text-[2rem] font-semibold leading-tight md:mt-2 md:text-4xl">
             What&apos;s on your mind?
           </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground md:mt-3">
+          <p className="mt-3 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
             Talk through a want, mood, decision, delay, or repeating thought.
           </p>
         </div>
 
-        <div className="min-h-[300px] flex-1 space-y-3 overflow-y-auto py-4 md:max-h-[58vh] md:min-h-[420px] md:space-y-4 md:p-5">
+        <div className="min-h-[300px] flex-1 space-y-4 overflow-y-auto py-5 md:max-h-[58vh] md:min-h-[420px] md:space-y-5 md:p-6">
           {activeConversation?.messages.map((message) => (
             <div
               key={message.createdAt}
@@ -199,7 +199,7 @@ export function GuideChat() {
             >
               <div
                 className={cn(
-                  "max-w-[94%] rounded-2xl border px-4 py-3 text-[15px] leading-7 shadow-sm sm:max-w-[85%] md:rounded-md md:text-sm md:leading-6",
+                  "max-w-[92%] rounded-2xl border px-4 py-3.5 text-[15px] leading-7 shadow-sm sm:max-w-[82%] md:rounded-md md:px-5 md:py-4 md:text-[15px] md:leading-7",
                   message.role === "user"
                     ? "border-foreground/25 bg-foreground text-background"
                     : "border-border/70 bg-card text-muted-foreground",
@@ -233,7 +233,7 @@ export function GuideChat() {
             </div>
           ))}
           {isSending ? (
-            <div className="max-w-[94%] rounded-2xl border border-border/70 bg-card px-4 py-3 text-sm text-muted-foreground sm:max-w-[85%] md:rounded-md">
+              <div className="max-w-[92%] rounded-2xl border border-border/70 bg-card px-4 py-3 text-sm text-muted-foreground sm:max-w-[82%] md:rounded-md">
               Thinking with you...
             </div>
           ) : null}
@@ -269,7 +269,7 @@ export function GuideChat() {
         </div>
 
         <form
-          className="sticky bottom-0 border-t border-border/60 bg-background/94 py-3 backdrop-blur-xl md:bg-card/40 md:p-5"
+          className="sticky bottom-0 border-t border-border/50 bg-background/94 py-4 backdrop-blur-xl md:bg-card/40 md:p-6"
           onSubmit={sendMessage}
         >
           <Textarea

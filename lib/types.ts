@@ -67,6 +67,8 @@ export type JournalEntry = {
   id: string;
   date: string;
   content: string;
+  alignedAction?: string;
+  alignedActionCompletedAt?: string;
   createdAt: string;
   updatedAt: string;
 };

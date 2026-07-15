@@ -7,10 +7,14 @@ import { AlignmentResult } from "@/components/alignment-result";
 import { DailyFlow } from "@/components/daily-flow";
 import { TeachingQuote } from "@/components/teaching-quote";
 import { Button } from "@/components/ui/button";
-import { saveCheckInToAccount } from "@/lib/account-data";
+import { saveCheckInToAccount, saveJournalEntryToAccount } from "@/lib/account-data";
 import { buildAiReadingSignature } from "@/lib/ai-reading-signature";
 import { getCheckInDateKey, getCheckIns, updateCheckIn } from "@/lib/alignment";
-import { getJournalEntries } from "@/lib/journal-storage";
+import {
+  createEmptyJournalEntry,
+  getJournalEntries,
+  saveJournalEntry,
+} from "@/lib/journal-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
@@ -41,6 +45,32 @@ export default function ReviewPage() {
     (entry) => entry.date === calendarTodayKey,
   );
   const report = buildTodayReport(latestTodayCheckIn, todayJournal);
+  const alignedAction =
+    todayJournal?.alignedAction?.trim() ||
+    latestTodayCheckIn?.aiAlignment?.actionStep ||
+    latestTodayCheckIn?.prescription.actionStep ||
+    report.correctionDetail;
+  const actionCompleted = Boolean(todayJournal?.alignedActionCompletedAt);
+
+  const toggleAlignedAction = async () => {
+    if (!latestTodayCheckIn) return;
+
+    const existing = todayJournal ?? createEmptyJournalEntry(calendarTodayKey);
+    const nextEntry: JournalEntry = {
+      ...existing,
+      alignedAction,
+      alignedActionCompletedAt: actionCompleted ? undefined : new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    saveJournalEntry(nextEntry);
+    setJournalEntries(getJournalEntries());
+    try {
+      await saveJournalEntryToAccount(nextEntry);
+    } catch {
+      // The local mirror stays responsive even if the account save is delayed.
+    }
+  };
 
   useEffect(() => {
     if (!latestTodayCheckIn) {
@@ -112,13 +142,13 @@ export default function ReviewPage() {
   }, [latestTodayCheckIn]);
 
   return (
-    <main className="container py-6 md:py-12">
+    <main className="container py-7 md:py-12">
       <section className="mx-auto max-w-6xl">
         <div className="flex flex-col gap-4 border-b border-border/60 pb-5 md:flex-row md:items-end md:justify-between md:pb-7">
           <div>
             <p className="clearpth-page-kicker">Today</p>
             <h1 className="clearpth-page-title">Today&apos;s Gap</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:mt-4 md:text-base">
+            <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
               See how today&apos;s state relates to the life you already named.
             </p>
           </div>
@@ -137,7 +167,7 @@ export default function ReviewPage() {
         />
       </section>
 
-      <section className="mx-auto mt-5 max-w-6xl overflow-hidden rounded-2xl border border-border/70 bg-card/35 md:mt-6 md:rounded-md">
+      <section className="mx-auto mt-5 max-w-6xl overflow-hidden rounded-2xl border border-border/60 bg-card/28 md:mt-6 md:rounded-md">
         <div className="grid grid-cols-2 md:grid-cols-4">
           <ReviewStat
             label="Score Today"
@@ -178,8 +208,8 @@ export default function ReviewPage() {
         </section>
       ) : (
         <>
-          <section className="mx-auto mt-8 grid max-w-6xl gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-            <article className="rounded-2xl border border-foreground/20 bg-card p-5 md:rounded-md md:p-7">
+          <section className="mx-auto mt-8 grid max-w-6xl gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+            <article className="rounded-2xl border border-foreground/16 bg-card/75 p-5 md:rounded-md md:p-7">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden />
                 <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
@@ -194,7 +224,7 @@ export default function ReviewPage() {
               </p>
             </article>
 
-            <article className="rounded-2xl border border-border/70 bg-card/35 p-5 md:rounded-md md:p-7">
+            <article className="rounded-2xl border border-border/60 bg-card/30 p-5 md:rounded-md md:p-7">
               <div className="flex items-center gap-3">
                 <Target className="h-5 w-5 text-primary" aria-hidden />
                 <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
@@ -208,6 +238,34 @@ export default function ReviewPage() {
                 {report.correctionDetail}
               </p>
             </article>
+          </section>
+
+          <section className="mx-auto mt-5 max-w-6xl rounded-2xl border border-primary/20 bg-primary/10 p-5 md:rounded-md md:p-6">
+            <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+              <div>
+                <div className="flex items-center gap-3">
+                  <Target className="h-5 w-5 text-primary" aria-hidden />
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
+                    Today&apos;s Aligned Action
+                  </p>
+                </div>
+                <p className="mt-3 max-w-3xl font-serif text-2xl font-semibold leading-tight text-foreground md:text-3xl">
+                  {alignedAction}
+                </p>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  This is the one visible step that closes the gap today.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant={actionCompleted ? "secondary" : "default"}
+                className="w-full shrink-0 md:w-auto"
+                onClick={toggleAlignedAction}
+              >
+                <CheckCircle2 className="h-4 w-4" aria-hidden />
+                {actionCompleted ? "Completed" : "Mark Complete"}
+              </Button>
+            </div>
           </section>
 
           <section className="mt-8">

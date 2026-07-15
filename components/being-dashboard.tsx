@@ -7,8 +7,11 @@ import {
   ArrowRight,
   BarChart3,
   CalendarDays,
+  CheckCircle2,
   Compass,
   Gauge,
+  TrendingDown,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HistoryCalendar } from "@/components/history-calendar";
@@ -39,6 +42,14 @@ type GapInsight = {
   progress: number;
   missingBridge: string;
   nextMove: string;
+};
+
+type PatternMirror = {
+  weekAverage: string;
+  biggestLeak: string;
+  improvesScore: string;
+  lowersScore: string;
+  adjustment: string;
 };
 
 const ANALYSIS_CACHE_KEY = "clearpth.beingAnalysis.v1";
@@ -140,13 +151,17 @@ export function BeingDashboard() {
     () => buildGapInsight(dashboard, onboardingProfile),
     [dashboard, onboardingProfile],
   );
+  const patternMirror = useMemo(
+    () => buildPatternMirror(checkIns, journalEntries, dashboard),
+    [checkIns, journalEntries, dashboard],
+  );
 
   return (
-    <main className="container py-6 md:py-12">
+    <main className="container py-7 md:py-12">
       <section className="mx-auto max-w-6xl">
         <p className="clearpth-page-kicker">Patterns</p>
         <h1 className="clearpth-page-title">What Keeps Repeating?</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:mt-4 md:text-base">
+        <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
           The point is not more data. The point is seeing the pattern clearly
           enough to move differently.
         </p>
@@ -171,16 +186,16 @@ export function BeingDashboard() {
         </section>
       ) : (
         <>
-          <section className="mx-auto mt-6 grid max-w-6xl gap-5 lg:mt-8 lg:grid-cols-[0.9fr_1.1fr]">
-            <div className="aura-glass rounded-2xl p-5 md:rounded-lg md:p-6">
+          <section className="mx-auto mt-7 grid max-w-6xl gap-5 lg:mt-8 lg:grid-cols-[0.86fr_1.14fr]">
+            <div className="aura-glass rounded-2xl p-5 md:rounded-lg md:p-7">
               <div className="flex items-center gap-3">
                 <Gauge className="h-5 w-5 text-primary" aria-hidden />
                 <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
                   Current Score
                 </p>
               </div>
-              <div className="mt-5 flex items-end gap-3 md:mt-6">
-                <span className="font-serif text-6xl font-semibold leading-none text-primary sm:text-8xl">
+              <div className="mt-6 flex items-end gap-3">
+                <span className="font-serif text-7xl font-semibold leading-none text-primary sm:text-8xl">
                   {dashboard.latestScore?.toFixed(1) ?? "-"}
                 </span>
                 <span className="pb-3 text-xl text-muted-foreground">/ 10</span>
@@ -211,7 +226,7 @@ export function BeingDashboard() {
               </div>
             </div>
 
-            <div className="aura-glass rounded-2xl p-5 md:rounded-lg md:p-6">
+            <div className="aura-glass rounded-2xl p-5 md:rounded-lg md:p-7">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
@@ -227,7 +242,7 @@ export function BeingDashboard() {
                   </span>
                 ) : null}
               </div>
-              <div className="mt-5 grid gap-3 md:gap-4">
+              <div className="mt-6 grid gap-3 md:gap-4">
                 <AnalysisBlock label="Summary" body={analysis?.summary} />
                 <AnalysisBlock label="Root Cause" body={analysis?.rootCause} />
                 <AnalysisBlock label="Hidden Debt" body={analysis?.hiddenDebt} />
@@ -242,9 +257,11 @@ export function BeingDashboard() {
 
           <GapInsightCard insight={gapInsight} />
 
+          <PatternMirrorSection mirror={patternMirror} />
+
           <section className="mx-auto mt-8 grid max-w-6xl gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-4">
             {dashboard.metrics.map((metric) => (
-              <article key={metric.label} className="rounded-2xl border border-border/65 bg-card/35 p-4 md:aura-glass md:rounded-lg md:p-5">
+              <article key={metric.label} className="rounded-2xl border border-border/60 bg-card/28 p-4 md:aura-glass md:rounded-lg md:p-5">
                 <div className="flex items-center gap-3">
                   <MetricIcon label={metric.label} />
                   <p className="text-[10px] uppercase tracking-[0.14em] text-primary md:text-xs md:tracking-[0.22em]">
@@ -261,7 +278,7 @@ export function BeingDashboard() {
             ))}
           </section>
 
-          <section className="mx-auto mt-8 max-w-6xl rounded-2xl border border-border/65 bg-card/35 p-4 md:aura-glass md:rounded-lg md:p-5">
+          <section className="mx-auto mt-8 max-w-6xl rounded-2xl border border-border/60 bg-card/28 p-4 md:aura-glass md:rounded-lg md:p-6">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <BarChart3 className="h-5 w-5 text-primary" aria-hidden />
@@ -554,6 +571,79 @@ function GapInsightCard({ insight }: { insight: GapInsight }) {
   );
 }
 
+function PatternMirrorSection({ mirror }: { mirror: PatternMirror }) {
+  const cards = [
+    {
+      label: "This Week",
+      value: mirror.weekAverage,
+      detail: "Your average recorded state over the last seven days.",
+      icon: Gauge,
+    },
+    {
+      label: "Biggest Leak",
+      value: mirror.biggestLeak,
+      detail: "The pillar most likely to pull the whole system out of agreement.",
+      icon: TrendingDown,
+    },
+    {
+      label: "Raises Score",
+      value: mirror.improvesScore,
+      detail: "What seems to support a clearer state when it appears.",
+      icon: TrendingUp,
+    },
+    {
+      label: "Lowers Score",
+      value: mirror.lowersScore,
+      detail: "What seems connected to lower or less stable days.",
+      icon: Compass,
+    },
+    {
+      label: "Adjustment",
+      value: mirror.adjustment,
+      detail: "The one refinement to practice before adding more complexity.",
+      icon: CheckCircle2,
+    },
+  ];
+
+  return (
+    <section className="mx-auto mt-8 max-w-6xl">
+      <div className="mb-5">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
+          Personal Mirror
+        </p>
+        <h2 className="mt-2 font-serif text-3xl font-semibold leading-tight md:text-4xl">
+          What your pattern is saying.
+        </h2>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-5">
+        {cards.map((card) => {
+          const Icon = card.icon;
+
+          return (
+            <article
+              key={card.label}
+              className="rounded-2xl border border-border/65 bg-card/35 p-4 md:aura-glass md:rounded-lg md:p-5"
+            >
+              <div className="flex items-center gap-3">
+                <Icon className="h-4 w-4 text-primary" aria-hidden />
+                <p className="text-[10px] uppercase tracking-[0.14em] text-primary md:text-xs md:tracking-[0.22em]">
+                  {card.label}
+                </p>
+              </div>
+              <p className="mt-3 text-lg font-medium leading-snug text-foreground">
+                {card.value}
+              </p>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                {card.detail}
+              </p>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function GapState({ label, value }: { label: string; value: string }) {
   return (
     <article className="rounded-2xl border border-border/70 bg-card/45 p-4 md:rounded-md md:p-5">
@@ -616,6 +706,70 @@ function buildGapInsight(
     missingBridge: getMissingBridge(bridgePillar, latestScore),
     nextMove: getBridgeMove(bridgePillar),
   };
+}
+
+function buildPatternMirror(
+  checkIns: CheckInResult[],
+  journalEntries: JournalEntry[],
+  dashboard: ReturnType<typeof buildBeingDashboardData>,
+): PatternMirror {
+  if (checkIns.length === 0) {
+    return {
+      weekAverage: "Unmeasured",
+      biggestLeak: "No signal yet",
+      improvesScore: "Complete check-ins",
+      lowersScore: "Not visible yet",
+      adjustment: "Create today's signal",
+    };
+  }
+
+  const sorted = [...checkIns].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+  );
+  const recentWeek = sorted.filter((item) => {
+    const checkInDate = new Date(`${getCheckInDateKey(item)}T12:00:00`);
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+    return checkInDate >= sevenDaysAgo;
+  });
+  const weekItems = recentWeek.length ? recentWeek : sorted.slice(-7);
+  const weekAverage = averageScore(weekItems.map((item) => item.beingScore));
+  const bestDay = [...sorted].sort((a, b) => b.beingScore - a.beingScore)[0];
+  const lowestDay = [...sorted].sort((a, b) => a.beingScore - b.beingScore)[0];
+  const completedActions = journalEntries.filter(
+    (entry) => entry.alignedActionCompletedAt,
+  ).length;
+  const actionSignal =
+    completedActions > 0
+      ? "completed aligned actions"
+      : "clear Willing scores";
+
+  return {
+    weekAverage: `${weekAverage.toFixed(1)} / 10`,
+    biggestLeak: dashboard.weakestPillar
+      ? `${dashboard.weakestPillar} is asking for repair`
+      : "No leak visible yet",
+    improvesScore: bestDay
+      ? `${bestDay.strongestPillar} plus ${actionSignal}`
+      : "More signal needed",
+    lowersScore: lowestDay
+      ? `${lowestDay.weakestPillar} falling out of agreement`
+      : "More signal needed",
+    adjustment: getPatternAdjustment(dashboard.weakestPillar),
+  };
+}
+
+function getPatternAdjustment(pillar: PillarName | null) {
+  if (!pillar) return "Complete one check-in today.";
+
+  const adjustments: Record<PillarName, string> = {
+    Thinking: "Start the day by naming one cleaner interpretation.",
+    Willing: "Choose one visible action and finish it before reflection expands.",
+    Feeling: "Regulate your body before making the next important choice.",
+  };
+
+  return adjustments[pillar];
 }
 
 function getNextThreshold(score: number) {
@@ -872,6 +1026,11 @@ function formatShortDate(date: string) {
 
 function formatDateKey(dateKey: string) {
   return new Date(`${dateKey}T12:00:00`).toLocaleDateString();
+}
+
+function averageScore(values: number[]) {
+  if (values.length === 0) return 0;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
 function buildAnalysisSignature(

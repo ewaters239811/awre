@@ -114,13 +114,13 @@ export default function CheckInPage() {
   };
 
   return (
-    <main className="container py-5 md:py-12">
-      <div className="mx-auto max-w-5xl">
+    <main className="container py-7 md:py-12">
+      <div className="mx-auto max-w-4xl">
         <p className="clearpth-page-kicker">Daily Check In</p>
         <h1 className="clearpth-page-title">
           Measure Today&apos;s Gap
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:mt-4 md:text-base">
+        <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base md:leading-7">
           Score how your thoughts, actions, and emotions relate to the life you
           already named. Today is about alignment, not choosing a new desire.
         </p>
@@ -133,7 +133,7 @@ export default function CheckInPage() {
         </div>
 
         {profile?.primaryGoal.trim() ? (
-          <section className="aura-glass mt-5 rounded-xl p-4 md:mt-6 md:rounded-lg md:p-5">
+          <section className="clearpth-soft-card clearpth-panel-pad mt-5 md:mt-6">
             <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
               What You Want
             </p>
@@ -144,7 +144,7 @@ export default function CheckInPage() {
         ) : null}
 
         {!hasProfile ? (
-          <section className="aura-glass mt-5 rounded-xl p-4 md:mt-6 md:rounded-lg md:p-5">
+          <section className="clearpth-soft-card clearpth-panel-pad mt-5 md:mt-6">
             <p className="text-xs uppercase tracking-[0.24em] text-primary">
               First Question
             </p>
@@ -165,7 +165,7 @@ export default function CheckInPage() {
         )}
 
         {todaysCheckIn ? (
-          <section className="aura-glass mt-8 rounded-lg p-6 md:p-7">
+          <section className="aura-glass mt-8 rounded-2xl p-6 md:rounded-lg md:p-7">
             <p className="text-xs uppercase tracking-[0.24em] text-primary">
               Today&apos;s Check In Is Complete
             </p>
@@ -192,7 +192,7 @@ export default function CheckInPage() {
             </div>
           </section>
         ) : (
-        <form className="mt-6 space-y-4 md:mt-8 md:space-y-5" onSubmit={submit}>
+        <form className="mt-7 space-y-5 md:mt-8 md:space-y-6" onSubmit={submit}>
           <CheckInGate
             eyebrow="Gate 01"
             title="Scores"
@@ -320,8 +320,8 @@ function CheckInGate({
   children: ReactNode;
 }) {
   return (
-    <section className="aura-glass rounded-2xl p-4 md:rounded-lg md:p-6">
-      <div className="grid gap-4 md:grid-cols-[0.75fr_1.25fr] md:items-start md:gap-5">
+    <section className="aura-glass rounded-2xl p-5 md:rounded-lg md:p-6">
+      <div className="grid gap-5 md:grid-cols-[0.7fr_1.3fr] md:items-start md:gap-6">
         <div>
           <div className="flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary md:h-10 md:w-10 md:rounded-md">
@@ -338,7 +338,7 @@ function CheckInGate({
             {description}
           </p>
         </div>
-        <div className="md:rounded-lg md:border md:border-border/55 md:bg-card/55 md:p-4">
+        <div className="space-y-5 md:rounded-lg md:border md:border-border/55 md:bg-card/45 md:p-5">
           {children}
         </div>
       </div>

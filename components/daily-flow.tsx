@@ -24,7 +24,7 @@ export function DailyFlow({
   const state = { checkedIn, readToday, journaled };
 
   return (
-    <section className="rounded-2xl border border-border/65 bg-card/38 p-3 sm:rounded-xl sm:p-4">
+    <section className="rounded-2xl border border-border/55 bg-card/28 p-4 sm:rounded-xl sm:p-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground sm:text-xs sm:tracking-[0.22em]">
           Today
@@ -33,7 +33,7 @@ export function DailyFlow({
           {journaled ? "Complete" : "Next step"}
         </p>
       </div>
-      <div className="mt-3 grid grid-cols-3 gap-2 sm:mt-4">
+      <div className="mt-4 grid grid-cols-3 gap-2 sm:mt-4">
         {steps.map((step, index) => {
           const complete = state[step.key];
 
@@ -42,7 +42,7 @@ export function DailyFlow({
               key={step.key}
               href={step.href}
               className={cn(
-                "rounded-xl border px-2 py-2.5 text-xs transition sm:rounded-lg sm:px-3 sm:py-3 sm:text-sm",
+                "rounded-xl border px-2 py-3 text-xs transition sm:rounded-lg sm:px-3 sm:py-3 sm:text-sm",
                 complete
                   ? "border-primary/35 bg-primary/10 text-foreground"
                   : "border-border bg-background/40 text-muted-foreground hover:border-foreground/30 hover:text-foreground",
