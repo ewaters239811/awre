@@ -5,9 +5,7 @@ import {
   getCheckInDateKey,
   replaceCheckIns,
 } from "@/lib/alignment";
-import {
-  replaceJournalEntries,
-} from "@/lib/journal-storage";
+import { replaceJournalEntries } from "@/lib/journal-storage";
 import {
   clearOnboardingProfile,
   saveOnboardingProfile,

@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { syncLocalDataToAccount } from "@/lib/account-data";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
@@ -77,13 +77,13 @@ export default function LoginPage() {
         return;
       }
 
-      await syncLocalDataToAccount();
+      const syncResult = await syncLocalDataToAccount();
       setStatus(
         mode === "sign-up"
           ? "Account created and signed in. Your record is connected to your profile."
           : "Signed in. Your record is connected to your profile.",
       );
-      router.push("/");
+      router.push(syncResult?.hasOnboardingProfile ? "/" : "/onboarding");
     } catch {
       setError("Something went wrong while connecting your account.");
     } finally {
@@ -184,20 +184,7 @@ export default function LoginPage() {
       <section className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
         <div>
           <p className="clearpth-page-kicker">Account</p>
-          <h1 className="clearpth-page-title">Save Your Path</h1>
-          <p className="mt-4 max-w-xl leading-7 text-muted-foreground">
-            Create a ClearPth account so your check-ins, journal entries,
-            onboarding profile, and analysis can follow you across devices.
-          </p>
-          <div className="mt-6 rounded-md border border-border/70 bg-card/35 p-4">
-            <div className="flex items-start gap-3">
-              <ShieldCheck className="mt-1 h-5 w-5 text-primary" aria-hidden />
-              <p className="text-sm leading-6 text-muted-foreground">
-                ClearPth saves personal records only when you are signed in.
-                Guest sessions are private and unsaved.
-              </p>
-            </div>
-          </div>
+          <h1 className="clearpth-page-title">Start Aligning</h1>
         </div>
 
         <form className="aura-glass rounded-lg p-5 md:p-6" onSubmit={submit}>

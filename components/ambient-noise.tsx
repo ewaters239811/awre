@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +10,7 @@ const AUDIO_CHOICE_KEY = "clearpth.ambientNoise.enabled";
 type AudioState = "starting" | "blocked" | "playing" | "muted";
 
 export function AmbientNoise() {
+  const pathname = usePathname();
   const audioContext = useRef<AudioContext | null>(null);
   const nodes = useRef<AudioNode[]>([]);
   const stopHandles = useRef<Array<() => void>>([]);
@@ -239,6 +241,10 @@ export function AmbientNoise() {
       stopNoise();
     };
   }, [startNoise, stopNoise]);
+
+  if (pathname === "/" || pathname === "/login" || pathname === "/onboarding") {
+    return null;
+  }
 
   return (
     <div className="fixed right-16 top-2.5 z-50 lg:bottom-4 lg:right-4 lg:top-auto">

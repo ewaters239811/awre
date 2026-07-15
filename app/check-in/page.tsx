@@ -91,12 +91,6 @@ export default function CheckInPage() {
     }
 
     try {
-      const account = await getCurrentAccount();
-      if (!account) {
-        setError("Sign in or create an account to save your check-in.");
-        return;
-      }
-
       const existing = getCheckInForDate(todayKey);
       if (existing) {
         setTodaysCheckIn(existing);
@@ -105,6 +99,11 @@ export default function CheckInPage() {
       }
 
       const result = buildResult(draft);
+      const account = await getCurrentAccount();
+      if (!account) {
+        setError("Sign in or create an account to save your check-in.");
+        return;
+      }
       await saveCheckInToAccount(result);
       saveCheckIn(result);
       setTodaysCheckIn(result);

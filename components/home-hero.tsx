@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import {
   getJournalEntries,
   getJournalEntryForDate,
 } from "@/lib/journal-storage";
+import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
 import type { CheckInResult, JournalEntry } from "@/lib/types";
@@ -35,9 +37,11 @@ type HomeState = {
   todaysJournal: JournalEntry | null;
   totalCheckIns: number;
   totalJournals: number;
+  hasProfile: boolean;
 };
 
 export function HomeHero() {
+  const router = useRouter();
   const checkInToday = useCurrentCheckInDateKey();
   const calendarToday = useCurrentDateKey();
   const [state, setState] = useState<HomeState>({
@@ -47,6 +51,7 @@ export function HomeHero() {
     todaysJournal: null,
     totalCheckIns: 0,
     totalJournals: 0,
+    hasProfile: false,
   });
   const [loaded, setLoaded] = useState(false);
 
@@ -64,6 +69,7 @@ export function HomeHero() {
             todaysJournal: getJournalEntryForDate(calendarToday),
             totalCheckIns: getCheckIns().length,
             totalJournals: getJournalEntries().length,
+            hasProfile: Boolean(getOnboardingProfile()),
           });
         })
         .finally(() => {
@@ -84,40 +90,65 @@ export function HomeHero() {
     return <PublicHomeHero />;
   }
 
+  if (!state.hasProfile) {
+    queueMicrotask(() => router.replace("/onboarding"));
+    return (
+      <div className="max-w-3xl pt-2 md:pt-0">
+        <p className="clearpth-page-kicker">Setup</p>
+        <h1 className="clearpth-page-title">Preparing your path.</h1>
+      </div>
+    );
+  }
+
   return <PersonalHomeHero state={state} />;
 }
 
 function PublicHomeHero() {
   return (
-    <div className="max-w-3xl pt-2 md:pt-0">
-      <p className="mb-3 text-[11px] uppercase tracking-[0.18em] text-primary sm:mb-4 sm:text-sm sm:tracking-[0.28em]">
+    <div className="flex min-h-[calc(100dvh-7rem)] max-w-4xl flex-col items-center justify-center text-center md:min-h-[calc(100vh-5rem)]">
+      <span className="mb-7 flex h-16 w-16 animate-cover-float items-center justify-center rounded-2xl border border-border bg-foreground text-background shadow-2xl sm:h-20 sm:w-20">
+        <svg
+          viewBox="0 0 36 36"
+          className="h-9 w-9 sm:h-11 sm:w-11"
+          fill="none"
+          aria-hidden
+        >
+          <path
+            d="M18 4 29 18 18 32 7 18 18 4Z"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M12 21.5c2.1 2.6 5.6 3.8 9 2.9 3.5-.9 6-3.9 6.1-7.3"
+            stroke="currentColor"
+            strokeWidth="2.6"
+            strokeLinecap="round"
+          />
+          <path
+            d="M24 14.5c-2-2.2-5.1-3.1-8.1-2.3-3.5.9-6 3.9-6.1 7.3"
+            stroke="currentColor"
+            strokeWidth="2.6"
+            strokeLinecap="round"
+            opacity="0.55"
+          />
+          <circle cx="18" cy="18" r="2.2" fill="currentColor" />
+        </svg>
+      </span>
+      <h1 className="animate-cover-float font-serif text-[4.7rem] font-semibold leading-[0.88] text-foreground drop-shadow-sm sm:text-8xl lg:text-[8.5rem]">
         ClearPth
-      </p>
-      <h1 className="font-serif text-[3.25rem] font-semibold leading-[0.98] text-foreground sm:text-7xl lg:text-8xl">
-        Close the gap.
       </h1>
-      <div className="aura-luxury-line mt-6 max-w-lg" />
-      <p className="mt-4 max-w-2xl text-[15px] leading-7 text-foreground/86 sm:mt-6 sm:text-2xl sm:leading-9">
-        Name what you want once. Then use ClearPth each day to see whether your
-        thoughts, actions, and emotions are becoming aligned enough to hold it.
+      <div className="aura-luxury-line mx-auto mt-7 w-40 max-w-lg sm:mt-9 sm:w-64" />
+      <p className="mt-7 max-w-xl text-xl leading-8 text-foreground/88 sm:mt-9 sm:text-3xl sm:leading-10">
+        Become aligned with the life you want.
       </p>
-      <Button asChild size="lg" className="mt-7 w-full sm:w-auto">
-        <Link href="/onboarding">
-          Name What You Want
-          <ArrowRight className="h-4 w-4" aria-hidden />
-        </Link>
-      </Button>
-      <div className="mt-5 flex flex-wrap gap-2">
-        {["name the desire", "measure the gap", "choose the next step"].map(
-          (item) => (
-            <span
-              key={item}
-              className="rounded-full border border-border bg-card/70 px-3 py-2 text-xs font-medium text-muted-foreground shadow-sm"
-            >
-              {item}
-            </span>
-          ),
-        )}
+      <div className="mt-10 grid w-full max-w-sm gap-4 sm:mt-12 sm:max-w-xs">
+        <Button asChild size="lg" className="w-full sm:w-auto">
+          <Link href="/login">
+            Start Aligning
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+        </Button>
       </div>
     </div>
   );

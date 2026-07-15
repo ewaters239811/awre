@@ -151,21 +151,20 @@ export default function OnboardingPage() {
       return;
     }
 
-    const account = await getCurrentAccount();
-    if (!account) {
-      setError("Sign in or create an account to save what you want.");
-      return;
-    }
-
     const nextProfile = {
       ...profile,
       updatedAt: new Date().toISOString(),
     };
 
+    const account = await getCurrentAccount();
+    if (!account) {
+      setError("Sign in or create an account to save setup.");
+      return;
+    }
     await saveOnboardingProfileToAccount(nextProfile);
     saveOnboardingProfile(nextProfile);
     setSaved(true);
-    router.push("/check-in");
+    router.push("/");
   };
 
   const step = steps[stepIndex];
@@ -187,16 +186,10 @@ export default function OnboardingPage() {
   };
 
   return (
-    <main className="container flex min-h-[calc(100dvh-10rem)] items-center py-6 md:min-h-[calc(100vh-5rem)] md:py-12">
+    <main className="container flex min-h-dvh items-center py-6 md:py-12">
       <section className="mx-auto w-full max-w-3xl">
-        <p className="clearpth-page-kicker">Your Desired Reality</p>
-        <h1 className="clearpth-page-title">Start With What You Want</h1>
-        <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
-          Say it plainly. ClearPth will help unpack the state, pattern, and next
-          step underneath it.
-        </p>
-        <form className="mt-8" onSubmit={submit}>
-          <section className="aura-glass overflow-hidden rounded-lg p-5 md:p-7">
+        <form onSubmit={submit}>
+          <section className="aura-glass overflow-hidden rounded-2xl p-5 md:rounded-lg md:p-7">
             <div className="flex items-center justify-between gap-4">
               <p className="text-xs uppercase tracking-[0.24em] text-primary">
                 {step.kicker}
@@ -259,7 +252,7 @@ export default function OnboardingPage() {
                   size="lg"
                   disabled={!finalChoiceConfirmed}
                 >
-                  Continue To Check In
+                  Continue
                   <ArrowRight className="h-4 w-4" aria-hidden />
                 </Button>
               ) : (
@@ -272,7 +265,7 @@ export default function OnboardingPage() {
           </div>
 
           <p className="mt-4 text-sm text-muted-foreground">
-            Sign in to save this to your profile.
+            Your setup is saved to your account profile.
           </p>
         </form>
       </section>

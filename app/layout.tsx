@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AmbientNoise } from "@/components/ambient-noise";
 import { AccountSync } from "@/components/account-sync";
-import { AuthChoicePrompt } from "@/components/auth-choice-prompt";
 import { Navigation } from "@/components/navigation";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
@@ -29,7 +28,6 @@ export default function RootLayout({
         <div className="aura-animated-backdrop" aria-hidden />
         <Navigation />
         {children}
-        <AuthChoicePrompt />
         <AccountSync />
         <AmbientNoise />
       </body>

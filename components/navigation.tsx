@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   BarChart3,
   Compass,
@@ -12,6 +13,7 @@ import {
   Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getCurrentAccount } from "@/lib/account-data";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -34,7 +36,22 @@ const mobileLinks = [
 export function Navigation() {
   const pathname = usePathname();
   const router = useRouter();
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const isSettings = pathname === "/settings";
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      getCurrentAccount().then((user) => setSignedIn(Boolean(user)));
+    });
+  }, [pathname]);
+
+  if (
+    pathname === "/login" ||
+    pathname === "/onboarding" ||
+    (pathname === "/" && signedIn !== true)
+  ) {
+    return null;
+  }
 
   const openSettingsOrGoBack = () => {
     if (isSettings) {

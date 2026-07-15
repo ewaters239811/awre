@@ -82,12 +82,6 @@ export default function RitualPage() {
     const content = draftContent.trim();
     if (!entry || !content) return;
 
-    const account = await getCurrentAccount();
-    if (!account) {
-      setError("Sign in or create an account to save your journal.");
-      return;
-    }
-
     const existingEntry = getJournalEntryForDate(today);
     const nextEntry: JournalEntry = {
       ...(existingEntry ?? entry),
@@ -98,6 +92,11 @@ export default function RitualPage() {
       updatedAt: new Date().toISOString(),
     };
 
+    const account = await getCurrentAccount();
+    if (!account) {
+      setError("Sign in or create an account to save your journal.");
+      return;
+    }
     await saveJournalEntryToAccount(nextEntry);
     saveJournalEntry(nextEntry);
     setEntry(nextEntry);

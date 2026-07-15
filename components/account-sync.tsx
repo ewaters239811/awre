@@ -13,7 +13,7 @@ export const ACCOUNT_DATA_SYNCED_EVENT = "clearpth:account-data-synced";
 export function AccountSync() {
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const syncing = useRef(false);
-  const clearedGuestData = useRef(false);
+  const clearedSignedOutData = useRef(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
@@ -30,14 +30,14 @@ export function AccountSync() {
         getCurrentAccount()
           .then((user) => {
             if (!user) {
-              if (!clearedGuestData.current) {
+              if (!clearedSignedOutData.current) {
                 clearLocalAccountData();
-                clearedGuestData.current = true;
+                clearedSignedOutData.current = true;
               }
               return null;
             }
 
-            clearedGuestData.current = false;
+            clearedSignedOutData.current = false;
             return syncLocalDataToAccount();
           })
           .then((result) => {
