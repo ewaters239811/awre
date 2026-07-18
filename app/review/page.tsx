@@ -266,6 +266,9 @@ export default function ReviewPage() {
                 {actionCompleted ? "Completed" : "Mark Complete"}
               </Button>
             </div>
+            <Button asChild className="mt-4 w-full md:w-auto" variant="secondary">
+              <Link href="/tune-in">Open Today&apos;s Meditation</Link>
+            </Button>
           </section>
 
           <section className="mt-8">

@@ -21,6 +21,14 @@ export type AiAlignment = AlignmentPrescription & {
   summary: string;
 };
 
+export type AiMeditation = {
+  title: string;
+  intention: string;
+  durationSeconds: number;
+  script: string;
+  closingPrompt: string;
+};
+
 export type CheckInResult = CheckInDraft & {
   id: string;
   createdAt: string;
@@ -31,6 +39,9 @@ export type CheckInResult = CheckInDraft & {
   weakestPillar: PillarName;
   prescription: AlignmentPrescription;
   aiAlignment?: AiAlignment;
+  aiMeditation?: AiMeditation;
+  aiMeditationGeneratedAt?: string;
+  aiMeditationContextSignature?: string;
   aiQuote?: string;
   aiGeneratedAt?: string;
   aiContextSignature?: string;

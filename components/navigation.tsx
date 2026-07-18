@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import {
   BarChart3,
   Compass,
+  Headphones,
   Home,
   MessageCircle,
   PenLine,
@@ -20,6 +21,7 @@ const links = [
   { href: "/", label: "Home" },
   { href: "/check-in", label: "Check In" },
   { href: "/review", label: "Today" },
+  { href: "/tune-in", label: "Tune In" },
   { href: "/ritual", label: "Journal" },
   { href: "/dashboard", label: "Patterns" },
   { href: "/guide", label: "Guide" },
@@ -29,8 +31,9 @@ const mobileLinks = [
   { href: "/", label: "Home", icon: Home },
   { href: "/check-in", label: "Check", icon: PenLine },
   { href: "/review", label: "Today", icon: Compass },
+  { href: "/tune-in", label: "Tune", icon: Headphones },
   { href: "/guide", label: "Guide", icon: MessageCircle },
-  { href: "/dashboard", label: "Patterns", icon: BarChart3 },
+  { href: "/dashboard", label: "Pattern", icon: BarChart3 },
 ];
 
 export function Navigation() {
@@ -151,7 +154,7 @@ export function Navigation() {
 function MobileTabBar({ pathname }: { pathname: string }) {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/90 px-3 pb-[calc(env(safe-area-inset-bottom)+0.65rem)] pt-2 backdrop-blur-2xl lg:hidden">
-      <div className="mx-auto grid max-w-[23rem] grid-cols-5 gap-1 rounded-[1.35rem] border border-border/60 bg-card/88 p-1.5 shadow-2xl">
+      <div className="mx-auto grid max-w-[25rem] grid-cols-6 gap-1 rounded-[1.35rem] border border-border/60 bg-card/88 p-1.5 shadow-2xl">
         {mobileLinks.map((link) => {
           const Icon = link.icon;
           const active =
@@ -163,7 +166,7 @@ function MobileTabBar({ pathname }: { pathname: string }) {
               key={link.href}
               href={link.href}
               className={cn(
-                "flex min-h-12 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-[10px] font-medium leading-none text-muted-foreground transition",
+                "flex min-h-12 flex-col items-center justify-center gap-1 rounded-2xl px-0.5 py-2 text-[9px] font-medium leading-none text-muted-foreground transition",
                 active && "bg-foreground text-background shadow-sm",
               )}
             >
