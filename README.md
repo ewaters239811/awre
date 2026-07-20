@@ -30,6 +30,24 @@ AURA_AI_MODEL=gpt-5.4-mini
 
 Then restart the dev server.
 
+## Optional ElevenLabs Meditation Audio
+
+Tune In can play realistic generated meditation audio with ElevenLabs. Add
+these values to `.env.local`:
+
+```bash
+ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
+ELEVENLABS_VOICE_ID=your_preferred_voice_id
+ELEVENLABS_MODEL=eleven_multilingual_v2
+ELEVENLABS_VOICE_SPEED=0.78
+```
+
+`ELEVENLABS_VOICE_ID` is optional. If omitted, the app uses the ElevenLabs
+example voice ID from their text-to-speech API docs. For the best ClearPth
+experience, choose or create a calm feminine meditation voice in ElevenLabs and
+use that voice ID. Lower `ELEVENLABS_VOICE_SPEED` if the meditation feels too
+fast; ElevenLabs supports values below `1` for slower speech.
+
 ## Supabase Login And Profile Records
 
 ClearPth can save a user's check-ins, journal entries, and onboarding profile to
@@ -85,6 +103,7 @@ but personal records are not saved.
 - Account history page with calendar tracking, pattern insights, and clear history action
 - Today page with the current day's check-in, journal status, signal, and correction
 - Daily Guide chat for working through challenges with the ClearPth model
+- Tune In page with tailored five-minute meditations and optional ElevenLabs audio
 - Single teaching quote based on the latest check-in when an API key is configured
 - About page explaining the model
 - Crisis-language guardrail message for severe distress or self-harm language

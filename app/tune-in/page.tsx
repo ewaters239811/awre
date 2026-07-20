@@ -34,25 +34,25 @@ export default function TuneInPage() {
   const [status, setStatus] = useState<MeditationStatus>("idle");
   const [remainingSeconds, setRemainingSeconds] = useState(300);
   const [timerRunning, setTimerRunning] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
+  const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioPaused, setAudioPaused] = useState(false);
-  const [voiceReady, setVoiceReady] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioStatus, setAudioStatus] = useState<
+    "idle" | "loading" | "ready" | "unavailable"
+  >("idle");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const requestedFor = useRef<string | null>(null);
 
   useEffect(() => {
     queueMicrotask(() => {
       setCheckIn(getCheckInForDate(todayKey));
-      setVoiceReady("speechSynthesis" in window);
     });
 
-    const loadVoices = () => setVoiceReady(true);
-    window.speechSynthesis?.addEventListener("voiceschanged", loadVoices);
-
     return () => {
-      window.speechSynthesis?.cancel();
-      window.speechSynthesis?.removeEventListener("voiceschanged", loadVoices);
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      stopAmbientBed();
     };
-  }, [todayKey]);
+  }, [todayKey, audioUrl]);
 
   const contextSignature = useMemo(() => {
     if (!checkIn) return "";
@@ -131,8 +131,10 @@ export default function TuneInPage() {
         if (next === 0) {
           queueMicrotask(() => {
             setTimerRunning(false);
-            window.speechSynthesis?.cancel();
-            setSpeaking(false);
+            audioRef.current?.pause();
+            if (audioRef.current) audioRef.current.currentTime = 0;
+            stopAmbientBed();
+            setAudioPlaying(false);
             setAudioPaused(false);
           });
         }
@@ -146,58 +148,76 @@ export default function TuneInPage() {
   const resetSession = () => {
     setTimerRunning(false);
     setRemainingSeconds(Math.min(meditation.durationSeconds, 300));
-    window.speechSynthesis?.cancel();
-    setSpeaking(false);
+    audioRef.current?.pause();
+    if (audioRef.current) audioRef.current.currentTime = 0;
+    stopAmbientBed();
+    setAudioPlaying(false);
     setAudioPaused(false);
   };
 
-  const toggleMeditationAudio = () => {
-    if (!("speechSynthesis" in window)) return;
+  const ensureAudioUrl = async () => {
+    if (audioUrl) return audioUrl;
 
-    if (speaking && !audioPaused) {
-      window.speechSynthesis.pause();
+    setAudioStatus("loading");
+    const response = await fetch("/api/meditation-audio", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: meditation.script }),
+    });
+
+    if (!response.ok) {
+      setAudioStatus("unavailable");
+      throw new Error("Meditation audio is unavailable.");
+    }
+
+    const blob = await response.blob();
+    const nextUrl = URL.createObjectURL(blob);
+    setAudioUrl(nextUrl);
+    setAudioStatus("ready");
+    return nextUrl;
+  };
+
+  const toggleMeditationAudio = async () => {
+    if (audioPlaying && !audioPaused) {
+      audioRef.current?.pause();
+      pauseAmbientBed();
       setAudioPaused(true);
       setTimerRunning(false);
       return;
     }
 
-    if (speaking && audioPaused) {
-      window.speechSynthesis.resume();
+    if (audioPlaying && audioPaused) {
+      await audioRef.current?.play();
+      await resumeAmbientBed();
+      updateMediaSession("playing", meditation);
       setAudioPaused(false);
       setTimerRunning(true);
       return;
     }
 
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(meditation.script);
-    const softVoice = getSoftFeminineVoice();
-    if (softVoice) {
-      utterance.voice = softVoice;
-      utterance.lang = softVoice.lang;
+    try {
+      const nextUrl = await ensureAudioUrl();
+      if (audioRef.current) {
+        audioRef.current.src = nextUrl;
+        audioRef.current.currentTime = 0;
+        await audioRef.current.play();
+      }
+      await startAmbientBed();
+      updateMediaSession("playing", meditation);
+      setAudioPlaying(true);
+      setAudioPaused(false);
+      setTimerRunning(true);
+    } catch {
+      setTimerRunning(false);
     }
-    utterance.rate = 0.74;
-    utterance.pitch = 1.08;
-    utterance.volume = 0.95;
-    utterance.onend = () => {
-      setSpeaking(false);
-      setAudioPaused(false);
-      setTimerRunning(false);
-    };
-    utterance.onerror = () => {
-      setSpeaking(false);
-      setAudioPaused(false);
-      setTimerRunning(false);
-    };
-
-    setSpeaking(true);
-    setAudioPaused(false);
-    setTimerRunning(true);
-    window.speechSynthesis.speak(utterance);
   };
 
   const stopMeditationAudio = () => {
-    window.speechSynthesis?.cancel();
-    setSpeaking(false);
+    audioRef.current?.pause();
+    updateMediaSession("paused", meditation);
+    if (audioRef.current) audioRef.current.currentTime = 0;
+    stopAmbientBed();
+    setAudioPlaying(false);
     setAudioPaused(false);
     setTimerRunning(false);
   };
@@ -274,15 +294,17 @@ export default function TuneInPage() {
           <Button
             type="button"
             size="lg"
-            disabled={status === "loading" || !voiceReady}
+            disabled={status === "loading" || audioStatus === "loading"}
             onClick={toggleMeditationAudio}
           >
-            {speaking && !audioPaused ? (
+            {audioPlaying && !audioPaused ? (
               <Pause className="h-4 w-4" aria-hidden />
             ) : (
               <Volume2 className="h-4 w-4" aria-hidden />
             )}
-            {speaking && !audioPaused
+            {audioStatus === "loading"
+              ? "Creating Audio"
+              : audioPlaying && !audioPaused
               ? "Pause Meditation"
               : audioPaused
                 ? "Resume Meditation"
@@ -292,7 +314,7 @@ export default function TuneInPage() {
             type="button"
             variant="secondary"
             size="lg"
-            disabled={!speaking}
+            disabled={!audioPlaying}
             onClick={stopMeditationAudio}
           >
             <Square className="h-4 w-4" aria-hidden />
@@ -309,11 +331,42 @@ export default function TuneInPage() {
             The tailored session is using the fallback meditation for now.
           </p>
         ) : null}
-        {!voiceReady ? (
+        {audioStatus === "unavailable" ? (
           <p className="mt-4 rounded-md border border-border/70 bg-card/45 px-4 py-3 text-sm text-muted-foreground">
-            Preparing your device&apos;s meditation voice.
+            ElevenLabs audio is not configured yet. Add your ElevenLabs API key
+            to enable realistic generated audio.
           </p>
         ) : null}
+        <audio
+          ref={audioRef}
+          preload="none"
+          playsInline
+          onPause={() => updateMediaSession("paused", meditation)}
+          onPlay={() => updateMediaSession("playing", meditation)}
+          onTimeUpdate={(event) => {
+            const audio = event.currentTarget;
+            if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
+
+            setRemainingSeconds(
+              Math.max(Math.ceil(audio.duration - audio.currentTime), 0),
+            );
+          }}
+          onEnded={() => {
+            stopAmbientBed();
+            updateMediaSession("none", meditation);
+            setAudioPlaying(false);
+            setAudioPaused(false);
+            setTimerRunning(false);
+          }}
+          onError={() => {
+            stopAmbientBed();
+            updateMediaSession("none", meditation);
+            setAudioStatus("unavailable");
+            setAudioPlaying(false);
+            setAudioPaused(false);
+            setTimerRunning(false);
+          }}
+        />
       </section>
 
       <section className="mx-auto mt-6 grid max-w-5xl gap-5 lg:grid-cols-[1.15fr_0.85fr]">
@@ -357,50 +410,136 @@ function normalizeMeditation(value?: AiMeditation) {
   };
 }
 
-function getSoftFeminineVoice() {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-    return null;
+function updateMediaSession(
+  playbackState: MediaSessionPlaybackState,
+  meditation: AiMeditation,
+) {
+  if (typeof navigator === "undefined" || !("mediaSession" in navigator)) {
+    return;
   }
 
-  const voices = window.speechSynthesis.getVoices();
-  if (!voices.length) return null;
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: meditation.title,
+    artist: "ClearPth",
+    album: "Tune In",
+  });
+  navigator.mediaSession.playbackState = playbackState;
 
-  const preferredNames = [
-    "Samantha",
-    "Ava",
-    "Allison",
-    "Susan",
-    "Victoria",
-    "Karen",
-    "Moira",
-    "Tessa",
-    "Zira",
-    "Jenny",
-    "Aria",
-    "Michelle",
-    "Serena",
-    "Female",
-  ];
-
-  return (
-    preferredNames
-      .map((name) =>
-        voices.find((voice) =>
-          voice.name.toLowerCase().includes(name.toLowerCase()),
-        ),
-      )
-      .find(Boolean) ??
-    voices.find(
-      (voice) =>
-        voice.lang.toLowerCase().startsWith("en") &&
-        /female|woman|samantha|ava|allison|susan|victoria|serena|zira|jenny|aria/i.test(
-          voice.name,
-        ),
-    ) ??
-    voices.find((voice) => voice.lang.toLowerCase().startsWith("en")) ??
-    voices[0]
-  );
+  navigator.mediaSession.setActionHandler("play", () => {
+    document.querySelector("audio")?.play().catch(() => undefined);
+    navigator.mediaSession.playbackState = "playing";
+  });
+  navigator.mediaSession.setActionHandler("pause", () => {
+    document.querySelector("audio")?.pause();
+    navigator.mediaSession.playbackState = "paused";
+  });
+  navigator.mediaSession.setActionHandler("stop", () => {
+    const audio = document.querySelector("audio");
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    navigator.mediaSession.playbackState = "none";
+  });
 }
+
+async function startAmbientBed() {
+  const AudioContextConstructor =
+    window.AudioContext ||
+    (window as Window & { webkitAudioContext?: typeof AudioContext })
+      .webkitAudioContext;
+
+  if (!AudioContextConstructor) return;
+
+  if (!ambientContextRefGlobal.context) {
+    const context = new AudioContextConstructor();
+    const gain = context.createGain();
+    gain.gain.setValueAtTime(0.0001, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.035, context.currentTime + 2.2);
+    gain.connect(context.destination);
+
+    const frequencies = [110, 165, 220];
+    const oscillators = frequencies.map((frequency, index) => {
+      const oscillator = context.createOscillator();
+      const filter = context.createBiquadFilter();
+      const oscillatorGain = context.createGain();
+
+      oscillator.type = index === 1 ? "triangle" : "sine";
+      oscillator.frequency.value = frequency;
+      oscillator.detune.value = index === 0 ? -7 : index === 1 ? 5 : 11;
+      filter.type = "lowpass";
+      filter.frequency.value = 520;
+      oscillatorGain.gain.value = index === 1 ? 0.38 : 0.28;
+
+      oscillator.connect(filter);
+      filter.connect(oscillatorGain);
+      oscillatorGain.connect(gain);
+      oscillator.start();
+
+      return oscillator;
+    });
+
+    ambientContextRefGlobal.context = context;
+    ambientContextRefGlobal.gain = gain;
+    ambientContextRefGlobal.oscillators = oscillators;
+  }
+
+  if (ambientContextRefGlobal.context.state === "suspended") {
+    await ambientContextRefGlobal.context.resume();
+  }
+}
+
+function pauseAmbientBed() {
+  ambientContextRefGlobal.context?.suspend().catch(() => undefined);
+}
+
+async function resumeAmbientBed() {
+  await ambientContextRefGlobal.context?.resume().catch(() => undefined);
+}
+
+function stopAmbientBed() {
+  const context = ambientContextRefGlobal.context;
+  const gain = ambientContextRefGlobal.gain;
+
+  if (!context) return;
+
+  try {
+    if (gain) {
+      gain.gain.cancelScheduledValues(context.currentTime);
+      gain.gain.setValueAtTime(Math.max(gain.gain.value, 0.0001), context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.8);
+    }
+
+    window.setTimeout(() => {
+      ambientContextRefGlobal.oscillators.forEach((oscillator) => {
+        try {
+          oscillator.stop();
+        } catch {
+          // The oscillator may already be stopped by cleanup.
+        }
+      });
+      context.close().catch(() => undefined);
+      ambientContextRefGlobal.context = null;
+      ambientContextRefGlobal.gain = null;
+      ambientContextRefGlobal.oscillators = [];
+    }, 850);
+  } catch {
+    context.close().catch(() => undefined);
+    ambientContextRefGlobal.context = null;
+    ambientContextRefGlobal.gain = null;
+    ambientContextRefGlobal.oscillators = [];
+  }
+}
+
+const ambientContextRefGlobal: {
+  context: AudioContext | null;
+  gain: GainNode | null;
+  oscillators: OscillatorNode[];
+} = {
+  context: null,
+  gain: null,
+  oscillators: [],
+};
 
 function formatTime(seconds: number) {
   const minutes = Math.floor(seconds / 60);
