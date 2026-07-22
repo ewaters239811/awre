@@ -165,6 +165,11 @@ export default function OnboardingPage() {
     }
     await saveOnboardingProfileToAccount(nextProfile);
     saveOnboardingProfile(nextProfile);
+    try {
+      sessionStorage.removeItem(RETURN_TO_COVER_KEY);
+    } catch {
+      // Session storage can be unavailable in some privacy modes.
+    }
     setSaved(true);
     router.push("/");
   };

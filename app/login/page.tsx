@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { signInAsGuest, syncLocalDataToAccount } from "@/lib/account-data";
+import { syncLocalDataToAccount } from "@/lib/account-data";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 const CONFIRMATION_REDIRECT_URL = "https://clearpth.io/auth/callback";
@@ -26,7 +26,6 @@ export default function LoginPage() {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [guestLoading, setGuestLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
   const [confirmationEmail, setConfirmationEmail] = useState("");
@@ -178,21 +177,6 @@ export default function LoginPage() {
       setError("Could not send the password reset email. Please try again.");
     } finally {
       setSendingReset(false);
-    }
-  };
-
-  const continueAsGuest = async () => {
-    setError("");
-    setStatus("");
-    setGuestLoading(true);
-
-    try {
-      await signInAsGuest();
-      router.push("/onboarding");
-    } catch (guestSignInError) {
-      setError(getGuestErrorMessage(guestSignInError));
-    } finally {
-      setGuestLoading(false);
     }
   };
 
@@ -349,26 +333,8 @@ export default function LoginPage() {
           <Button asChild variant="secondary" className="mt-3 w-full">
             <Link href="/">Return Home</Link>
           </Button>
-
-          <Button
-            type="button"
-            variant="ghost"
-            className="mt-3 w-full"
-            disabled={guestLoading || loading}
-            onClick={continueAsGuest}
-          >
-            {guestLoading ? "Opening..." : "Continue As Guest"}
-          </Button>
         </form>
       </section>
     </main>
   );
-}
-
-function getGuestErrorMessage(error: unknown) {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return "Guest access is not available yet. Please try again.";
 }
