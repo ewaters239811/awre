@@ -43,6 +43,8 @@ const guidanceTones = [
   "Practical and concise",
 ];
 
+const RETURN_TO_COVER_KEY = "clearpth.returnToCoverFromSetup";
+
 const steps = [
   {
     id: "primaryGoal",
@@ -182,6 +184,15 @@ export default function OnboardingPage() {
     setError("");
     setDirection("back");
     setFinalChoiceConfirmed(false);
+    if (stepIndex === 0) {
+      try {
+        sessionStorage.setItem(RETURN_TO_COVER_KEY, "true");
+      } catch {
+        // Session storage can be unavailable in some privacy modes.
+      }
+      router.push("/");
+      return;
+    }
     setStepIndex((current) => Math.max(current - 1, 0));
   };
 
@@ -231,7 +242,6 @@ export default function OnboardingPage() {
             <Button
               type="button"
               variant="secondary"
-              disabled={stepIndex === 0}
               onClick={goBack}
             >
               <ArrowLeft className="h-4 w-4" aria-hidden />

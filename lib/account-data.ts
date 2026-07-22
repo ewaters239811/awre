@@ -37,6 +37,18 @@ export async function signOutOfAccount() {
   clearLocalAccountData();
 }
 
+export async function signInAsGuest() {
+  if (!isSupabaseConfigured()) {
+    throw new Error("Supabase is not configured.");
+  }
+
+  const supabase = createSupabaseBrowserClient();
+  const { data, error } = await supabase.auth.signInAnonymously();
+
+  if (error) throw error;
+  return data.user;
+}
+
 export function clearLocalAccountData() {
   clearCheckIns();
   replaceJournalEntries([]);

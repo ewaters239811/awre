@@ -18,6 +18,7 @@ import { getOnboardingProfile } from "@/lib/onboarding-storage";
 type AccountUser = {
   email?: string;
   id: string;
+  is_anonymous?: boolean;
   user_metadata?: {
     full_name?: string;
     name?: string;
@@ -124,7 +125,7 @@ export default function SettingsPage() {
         <p className="clearpth-page-kicker">Settings</p>
         <h1 className="clearpth-page-title">Profile And Preferences</h1>
         <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
-          Signed in as {getAccountName(user) ?? user.email}.
+          Signed in as {getAccountLabel(user)}.
         </p>
       </section>
 
@@ -234,6 +235,11 @@ function getAccountName(user: AccountUser) {
     user.user_metadata?.full_name?.trim() || user.user_metadata?.name?.trim();
 
   return name || null;
+}
+
+function getAccountLabel(user: AccountUser) {
+  if (user.is_anonymous) return "Guest";
+  return getAccountName(user) ?? user.email ?? "Account";
 }
 
 function SettingsStat({ label, value }: { label: string; value: string }) {

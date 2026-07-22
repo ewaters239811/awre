@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DailyFlow } from "@/components/daily-flow";
-import { getCurrentAccount } from "@/lib/account-data";
+import { getCurrentAccount, signInAsGuest } from "@/lib/account-data";
 import {
   CHECK_INS_CHANGED_EVENT,
   getCheckInForDate,
@@ -24,6 +24,7 @@ import type { CheckInResult, JournalEntry } from "@/lib/types";
 
 type AccountUser = {
   email?: string;
+  is_anonymous?: boolean;
   user_metadata?: {
     full_name?: string;
     name?: string;
@@ -40,6 +41,8 @@ type HomeState = {
   hasProfile: boolean;
 };
 
+const RETURN_TO_COVER_KEY = "clearpth.returnToCoverFromSetup";
+
 export function HomeHero() {
   const router = useRouter();
   const checkInToday = useCurrentCheckInDateKey();
@@ -54,14 +57,27 @@ export function HomeHero() {
     hasProfile: false,
   });
   const [loaded, setLoaded] = useState(false);
+  const [showCoverInsteadOfSetup, setShowCoverInsteadOfSetup] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     const refreshHomeState = () => {
+      let shouldShowCover = false;
+      try {
+        shouldShowCover =
+          sessionStorage.getItem(RETURN_TO_COVER_KEY) === "true";
+        if (shouldShowCover) {
+          sessionStorage.removeItem(RETURN_TO_COVER_KEY);
+        }
+      } catch {
+        shouldShowCover = false;
+      }
+
       getCurrentAccount()
         .then((user) => {
           if (cancelled) return;
+          setShowCoverInsteadOfSetup(shouldShowCover);
           setState({
             user,
             latestCheckIn: getLatestCheckIn(),
@@ -90,6 +106,10 @@ export function HomeHero() {
     return <PublicHomeHero />;
   }
 
+  if (!state.hasProfile && showCoverInsteadOfSetup) {
+    return <PublicHomeHero startHref="/onboarding" showGuestButton={false} />;
+  }
+
   if (!state.hasProfile) {
     queueMicrotask(() => router.replace("/onboarding"));
     return (
@@ -103,7 +123,31 @@ export function HomeHero() {
   return <PersonalHomeHero state={state} />;
 }
 
-function PublicHomeHero() {
+function PublicHomeHero({
+  startHref = "/login",
+  showGuestButton = true,
+}: {
+  startHref?: string;
+  showGuestButton?: boolean;
+}) {
+  const router = useRouter();
+  const [guestLoading, setGuestLoading] = useState(false);
+  const [guestError, setGuestError] = useState("");
+
+  const continueAsGuest = async () => {
+    setGuestError("");
+    setGuestLoading(true);
+
+    try {
+      await signInAsGuest();
+      router.push("/onboarding");
+    } catch (guestSignInError) {
+      setGuestError(getGuestErrorMessage(guestSignInError));
+    } finally {
+      setGuestLoading(false);
+    }
+  };
+
   return (
     <div className="flex min-h-[calc(100dvh-7rem)] max-w-4xl flex-col items-center justify-center text-center md:min-h-[calc(100vh-5rem)]">
       <span className="mb-7 flex h-16 w-16 animate-cover-float items-center justify-center rounded-2xl border border-primary/22 bg-card/30 text-foreground shadow-[0_18px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:h-20 sm:w-20">
@@ -147,11 +191,26 @@ function PublicHomeHero() {
       </p>
       <div className="mt-10 grid w-full max-w-sm gap-4 sm:mt-12 sm:max-w-xs">
         <Button asChild size="lg" className="w-full sm:w-auto">
-          <Link href="/login">
+          <Link href={startHref}>
             Start Aligning
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </Button>
+        {showGuestButton ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="w-full sm:w-auto"
+            disabled={guestLoading}
+            onClick={continueAsGuest}
+          >
+            {guestLoading ? "Opening..." : "Continue As Guest"}
+          </Button>
+        ) : null}
+        {showGuestButton && guestError ? (
+          <p className="text-sm leading-6 text-muted-foreground">{guestError}</p>
+        ) : null}
       </div>
     </div>
   );
@@ -245,6 +304,8 @@ function HomeStatus({ label, value }: { label: string; value: string }) {
 }
 
 function getFirstName(user: AccountUser | null) {
+  if (user?.is_anonymous) return "there";
+
   const name =
     user?.user_metadata?.full_name?.trim() ||
     user?.user_metadata?.name?.trim() ||
@@ -252,6 +313,14 @@ function getFirstName(user: AccountUser | null) {
     "there";
 
   return name.split(/\s+/)[0];
+}
+
+function getGuestErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "Guest access is not available yet. Try signing in instead.";
 }
 
 function buildHomeMessage(state: HomeState) {

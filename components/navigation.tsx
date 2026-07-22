@@ -50,6 +50,7 @@ export function Navigation() {
 
   if (
     pathname === "/login" ||
+    pathname === "/reset-password" ||
     pathname === "/onboarding" ||
     (pathname === "/" && signedIn !== true)
   ) {

@@ -4,7 +4,10 @@ import { createServerClient } from "@supabase/ssr";
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
-  const redirectTo = requestUrl.searchParams.get("next") ?? "/";
+  const authType = requestUrl.searchParams.get("type");
+  const redirectTo =
+    requestUrl.searchParams.get("next") ??
+    (authType === "recovery" ? "/reset-password" : "/");
   const response = NextResponse.redirect(new URL(redirectTo, requestUrl.origin));
 
   if (!code) {
