@@ -75,7 +75,7 @@ export function Navigation() {
     <header className="sticky top-0 z-50 border-b border-border/35 bg-background/76 backdrop-blur-2xl">
       <nav className="container flex h-14 items-center justify-between lg:h-20">
         <Link href="/" className="flex items-center gap-3">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-primary/18 bg-card/24 text-foreground shadow-sm lg:h-9 lg:w-9 lg:rounded-lg">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-primary/22 bg-[linear-gradient(145deg,rgba(216,190,132,0.18),rgba(90,140,118,0.08))] text-foreground shadow-sm lg:h-9 lg:w-9 lg:rounded-lg">
             <svg
               viewBox="0 0 36 36"
               className="h-4 w-4 lg:h-6 lg:w-6"
@@ -117,7 +117,7 @@ export function Navigation() {
               className={cn(
                 "rounded-full px-3.5 py-2 text-sm text-muted-foreground transition hover:bg-accent/55 hover:text-foreground",
                 pathname === link.href &&
-                  "bg-foreground text-background hover:bg-foreground hover:text-background",
+                  "bg-[linear-gradient(135deg,#f4efe4,#d8be84)] text-background shadow-[0_8px_20px_rgba(0,0,0,0.2)] hover:text-background",
               )}
             >
               {link.label}
@@ -168,7 +168,8 @@ function MobileTabBar({ pathname }: { pathname: string }) {
               href={link.href}
               className={cn(
                 "flex min-h-[3.15rem] flex-col items-center justify-center gap-1 rounded-[1.05rem] px-0.5 py-2 text-[9px] font-medium leading-none text-muted-foreground transition",
-                active && "bg-foreground text-background shadow-[0_8px_20px_rgba(0,0,0,0.22)]",
+                active &&
+                  "bg-[linear-gradient(135deg,#f4efe4,#d8be84_58%,#91b39e)] text-background shadow-[0_8px_20px_rgba(0,0,0,0.22)]",
               )}
             >
               <Icon className="h-4 w-4" aria-hidden />

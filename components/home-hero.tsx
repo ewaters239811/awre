@@ -165,7 +165,7 @@ function PublicHomeHero({
       </span>
       <div className="relative">
         <div className="pointer-events-none absolute inset-x-[-18%] top-1/2 h-20 -translate-y-1/2 rounded-full bg-primary/16 blur-3xl sm:h-28" />
-        <h1 className="relative animate-cover-float font-serif text-[4.4rem] font-semibold leading-[0.9] text-foreground drop-shadow-[0_0_34px_rgba(216,190,132,0.24)] sm:text-8xl lg:text-[8.5rem]">
+        <h1 className="aura-gradient-text relative animate-cover-float font-serif text-[4.4rem] font-semibold leading-[0.9] drop-shadow-[0_0_34px_rgba(216,190,132,0.22)] sm:text-8xl lg:text-[8.5rem]">
           ClearPth
         </h1>
       </div>

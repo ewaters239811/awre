@@ -324,7 +324,7 @@ function CheckInGate({
       <div className="grid gap-6 md:grid-cols-[0.7fr_1.3fr] md:items-start md:gap-7">
         <div>
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-primary/22 bg-primary/8 text-primary md:h-10 md:w-10 md:rounded-md">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-primary/24 bg-[linear-gradient(135deg,rgba(216,190,132,0.18),rgba(90,140,118,0.1))] text-primary shadow-[0_8px_18px_rgba(0,0,0,0.18)] md:h-10 md:w-10 md:rounded-md">
               {icon}
             </span>
             <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">

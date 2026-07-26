@@ -25,7 +25,7 @@ export function DailyFlow({
   const completedSteps = steps.filter((step) => state[step.key]).length;
 
   return (
-    <section className="rounded-[1.35rem] border border-border/42 bg-card/20 p-4 sm:rounded-xl">
+    <section className="aura-playful-ring rounded-[1.35rem] border border-border/42 bg-card/24 p-4 sm:rounded-xl">
       <div className="flex items-center justify-between gap-3">
         <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground sm:text-xs sm:tracking-[0.22em]">
           Daily Path
@@ -36,7 +36,7 @@ export function DailyFlow({
       </div>
       <div className="mt-3 h-1 overflow-hidden rounded-full bg-muted/70">
         <div
-          className="h-full rounded-full bg-primary transition-all duration-500"
+          className="h-full rounded-full bg-[linear-gradient(90deg,#d8be84,#f4efe4,#91b39e)] transition-all duration-500"
           style={{ width: `${(completedSteps / steps.length) * 100}%` }}
         />
       </div>
@@ -51,7 +51,7 @@ export function DailyFlow({
               className={cn(
                 "rounded-2xl border px-2 py-3 text-xs transition sm:rounded-lg sm:px-3 sm:py-3 sm:text-sm",
                 complete
-                  ? "border-primary/35 bg-primary/10 text-foreground"
+                  ? "border-primary/35 bg-[linear-gradient(135deg,rgba(216,190,132,0.18),rgba(90,140,118,0.12))] text-foreground shadow-[0_8px_20px_rgba(0,0,0,0.16)]"
                   : "border-border/55 bg-background/24 text-muted-foreground hover:border-foreground/25 hover:text-foreground",
               )}
             >
