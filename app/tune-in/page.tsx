@@ -224,8 +224,8 @@ export default function TuneInPage() {
 
   if (!checkIn) {
     return (
-      <main className="container py-7 md:py-12">
-        <section className="aura-glass mx-auto max-w-4xl rounded-2xl p-6 md:rounded-lg md:p-8">
+      <main className="clearpth-page-shell">
+        <section className="aura-glass mx-auto max-w-4xl rounded-[1.35rem] p-5 md:rounded-lg md:p-8">
           <p className="clearpth-page-kicker">Tune In</p>
           <h1 className="clearpth-page-title">Create today&apos;s signal first.</h1>
           <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground">
@@ -244,7 +244,7 @@ export default function TuneInPage() {
     100 - Math.round((remainingSeconds / Math.min(meditation.durationSeconds, 300)) * 100);
 
   return (
-    <main className="container py-7 md:py-12">
+    <main className="clearpth-page-shell">
       <section className="mx-auto max-w-5xl">
         <p className="clearpth-page-kicker">Tune In</p>
         <h1 className="clearpth-page-title">Today&apos;s Meditation</h1>
@@ -254,11 +254,11 @@ export default function TuneInPage() {
         </p>
       </section>
 
-      <section className="aura-glass mx-auto mt-7 max-w-5xl rounded-2xl p-5 md:rounded-lg md:p-8">
+      <section className="aura-glass mx-auto mt-9 max-w-5xl rounded-[1.35rem] p-5 md:rounded-lg md:p-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary md:rounded-md">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/22 bg-primary/8 text-primary md:rounded-md">
                 <Headphones className="h-5 w-5" aria-hidden />
               </span>
               <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
@@ -273,7 +273,7 @@ export default function TuneInPage() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-border/65 bg-card/40 p-4 text-center md:min-w-44 md:rounded-md">
+          <div className="rounded-[1.2rem] border border-border/42 bg-card/24 p-4 text-center md:min-w-44 md:rounded-md">
             <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
               Time
             </p>
@@ -369,8 +369,8 @@ export default function TuneInPage() {
         />
       </section>
 
-      <section className="mx-auto mt-6 grid max-w-5xl gap-5 lg:grid-cols-[1.15fr_0.85fr]">
-        <article className="rounded-2xl border border-border/60 bg-card/30 p-5 md:rounded-md md:p-6">
+      <section className="mx-auto mt-7 grid max-w-5xl gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+        <article className="rounded-[1.35rem] border border-border/42 bg-card/20 p-5 md:rounded-md md:p-6">
           <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
             Script
           </p>
@@ -379,7 +379,7 @@ export default function TuneInPage() {
           </p>
         </article>
 
-        <aside className="rounded-2xl border border-primary/20 bg-primary/10 p-5 md:rounded-md md:p-6">
+        <aside className="rounded-[1.35rem] border border-primary/18 bg-primary/8 p-5 md:rounded-md md:p-6">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden />
             <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">

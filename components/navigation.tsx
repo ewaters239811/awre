@@ -72,10 +72,10 @@ export function Navigation() {
 
   return (
     <>
-    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/82 backdrop-blur-2xl">
-      <nav className="container flex h-12 items-center justify-between lg:h-20">
+    <header className="sticky top-0 z-50 border-b border-border/35 bg-background/76 backdrop-blur-2xl">
+      <nav className="container flex h-14 items-center justify-between lg:h-20">
         <Link href="/" className="flex items-center gap-3">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-primary/20 bg-card/35 text-foreground shadow-sm lg:h-9 lg:w-9">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-primary/18 bg-card/24 text-foreground shadow-sm lg:h-9 lg:w-9 lg:rounded-lg">
             <svg
               viewBox="0 0 36 36"
               className="h-4 w-4 lg:h-6 lg:w-6"
@@ -104,18 +104,18 @@ export function Navigation() {
               <circle cx="18" cy="18" r="2.2" fill="currentColor" />
             </svg>
           </span>
-          <span className="text-sm font-semibold tracking-normal text-foreground lg:text-xl">
+          <span className="text-[15px] font-semibold tracking-normal text-foreground lg:text-xl">
             ClearPth
           </span>
         </Link>
 
-        <div className="hidden items-center gap-1 rounded-md border border-border/55 bg-card/35 p-1 lg:flex">
+        <div className="hidden items-center gap-1 rounded-full border border-border/42 bg-card/24 p-1 lg:flex">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                "rounded-md px-3 py-2 text-sm text-muted-foreground transition hover:bg-accent/70 hover:text-foreground",
+                "rounded-full px-3.5 py-2 text-sm text-muted-foreground transition hover:bg-accent/55 hover:text-foreground",
                 pathname === link.href &&
                   "bg-foreground text-background hover:bg-foreground hover:text-background",
               )}
@@ -138,7 +138,7 @@ export function Navigation() {
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden"
+            className="h-9 w-9 rounded-full border border-border/40 bg-card/20 lg:hidden"
             aria-label={isSettings ? "Go back" : "Open settings"}
             onClick={openSettingsOrGoBack}
           >
@@ -154,8 +154,8 @@ export function Navigation() {
 
 function MobileTabBar({ pathname }: { pathname: string }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/90 px-3 pb-[calc(env(safe-area-inset-bottom)+0.65rem)] pt-2 backdrop-blur-2xl lg:hidden">
-      <div className="mx-auto grid max-w-[25rem] grid-cols-6 gap-1 rounded-[1.35rem] border border-border/60 bg-card/88 p-1.5 shadow-2xl">
+    <nav className="fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-background via-background/92 to-transparent px-3 pb-[calc(env(safe-area-inset-bottom)+0.7rem)] pt-5 backdrop-blur-xl lg:hidden">
+      <div className="mx-auto grid max-w-[26rem] grid-cols-6 gap-1 rounded-[1.45rem] border border-border/42 bg-card/78 p-1.5 shadow-[0_18px_48px_rgba(0,0,0,0.34)]">
         {mobileLinks.map((link) => {
           const Icon = link.icon;
           const active =
@@ -167,8 +167,8 @@ function MobileTabBar({ pathname }: { pathname: string }) {
               key={link.href}
               href={link.href}
               className={cn(
-                "flex min-h-12 flex-col items-center justify-center gap-1 rounded-2xl px-0.5 py-2 text-[9px] font-medium leading-none text-muted-foreground transition",
-                active && "bg-foreground text-background shadow-sm",
+                "flex min-h-[3.15rem] flex-col items-center justify-center gap-1 rounded-[1.05rem] px-0.5 py-2 text-[9px] font-medium leading-none text-muted-foreground transition",
+                active && "bg-foreground text-background shadow-[0_8px_20px_rgba(0,0,0,0.22)]",
               )}
             >
               <Icon className="h-4 w-4" aria-hidden />

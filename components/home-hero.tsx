@@ -134,7 +134,7 @@ function PublicHomeHero({
 }) {
   return (
     <div className="flex min-h-[calc(100dvh-7rem)] max-w-4xl flex-col items-center justify-center text-center md:min-h-[calc(100vh-5rem)]">
-      <span className="mb-7 flex h-16 w-16 animate-cover-float items-center justify-center rounded-2xl border border-primary/22 bg-card/30 text-foreground shadow-[0_18px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:h-20 sm:w-20">
+      <span className="mb-8 flex h-16 w-16 animate-cover-float items-center justify-center rounded-[1.35rem] border border-primary/18 bg-card/22 text-foreground shadow-[0_18px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:h-20 sm:w-20 sm:rounded-3xl">
         <svg
           viewBox="0 0 36 36"
           className="h-9 w-9 sm:h-11 sm:w-11"
@@ -164,13 +164,13 @@ function PublicHomeHero({
         </svg>
       </span>
       <div className="relative">
-        <div className="pointer-events-none absolute inset-x-[-16%] top-1/2 h-16 -translate-y-1/2 rounded-full bg-primary/18 blur-3xl sm:h-24" />
-        <h1 className="relative animate-cover-float font-serif text-[4.7rem] font-semibold leading-[0.88] text-foreground drop-shadow-[0_0_32px_rgba(191,164,106,0.26)] sm:text-8xl lg:text-[8.5rem]">
+        <div className="pointer-events-none absolute inset-x-[-18%] top-1/2 h-20 -translate-y-1/2 rounded-full bg-primary/16 blur-3xl sm:h-28" />
+        <h1 className="relative animate-cover-float font-serif text-[4.4rem] font-semibold leading-[0.9] text-foreground drop-shadow-[0_0_34px_rgba(216,190,132,0.24)] sm:text-8xl lg:text-[8.5rem]">
           ClearPth
         </h1>
       </div>
       <div className="aura-luxury-line mx-auto mt-7 w-40 max-w-lg sm:mt-9 sm:w-64" />
-      <p className="mt-7 max-w-xl text-xl leading-8 text-foreground/88 sm:mt-9 sm:text-3xl sm:leading-10">
+      <p className="mt-7 max-w-xl text-[1.35rem] leading-8 text-foreground/88 sm:mt-9 sm:text-3xl sm:leading-10">
         Become aligned with the life you want.
       </p>
       <div className="mt-10 grid w-full max-w-sm gap-4 sm:mt-12 sm:max-w-xs">
@@ -202,10 +202,10 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
 
   return (
     <div className="max-w-3xl pt-2 md:pt-0">
-      <p className="mb-3 text-[11px] uppercase tracking-[0.18em] text-primary sm:mb-4 sm:text-sm sm:tracking-[0.28em]">
+      <p className="mb-3 text-[11px] uppercase tracking-[0.16em] text-primary sm:mb-4 sm:text-sm sm:tracking-[0.24em]">
         Welcome Back
       </p>
-      <h1 className="max-w-2xl font-serif text-[2.65rem] font-semibold leading-[1.02] text-foreground sm:text-6xl lg:text-7xl">
+      <h1 className="max-w-2xl font-serif text-[2.5rem] font-semibold leading-[1.04] text-foreground sm:text-6xl lg:text-7xl">
         Hi {firstName}. Let&apos;s close the gap.
       </h1>
       <div className="aura-luxury-line mt-5 max-w-lg sm:mt-6" />
@@ -222,7 +222,7 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
         </Button>
       </div>
 
-      <div className="mt-5 rounded-2xl border border-border/60 bg-card/38 px-4 py-3 sm:mt-6 sm:max-w-xl">
+      <div className="mt-6 rounded-[1.35rem] border border-border/42 bg-card/24 px-4 py-3.5 sm:mt-7 sm:max-w-xl sm:rounded-xl">
         <div className="grid grid-cols-3 gap-3 text-center">
           <HomeStatus
             label="Last"

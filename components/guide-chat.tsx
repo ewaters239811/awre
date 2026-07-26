@@ -174,9 +174,9 @@ export function GuideChat() {
   };
 
   return (
-    <section className="mx-auto max-w-4xl md:mt-8">
-      <div className="flex min-h-[calc(100dvh-8.75rem)] flex-col overflow-hidden rounded-none border-border/60 bg-transparent md:aura-glass md:min-h-[680px] md:rounded-lg">
-        <div className="border-b border-border/50 pb-5 pt-3 md:p-6">
+    <section className="mx-auto max-w-4xl md:mt-9">
+      <div className="flex min-h-[calc(100dvh-9rem)] flex-col overflow-hidden rounded-none border-border/42 bg-transparent md:aura-glass md:min-h-[680px] md:rounded-lg">
+        <div className="border-b border-border/35 pb-6 pt-4 md:p-6">
           <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
             Guide
           </p>
@@ -188,7 +188,7 @@ export function GuideChat() {
           </p>
         </div>
 
-        <div className="min-h-[300px] flex-1 space-y-4 overflow-y-auto py-5 md:max-h-[58vh] md:min-h-[420px] md:space-y-5 md:p-6">
+        <div className="min-h-[310px] flex-1 space-y-5 overflow-y-auto py-6 md:max-h-[58vh] md:min-h-[420px] md:p-6">
           {activeConversation?.messages.map((message) => (
             <div
               key={message.createdAt}
@@ -199,10 +199,10 @@ export function GuideChat() {
             >
               <div
                 className={cn(
-                  "max-w-[92%] rounded-2xl border px-4 py-3.5 text-[15px] leading-7 shadow-sm sm:max-w-[82%] md:rounded-md md:px-5 md:py-4 md:text-[15px] md:leading-7",
+                  "max-w-[92%] rounded-[1.2rem] border px-4 py-3.5 text-[15px] leading-7 shadow-sm sm:max-w-[82%] md:rounded-md md:px-5 md:py-4 md:text-[15px] md:leading-7",
                   message.role === "user"
                     ? "border-foreground/25 bg-foreground text-background"
-                    : "border-border/70 bg-card text-muted-foreground",
+                    : "border-border/42 bg-card/52 text-muted-foreground",
                 )}
               >
                 <p>{message.content}</p>
@@ -233,7 +233,7 @@ export function GuideChat() {
             </div>
           ))}
           {isSending ? (
-              <div className="max-w-[92%] rounded-2xl border border-border/70 bg-card px-4 py-3 text-sm text-muted-foreground sm:max-w-[82%] md:rounded-md">
+              <div className="max-w-[92%] rounded-[1.2rem] border border-border/42 bg-card/52 px-4 py-3 text-sm text-muted-foreground sm:max-w-[82%] md:rounded-md">
               Thinking with you...
             </div>
           ) : null}
@@ -244,7 +244,7 @@ export function GuideChat() {
                   key={path.label}
                   type="button"
                   onClick={() => setInput(path.prompt)}
-                  className="rounded-2xl border border-border bg-card px-4 py-3 text-left text-sm leading-5 text-foreground transition hover:border-foreground/35 hover:bg-accent md:rounded-md"
+                  className="rounded-[1.2rem] border border-border/45 bg-card/32 px-4 py-3 text-left text-sm leading-5 text-foreground transition hover:border-foreground/30 hover:bg-accent/60 md:rounded-md"
                 >
                   {path.label}
                 </button>
@@ -258,7 +258,7 @@ export function GuideChat() {
                   key={prompt}
                   type="button"
                   onClick={() => setInput(prompt)}
-                  className="min-w-[13rem] rounded-full border border-border bg-card px-3 py-2 text-left text-xs leading-5 text-foreground transition hover:border-foreground/35 hover:bg-accent md:min-w-0"
+                  className="min-w-[13rem] rounded-full border border-border/45 bg-card/32 px-3 py-2 text-left text-xs leading-5 text-foreground transition hover:border-foreground/30 hover:bg-accent/60 md:min-w-0"
                 >
                   {prompt}
                 </button>
@@ -269,11 +269,11 @@ export function GuideChat() {
         </div>
 
         <form
-          className="sticky bottom-0 border-t border-border/50 bg-background/94 py-4 backdrop-blur-xl md:bg-card/40 md:p-6"
+          className="sticky bottom-0 border-t border-border/35 bg-background/90 py-4 backdrop-blur-xl md:bg-card/28 md:p-6"
           onSubmit={sendMessage}
         >
           <Textarea
-            className="min-h-20 rounded-2xl text-[16px] leading-6 md:min-h-24 md:rounded-md"
+            className="min-h-20 rounded-[1.2rem] text-[16px] leading-6 md:min-h-24 md:rounded-md"
             value={input}
             onChange={(event) => setInput(event.target.value)}
             placeholder="What is on your mind?"

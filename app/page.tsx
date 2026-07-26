@@ -27,11 +27,11 @@ const benefits = [
 export default function HomePage() {
   return (
     <main>
-      <section className="container grid min-h-[calc(100dvh-8rem)] items-start gap-5 py-7 md:min-h-[calc(100vh-5rem)] md:grid-cols-[1.05fr_0.95fr] md:items-center md:gap-12 md:py-16">
+      <section className="container grid min-h-[calc(100dvh-8rem)] items-start gap-7 py-8 md:min-h-[calc(100vh-5rem)] md:grid-cols-[1.05fr_0.95fr] md:items-center md:gap-14 md:py-16">
         <HomeHero />
 
-        <div className="aura-glass hidden rounded-xl p-4 md:block md:rounded-lg md:p-6">
-          <div className="relative overflow-hidden rounded-md border border-border bg-card p-5">
+        <div className="hidden rounded-xl border border-border/38 bg-card/18 p-4 backdrop-blur-xl md:block md:rounded-lg md:p-6">
+          <div className="relative overflow-hidden rounded-md border border-border/45 bg-card/38 p-5">
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-[#bfa46a] to-primary" />
             <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
               How It Works
@@ -58,7 +58,7 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-          <div className="mt-4 grid gap-3 md:mt-5 md:gap-4">
+          <div className="mt-5 grid gap-3 md:mt-6">
             {benefits.map((benefit) => (
               <BenefitCard key={benefit.title} {...benefit} />
             ))}
@@ -82,9 +82,9 @@ function BenefitCard({
   icon: LucideIcon;
 }) {
   return (
-    <article className="aura-float-card rounded-md border border-border/70 bg-card/65 p-4">
+    <article className="aura-float-card rounded-md border border-border/45 bg-card/30 p-4">
       <div className="flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-background text-foreground">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border/45 bg-background/45 text-foreground">
           <Icon className="h-5 w-5" aria-hidden />
         </span>
         <div>
@@ -106,7 +106,7 @@ function BenefitCard({
 
 function PathStep({ label, body }: { label: string; body: string }) {
   return (
-    <article className="rounded-md border border-border/60 bg-background/45 px-4 py-3">
+    <article className="rounded-md border border-border/42 bg-background/30 px-4 py-3">
       <p className="text-xs uppercase tracking-[0.2em] text-primary">{label}</p>
       <p className="mt-1 text-sm leading-6 text-muted-foreground">{body}</p>
     </article>

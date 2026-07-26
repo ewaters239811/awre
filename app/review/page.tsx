@@ -142,9 +142,9 @@ export default function ReviewPage() {
   }, [latestTodayCheckIn]);
 
   return (
-    <main className="container py-7 md:py-12">
+    <main className="clearpth-page-shell">
       <section className="mx-auto max-w-6xl">
-        <div className="flex flex-col gap-4 border-b border-border/60 pb-5 md:flex-row md:items-end md:justify-between md:pb-7">
+        <div className="flex flex-col gap-5 border-b border-border/42 pb-6 md:flex-row md:items-end md:justify-between md:pb-8">
           <div>
             <p className="clearpth-page-kicker">Today</p>
             <h1 className="clearpth-page-title">Today&apos;s Gap</h1>
@@ -152,14 +152,14 @@ export default function ReviewPage() {
               See how today&apos;s state relates to the life you already named.
             </p>
           </div>
-          <div className="flex w-fit items-center gap-3 rounded-full border border-border/60 bg-card/45 px-4 py-2 text-xs text-muted-foreground md:rounded-md md:py-3 md:text-sm">
+          <div className="flex w-fit items-center gap-3 rounded-full border border-border/42 bg-card/24 px-4 py-2 text-xs text-muted-foreground md:rounded-md md:py-3 md:text-sm">
             <CalendarDays className="h-4 w-4 text-primary" aria-hidden />
             <span>{new Date().toLocaleDateString()}</span>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto mt-6 max-w-6xl">
+      <section className="mx-auto mt-7 max-w-6xl">
         <DailyFlow
           checkedIn={Boolean(latestTodayCheckIn)}
           readToday={Boolean(latestTodayCheckIn)}
@@ -167,7 +167,7 @@ export default function ReviewPage() {
         />
       </section>
 
-      <section className="mx-auto mt-5 max-w-6xl overflow-hidden rounded-2xl border border-border/60 bg-card/28 md:mt-6 md:rounded-md">
+      <section className="mx-auto mt-6 max-w-6xl overflow-hidden rounded-[1.35rem] border border-border/42 bg-card/20 md:mt-7 md:rounded-md">
         <div className="grid grid-cols-2 md:grid-cols-4">
           <ReviewStat
             label="Score Today"
@@ -186,7 +186,7 @@ export default function ReviewPage() {
       </section>
 
       {!latestTodayCheckIn ? (
-        <section className="mx-auto mt-8 max-w-6xl rounded-md border border-border/70 bg-card/30 p-6 md:p-8">
+        <section className="mx-auto mt-9 max-w-6xl rounded-[1.35rem] border border-border/50 bg-card/24 p-5 md:rounded-md md:p-8">
           <p className="text-xs uppercase tracking-[0.24em] text-primary">
             No check-in today
           </p>
@@ -208,8 +208,8 @@ export default function ReviewPage() {
         </section>
       ) : (
         <>
-          <section className="mx-auto mt-8 grid max-w-6xl gap-5 lg:grid-cols-[1.05fr_0.95fr]">
-            <article className="rounded-2xl border border-foreground/16 bg-card/75 p-5 md:rounded-md md:p-7">
+          <section className="mx-auto mt-9 grid max-w-6xl gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+            <article className="rounded-[1.35rem] border border-foreground/12 bg-card/48 p-5 md:rounded-md md:p-7">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden />
                 <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
@@ -224,7 +224,7 @@ export default function ReviewPage() {
               </p>
             </article>
 
-            <article className="rounded-2xl border border-border/60 bg-card/30 p-5 md:rounded-md md:p-7">
+            <article className="rounded-[1.35rem] border border-border/42 bg-card/22 p-5 md:rounded-md md:p-7">
               <div className="flex items-center gap-3">
                 <Target className="h-5 w-5 text-primary" aria-hidden />
                 <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
@@ -240,7 +240,7 @@ export default function ReviewPage() {
             </article>
           </section>
 
-          <section className="mx-auto mt-5 max-w-6xl rounded-2xl border border-primary/20 bg-primary/10 p-5 md:rounded-md md:p-6">
+          <section className="mx-auto mt-6 max-w-6xl rounded-[1.35rem] border border-primary/18 bg-primary/8 p-5 md:rounded-md md:p-6">
             <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
               <div>
                 <div className="flex items-center gap-3">
@@ -280,7 +280,7 @@ export default function ReviewPage() {
         </>
       )}
 
-      <section className="mx-auto mt-8 max-w-6xl rounded-md border border-border/70 bg-card/30">
+      <section className="mx-auto mt-9 max-w-6xl rounded-[1.35rem] border border-border/42 bg-card/22 md:rounded-md">
         <div className="border-b border-border/60 px-5 py-4">
           <div className="flex items-center gap-3">
             <NotebookPen className="h-5 w-5 text-primary" aria-hidden />
@@ -301,7 +301,7 @@ export default function ReviewPage() {
       </section>
 
       {todayJournal?.content.trim() ? (
-        <section className="mx-auto mt-5 max-w-6xl rounded-md border border-border/70 bg-card/30">
+        <section className="mx-auto mt-6 max-w-6xl rounded-[1.35rem] border border-border/42 bg-card/22 md:rounded-md">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-3">
               <NotebookPen className="h-5 w-5 text-primary" aria-hidden />
@@ -325,7 +325,7 @@ export default function ReviewPage() {
 
 function ReviewStat({ label, value }: { label: string; value: string }) {
   return (
-    <article className="min-w-0 border-border/60 p-4 odd:border-r [&:nth-child(-n+2)]:border-b md:border-b-0 md:border-r md:p-5 md:last:border-r-0">
+    <article className="min-w-0 border-border/42 p-4 odd:border-r [&:nth-child(-n+2)]:border-b md:border-b-0 md:border-r md:p-5 md:last:border-r-0">
       <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground md:text-xs md:tracking-[0.22em]">
         {label}
       </p>

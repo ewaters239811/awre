@@ -157,7 +157,7 @@ export function BeingDashboard() {
   );
 
   return (
-    <main className="container py-7 md:py-12">
+    <main className="clearpth-page-shell">
       <section className="mx-auto max-w-6xl">
         <p className="clearpth-page-kicker">Patterns</p>
         <h1 className="clearpth-page-title">What Keeps Repeating?</h1>
@@ -168,7 +168,7 @@ export function BeingDashboard() {
       </section>
 
       {checkIns.length === 0 ? (
-        <section className="aura-glass mx-auto mt-8 max-w-6xl rounded-lg p-6">
+        <section className="aura-glass mx-auto mt-9 max-w-6xl rounded-[1.35rem] p-5 md:rounded-lg md:p-6">
           <h2 className="font-serif text-3xl font-semibold">
             Your Being has not been measured yet.
           </h2>
@@ -186,8 +186,8 @@ export function BeingDashboard() {
         </section>
       ) : (
         <>
-          <section className="mx-auto mt-7 grid max-w-6xl gap-5 lg:mt-8 lg:grid-cols-[0.86fr_1.14fr]">
-            <div className="aura-glass rounded-2xl p-5 md:rounded-lg md:p-7">
+          <section className="mx-auto mt-9 grid max-w-6xl gap-5 lg:mt-10 lg:grid-cols-[0.86fr_1.14fr]">
+            <div className="aura-glass rounded-[1.35rem] p-5 md:rounded-lg md:p-7">
               <div className="flex items-center gap-3">
                 <Gauge className="h-5 w-5 text-primary" aria-hidden />
                 <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
@@ -214,7 +214,7 @@ export function BeingDashboard() {
                   value={dashboard.pillarAverages.Feeling}
                 />
               </div>
-              <div className="mt-6 rounded-2xl border border-primary/20 bg-primary/10 p-4 md:rounded-md">
+              <div className="mt-6 rounded-[1.15rem] border border-primary/18 bg-primary/8 p-4 md:rounded-md">
                 <p className="text-[11px] uppercase tracking-[0.16em] text-primary md:text-xs md:tracking-[0.2em]">
                   Primary Signal
                 </p>
@@ -226,7 +226,7 @@ export function BeingDashboard() {
               </div>
             </div>
 
-            <div className="aura-glass rounded-2xl p-5 md:rounded-lg md:p-7">
+            <div className="aura-glass rounded-[1.35rem] p-5 md:rounded-lg md:p-7">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
@@ -237,7 +237,7 @@ export function BeingDashboard() {
                   </h2>
                 </div>
                 {isReading ? (
-                  <span className="rounded-md border border-border/55 bg-card/55 px-3 py-2 text-xs text-muted-foreground">
+                  <span className="rounded-full border border-border/42 bg-card/30 px-3 py-2 text-xs text-muted-foreground md:rounded-md">
                     Reading
                   </span>
                 ) : null}
@@ -259,9 +259,9 @@ export function BeingDashboard() {
 
           <PatternMirrorSection mirror={patternMirror} />
 
-          <section className="mx-auto mt-8 grid max-w-6xl gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-4">
+          <section className="mx-auto mt-9 grid max-w-6xl gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-4">
             {dashboard.metrics.map((metric) => (
-              <article key={metric.label} className="rounded-2xl border border-border/60 bg-card/28 p-4 md:aura-glass md:rounded-lg md:p-5">
+              <article key={metric.label} className="rounded-[1.2rem] border border-border/42 bg-card/20 p-4 md:aura-glass md:rounded-lg md:p-5">
                 <div className="flex items-center gap-3">
                   <MetricIcon label={metric.label} />
                   <p className="text-[10px] uppercase tracking-[0.14em] text-primary md:text-xs md:tracking-[0.22em]">
@@ -278,7 +278,7 @@ export function BeingDashboard() {
             ))}
           </section>
 
-          <section className="mx-auto mt-8 max-w-6xl rounded-2xl border border-border/60 bg-card/28 p-4 md:aura-glass md:rounded-lg md:p-6">
+          <section className="mx-auto mt-9 max-w-6xl rounded-[1.35rem] border border-border/42 bg-card/20 p-4 md:aura-glass md:rounded-lg md:p-6">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <BarChart3 className="h-5 w-5 text-primary" aria-hidden />
@@ -293,7 +293,7 @@ export function BeingDashboard() {
             <ScoreTrendChart timeline={dashboard.timeline} />
           </section>
 
-          <section className="mx-auto mt-8 max-w-6xl">
+          <section className="mx-auto mt-9 max-w-6xl">
             <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
