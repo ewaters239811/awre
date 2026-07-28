@@ -159,21 +159,20 @@ export function BeingDashboard() {
   return (
     <main className="clearpth-page-shell">
       <section className="mx-auto max-w-6xl">
-        <p className="clearpth-page-kicker">Patterns</p>
-        <h1 className="clearpth-page-title">What Keeps Repeating?</h1>
+        <p className="clearpth-page-kicker">Progress</p>
+        <h1 className="clearpth-page-title">What Keeps Showing Up?</h1>
         <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
-          The point is not more data. The point is seeing the pattern clearly
-          enough to move differently.
+          See your scores over time and what deserves more focus.
         </p>
       </section>
 
       {checkIns.length === 0 ? (
         <section className="aura-glass mx-auto mt-9 max-w-6xl rounded-[1.35rem] p-5 md:rounded-lg md:p-6">
           <h2 className="font-serif text-3xl font-semibold">
-            Your Being has not been measured yet.
+            No check-ins yet.
           </h2>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            Complete a check-in and a daily journal to unlock your patterns.
+            Complete a check-in to start seeing your progress.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Button asChild>
@@ -216,12 +215,11 @@ export function BeingDashboard() {
               </div>
               <div className="mt-6 rounded-[1.15rem] border border-primary/18 bg-primary/8 p-4 md:rounded-md">
                 <p className="text-[11px] uppercase tracking-[0.16em] text-primary md:text-xs md:tracking-[0.2em]">
-                  Primary Signal
+                  What Stands Out
                 </p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {dashboard.strongestPillar} is your current support.
-                  {dashboard.weakestPillar} is the point where the whole system
-                  can become more coherent.
+                  {dashboard.strongestPillar} is helping most right now.
+                  {dashboard.weakestPillar} needs the most attention.
                 </p>
               </div>
             </div>
@@ -230,10 +228,10 @@ export function BeingDashboard() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                    Pattern Reading
+                    Progress Reading
                   </p>
                   <h2 className="mt-2 font-serif text-3xl font-semibold leading-tight">
-                    {analysis?.archetype ?? "Reading your pattern"}
+                    {analysis?.archetype ?? "Reading your progress"}
                   </h2>
                 </div>
                 {isReading ? (
@@ -244,13 +242,13 @@ export function BeingDashboard() {
               </div>
               <div className="mt-6 grid gap-3 md:gap-4">
                 <AnalysisBlock label="Summary" body={analysis?.summary} />
-                <AnalysisBlock label="Root Cause" body={analysis?.rootCause} />
-                <AnalysisBlock label="Hidden Debt" body={analysis?.hiddenDebt} />
+                <AnalysisBlock label="What Is Underneath" body={analysis?.rootCause} />
+                <AnalysisBlock label="What Needs More Focus" body={analysis?.hiddenDebt} />
                 <AnalysisBlock
-                  label="Leverage Point"
+                  label="Best Place To Start"
                   body={analysis?.leveragePoint}
                 />
-                <AnalysisBlock label="Next Practice" body={analysis?.nextPractice} />
+                <AnalysisBlock label="Next Step" body={analysis?.nextPractice} />
               </div>
             </div>
           </section>
@@ -351,7 +349,7 @@ function SelectedPatternDay({ item }: { item: CheckInResult | null }) {
         <MiniStat label="Thinking" value={String(item.thinkingScore)} />
         <MiniStat label="Willing" value={String(item.willingScore)} />
         <MiniStat label="Feeling" value={String(item.feelingScore)} />
-        <MiniStat label="Pattern" value={item.weakestPillar} />
+        <MiniStat label="Focus Area" value={item.weakestPillar} />
       </div>
     </section>
   );
@@ -363,10 +361,10 @@ function RecentPatternRecords({ items }: { items: CheckInResult[] }) {
       <div className="flex items-end justify-between gap-4">
         <div>
           <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-            Recent Records
+            Recent Check-Ins
           </p>
           <h2 className="mt-2 font-serif text-3xl font-semibold">
-            The Raw Signal
+            Your Latest Scores
           </h2>
         </div>
         <p className="hidden text-sm text-muted-foreground sm:block">
@@ -454,7 +452,7 @@ function MetricIcon({ label }: { label: string }) {
     return <Activity className={className} aria-hidden />;
   }
 
-  if (label.toLowerCase().includes("debt")) {
+  if (label.toLowerCase().includes("gap")) {
     return <Compass className={className} aria-hidden />;
   }
 
@@ -503,21 +501,21 @@ function GapInsightCard({ insight }: { insight: GapInsight }) {
           <div className="flex items-center gap-3">
             <Compass className="h-5 w-5 text-primary" aria-hidden />
             <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-              The Gap To Fill
+              Focus Area
             </p>
           </div>
           <h2 className="mt-3 font-serif text-3xl font-semibold leading-tight md:mt-4 md:text-4xl">
             {insight.missingBridge}
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground md:mt-4 md:text-base md:leading-7">
-            Fill the gap by bringing your weakest pillar into agreement with
-            your strongest one.
+            Focus on the part of today that feels least connected to what you
+            want.
           </p>
         </div>
 
         <div className="w-full max-w-sm rounded-2xl border border-border/70 bg-card/45 p-4 md:rounded-md">
           <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-muted-foreground">
-            <span>Gap closed</span>
+            <span>Progress</span>
             <span>{insight.progress}%</span>
           </div>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
@@ -544,12 +542,12 @@ function GapInsightCard({ insight }: { insight: GapInsight }) {
 
       <div className="mt-4 grid gap-4 md:grid-cols-3">
         <GapDetail
-          label="Bridge pillar"
+          label="Focus Area"
           value={insight.bridgePillar ?? "-"}
           detail={
             insight.bridgePillar
-              ? `${insight.bridgePillar} is where the gap is most visible.`
-              : "Complete check-ins to reveal the bridge."
+              ? `${insight.bridgePillar} has the most room to grow.`
+              : "Complete check-ins to see what to focus on."
           }
         />
         <GapDetail
@@ -557,12 +555,12 @@ function GapInsightCard({ insight }: { insight: GapInsight }) {
           value={insight.supportPillar ?? "-"}
           detail={
             insight.supportPillar
-              ? `Use ${insight.supportPillar} as support instead of starting from zero.`
-              : "Your support pillar will appear with more signal."
+              ? `Use ${insight.supportPillar} as support.`
+              : "What helps you will appear after more check-ins."
           }
         />
         <GapDetail
-          label="Next bridge move"
+          label="Next Move"
           value={insight.nextMove}
           detail="Do this before adding more complexity."
         />
@@ -576,31 +574,31 @@ function PatternMirrorSection({ mirror }: { mirror: PatternMirror }) {
     {
       label: "This Week",
       value: mirror.weekAverage,
-      detail: "Your average recorded state over the last seven days.",
+      detail: "Your average score over the last seven days.",
       icon: Gauge,
     },
     {
-      label: "Biggest Leak",
+      label: "Focus Area",
       value: mirror.biggestLeak,
-      detail: "The pillar most likely to pull the whole system out of agreement.",
+      detail: "The area with the most room to grow.",
       icon: TrendingDown,
     },
     {
       label: "Raises Score",
       value: mirror.improvesScore,
-      detail: "What seems to support a clearer state when it appears.",
+      detail: "What seems to help on better days.",
       icon: TrendingUp,
     },
     {
       label: "Lowers Score",
       value: mirror.lowersScore,
-      detail: "What seems connected to lower or less stable days.",
+      detail: "What seems connected to lower days.",
       icon: Compass,
     },
     {
       label: "Adjustment",
       value: mirror.adjustment,
-      detail: "The one refinement to practice before adding more complexity.",
+      detail: "One simple adjustment to practice next.",
       icon: CheckCircle2,
     },
   ];
@@ -609,10 +607,10 @@ function PatternMirrorSection({ mirror }: { mirror: PatternMirror }) {
     <section className="mx-auto mt-8 max-w-6xl">
       <div className="mb-5">
         <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-          Personal Mirror
+          What Helps And Hurts
         </p>
         <h2 className="mt-2 font-serif text-3xl font-semibold leading-tight md:text-4xl">
-          What your pattern is saying.
+          What your check-ins are showing.
         </h2>
       </div>
       <div className="grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-5">
@@ -683,7 +681,7 @@ function buildGapInsight(
 ): GapInsight {
   const latestScore = dashboard.latestScore ?? 0;
   const desiredState =
-    onboardingProfile?.desiredState.trim() || "Clear, steady Being";
+    onboardingProfile?.desiredState.trim() || "Clear and steady";
   const bridgePillar = dashboard.weakestPillar;
   const supportPillar = dashboard.strongestPillar;
   const nextThreshold = getNextThreshold(latestScore);
@@ -700,7 +698,7 @@ function buildGapInsight(
     supportPillar,
     distanceLabel:
       dashboard.latestScore === null
-        ? "Complete a check-in to reveal the gap."
+        ? "Complete a check-in to see where to focus."
         : `${pointsToThreshold.toFixed(1)} points from ${nextThreshold.label}.`,
     progress,
     missingBridge: getMissingBridge(bridgePillar, latestScore),
@@ -716,10 +714,10 @@ function buildPatternMirror(
   if (checkIns.length === 0) {
     return {
       weekAverage: "Unmeasured",
-      biggestLeak: "No signal yet",
+      biggestLeak: "No check-ins yet",
       improvesScore: "Complete check-ins",
       lowersScore: "Not visible yet",
-      adjustment: "Create today's signal",
+      adjustment: "Complete today's check-in",
     };
   }
 
@@ -742,20 +740,20 @@ function buildPatternMirror(
   ).length;
   const actionSignal =
     completedActions > 0
-      ? "completed aligned actions"
-      : "clear Willing scores";
+      ? "completed next steps"
+      : "strong action scores";
 
   return {
     weekAverage: `${weekAverage.toFixed(1)} / 10`,
     biggestLeak: dashboard.weakestPillar
-      ? `${dashboard.weakestPillar} is asking for repair`
-      : "No leak visible yet",
+      ? `${dashboard.weakestPillar} has room to grow`
+      : "Nothing visible yet",
     improvesScore: bestDay
       ? `${bestDay.strongestPillar} plus ${actionSignal}`
-      : "More signal needed",
+      : "More check-ins needed",
     lowersScore: lowestDay
-      ? `${lowestDay.weakestPillar} falling out of agreement`
-      : "More signal needed",
+      ? `${lowestDay.weakestPillar} dropping`
+      : "More check-ins needed",
     adjustment: getPatternAdjustment(dashboard.weakestPillar),
   };
 }
@@ -764,28 +762,28 @@ function getPatternAdjustment(pillar: PillarName | null) {
   if (!pillar) return "Complete one check-in today.";
 
   const adjustments: Record<PillarName, string> = {
-    Thinking: "Start the day by naming one cleaner interpretation.",
-    Willing: "Choose one visible action and finish it before reflection expands.",
-    Feeling: "Regulate your body before making the next important choice.",
+    Thinking: "Start by naming one clearer thought.",
+    Willing: "Choose one visible action and finish it.",
+    Feeling: "Calm your body before making the next important choice.",
   };
 
   return adjustments[pillar];
 }
 
 function getNextThreshold(score: number) {
-  if (score < 6) return { label: "stable alignment", score: 6 };
-  if (score < 7.5) return { label: "aligned action", score: 7.5 };
-  if (score < 9) return { label: "magnetic coherence", score: 9 };
-  return { label: "sustained magnetic coherence", score: 10 };
+  if (score < 6) return { label: "stable", score: 6 };
+  if (score < 7.5) return { label: "clear action", score: 7.5 };
+  if (score < 9) return { label: "strong", score: 9 };
+  return { label: "very strong", score: 10 };
 }
 
 function getMissingBridge(pillar: PillarName | null, score: number) {
-  if (!pillar) return "The gap will appear once you create signal.";
+  if (!pillar) return "Check in to see where to focus.";
 
   const byPillar: Record<PillarName, string> = {
-    Thinking: "The gap is cleaner perception.",
-    Willing: "The gap is embodied action.",
-    Feeling: "The gap is emotional agreement.",
+    Thinking: "Your thoughts need more clarity.",
+    Willing: "Your actions need more follow-through.",
+    Feeling: "Your emotions need more steadiness.",
   };
 
   if (score < 6) return `${byPillar[pillar]} Stabilize it first.`;
@@ -827,7 +825,7 @@ function ScoreTrendChart({
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <p className="text-sm font-medium text-foreground">
-              Being Score Trend
+              Score Trend
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
               {timeline.length} recorded day{timeline.length === 1 ? "" : "s"}
@@ -848,7 +846,7 @@ function ScoreTrendChart({
             viewBox="0 0 720 280"
             className="h-auto min-h-[260px] w-full text-foreground"
             role="img"
-            aria-label="Being score line graph over time"
+            aria-label="Score line graph over time"
           >
             {[0, 2.5, 5, 7.5, 10].map((score) => {
               const y = scoreToY(score);

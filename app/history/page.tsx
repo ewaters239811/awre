@@ -45,12 +45,12 @@ export default function HistoryPage() {
           <h1 className="clearpth-page-title">Every Day You Measured</h1>
           <p className="mt-4 max-w-2xl text-muted-foreground">
             Your archive of check-ins, organized by day. Use this page to
-            inspect what happened; use Patterns to understand what it means.
+            inspect what happened; use Progress to understand what it means.
           </p>
         </div>
         <Button asChild variant="secondary">
           <Link href="/dashboard">
-            View Patterns
+            View Progress
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </Button>
@@ -62,7 +62,7 @@ export default function HistoryPage() {
             Your record is still open.
           </h2>
           <p className="mt-3 max-w-xl text-muted-foreground">
-            Complete your first alignment check-in to begin seeing your state
+            Complete your first check-in to begin seeing your score
             patterns over time.
           </p>
           <Button asChild className="mt-6">
@@ -97,7 +97,7 @@ export default function HistoryPage() {
             <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
                 Check-ins are stored on your account profile. Clearing history
-                removes the record used by History and Patterns.
+                removes the record used by History and Progress.
               </p>
               <Button variant="secondary" onClick={clear}>
                 Clear history
@@ -147,7 +147,7 @@ function SelectedDayCard({ item }: { item: CheckInResult | null }) {
       </div>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <MiniStat label="Being" value={item.beingScore.toFixed(1)} />
+        <MiniStat label="Score" value={item.beingScore.toFixed(1)} />
         <MiniStat label="Thinking" value={String(item.thinkingScore)} />
         <MiniStat label="Willing" value={String(item.willingScore)} />
         <MiniStat label="Feeling" value={String(item.feelingScore)} />
@@ -225,7 +225,7 @@ function RecentEntries({ items }: { items: CheckInResult[] }) {
                 <th className="px-4 py-3 font-medium">Thinking</th>
                 <th className="px-4 py-3 font-medium">Willing</th>
                 <th className="px-4 py-3 font-medium">Feeling</th>
-                <th className="px-4 py-3 font-medium">Being</th>
+                <th className="px-4 py-3 font-medium">Score</th>
                 <th className="px-4 py-3 font-medium">State</th>
                 <th className="px-4 py-3 font-medium">Result</th>
               </tr>

@@ -1,19 +1,19 @@
 const model = [
   {
-    title: "Thinking directs perception",
-    body: "Your thoughts determine what receives attention, what receives meaning, and what becomes the story of the day.",
+    title: "Thoughts shape what you notice",
+    body: "Your thoughts affect what you focus on and what story you tell yourself about the day.",
   },
   {
-    title: "Willing directs behavior",
-    body: "Your will translates invisible intention into visible movement, habit, discipline, avoidance, or inspired action.",
+    title: "Actions show what you are choosing",
+    body: "Your actions, habits, delays, and choices show what you are practicing in real life.",
   },
   {
-    title: "Feeling charges identity",
-    body: "Your emotional state gives weight and electricity to the self you believe you are becoming.",
+    title: "Feelings affect how real it feels",
+    body: "Your feelings influence how possible, safe, or believable your desired life feels today.",
   },
   {
-    title: "Being is the integrated state",
-    body: "Being is the felt quality that emerges when thought, action, and emotional charge are no longer pulling in separate directions.",
+    title: "Your state is the full picture",
+    body: "Your state is what happens when your thoughts, actions, and feelings are either working together or pulling apart.",
   },
 ];
 
@@ -21,15 +21,14 @@ export default function AboutPage() {
   return (
     <main className="container py-8 md:py-12">
       <section className="mx-auto max-w-4xl">
-        <p className="clearpth-page-kicker">The ClearPth Model</p>
+        <p className="clearpth-page-kicker">How ClearPth Works</p>
         <h1 className="clearpth-page-title">
-          Thinking | Willing | Feeling = Being
+          Thoughts + Actions + Feelings
         </h1>
         <p className="mt-6 text-lg leading-8 text-muted-foreground">
-          ClearPth is a self-reflection and personal growth app. It helps you look
-          at the relationship between what you think, what you do, what you
-          feel, and the integrated state others experience from you. It is not a
-          medical, therapy, or diagnostic tool.
+          ClearPth is a self-reflection app. It helps you see what you want,
+          where you are today, and what next step could bring you closer. It
+          is not a medical, therapy, or diagnostic tool.
         </p>
       </section>
 

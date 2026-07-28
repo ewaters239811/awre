@@ -6,7 +6,7 @@ export default function TeachingsPage() {
       <div className="mx-auto max-w-3xl text-center">
         <p className="clearpth-page-kicker">Teachings</p>
         <h1 className="clearpth-page-title">
-          A Teaching For Your Alignment
+          A Thought For Today
         </h1>
       </div>
       <TeachingQuote />

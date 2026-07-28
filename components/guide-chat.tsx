@@ -14,16 +14,16 @@ import type { GuideConversation } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const fallbackSuggestedPrompts = [
-  "What is the deeper root of this pattern?",
+  "What is underneath this?",
   "What feeling am I trying to get from the outside?",
-  "What is one practical action I can take from that state?",
+  "What is one practical thing I can do?",
 ];
 
 const entryPaths = [
   {
     label: "Talk through today",
     prompt:
-      "Help me talk through what is on my mind and find the deeper pattern underneath it.",
+      "Help me talk through what is on my mind and understand what is underneath it.",
   },
   {
     label: "Understand what I want",
@@ -178,7 +178,7 @@ export function GuideChat() {
       <div className="flex min-h-[calc(100dvh-9rem)] flex-col overflow-hidden rounded-none border-border/42 bg-transparent md:aura-glass md:min-h-[680px] md:rounded-lg">
         <div className="border-b border-border/35 pb-6 pt-4 md:p-6">
           <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-            Guide
+            Talk It Out
           </p>
           <h1 className="mt-1 font-serif text-[2rem] font-semibold leading-tight md:mt-2 md:text-4xl">
             What&apos;s on your mind?

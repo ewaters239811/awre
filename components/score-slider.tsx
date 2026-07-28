@@ -29,8 +29,8 @@ export function ScoreSlider({
         aria-label={label}
       />
       <div className="flex justify-between text-xs text-muted-foreground">
-        <span>Low alignment</span>
-        <span>High alignment</span>
+        <span>Far off</span>
+        <span>Close</span>
       </div>
     </div>
   );

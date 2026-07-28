@@ -15,10 +15,10 @@ export function AlignmentResult({
   const activePrescription = result.aiAlignment ?? result.prescription;
   const signature = buildBeingSignature(result);
   const prescription: Array<[string, string]> = [
-    ["Thought correction", activePrescription.thoughtCorrection],
-    ["Action step", activePrescription.actionStep],
-    ["Feeling practice", activePrescription.embodimentPractice],
-    ["Identity affirmation", activePrescription.identityAffirmation],
+    ["Thought", activePrescription.thoughtCorrection],
+    ["Action", activePrescription.actionStep],
+    ["Feeling", activePrescription.embodimentPractice],
+    ["Reminder", activePrescription.identityAffirmation],
   ];
 
   return (
@@ -51,13 +51,13 @@ export function AlignmentResult({
               <div className="flex items-center gap-3">
                 <Sparkles className="h-5 w-5 text-primary" aria-hidden />
                 <p className="text-[11px] uppercase tracking-[0.16em] text-primary md:text-xs md:tracking-[0.22em]">
-                  State Signal
+                  What Stands Out
                 </p>
               </div>
               <div className="mt-5 grid gap-3 text-sm">
-                <Stat label="Strongest pillar" value={result.strongestPillar} />
-                <Stat label="Weakest pillar" value={result.weakestPillar} />
-                <Stat label="State signal" value={result.stateLabel} />
+                <Stat label="Helping most" value={result.strongestPillar} />
+                <Stat label="Needs attention" value={result.weakestPillar} />
+                <Stat label="Status" value={result.stateLabel} />
               </div>
             </article>
 
@@ -94,7 +94,7 @@ export function AlignmentResult({
             <div className="flex items-center gap-3">
               <Flame className="h-5 w-5 text-primary" aria-hidden />
               <h2 className="font-serif text-2xl font-semibold md:text-3xl">
-                Your Next Alignment
+                What To Do Next
               </h2>
             </div>
             {isWaitingForPersonalizedResult
@@ -138,7 +138,7 @@ export function AlignmentResult({
         </Button>
         <Button asChild variant="secondary">
           <Link href="/dashboard">
-            View Patterns
+            View Progress
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </Button>
@@ -148,7 +148,7 @@ export function AlignmentResult({
 }
 
 function buildBeingSignature(result: CheckInResult) {
-  return `${result.strongestPillar} is carrying the signal today. ${result.weakestPillar} is the doorway back into fuller integration.`;
+  return `${result.strongestPillar} is helping you most today. ${result.weakestPillar} needs the most attention.`;
 }
 
 function AiStatus({
@@ -161,7 +161,7 @@ function AiStatus({
   if (hasAi || status === "ready") {
     return (
       <p className="mt-4 rounded-md border border-primary/25 bg-primary/10 px-4 py-3 text-sm text-primary">
-        Personalized alignment revealed.
+        Your result is ready.
       </p>
     );
   }
@@ -169,7 +169,7 @@ function AiStatus({
   if (status === "loading") {
     return (
       <p className="mt-4 rounded-md border border-border/70 bg-card/45 px-4 py-3 text-sm text-muted-foreground">
-        Reading your alignment...
+        Reading your check-in...
       </p>
     );
   }
@@ -185,7 +185,7 @@ function AiStatus({
   if (status === "unavailable") {
     return (
       <p className="mt-4 rounded-md border border-border/70 bg-card/45 px-4 py-3 text-sm text-muted-foreground">
-        Showing your alignment result.
+        Showing your result.
       </p>
     );
   }

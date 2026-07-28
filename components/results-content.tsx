@@ -103,7 +103,7 @@ export function ResultsContent() {
   }, [result]);
 
   if (!loaded) {
-    return <main className="container py-12">Loading alignment...</main>;
+    return <main className="container py-12">Loading result...</main>;
   }
 
   if (!result) {
@@ -123,7 +123,7 @@ function NoResultFound() {
       <div className="aura-glass mx-auto max-w-2xl rounded-lg p-6">
         <h1 className="font-serif text-4xl font-semibold">No Result Found</h1>
         <p className="mt-3 text-muted-foreground">
-          Complete a check-in first and your alignment result will appear here.
+          Complete a check-in first and your result will appear here.
         </p>
         <Button asChild className="mt-6">
           <Link href="/check-in">Begin Check In</Link>

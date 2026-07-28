@@ -199,7 +199,7 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
     ? hasJournalToday
       ? "Review Today"
       : "Write Today"
-    : "Reveal Today's Gap";
+    : "See Where You Are";
 
   return (
     <div className="max-w-3xl pt-2 md:pt-0">
@@ -207,7 +207,7 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
         Welcome Back
       </p>
       <h1 className="max-w-2xl font-serif text-[2.5rem] font-semibold leading-[1.04] text-foreground sm:text-6xl lg:text-7xl">
-        Hi {firstName}. Align with your desired reality.
+        Hi {firstName}. Align with what you want.
       </h1>
       <div className="aura-luxury-line mt-5 max-w-lg sm:mt-6" />
       <p className="mt-4 max-w-2xl text-[15px] leading-7 text-foreground/86 sm:mt-6 sm:text-2xl sm:leading-9">
@@ -221,11 +221,11 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
           </span>
           <div>
             <p className="text-[11px] uppercase tracking-[0.16em] text-primary">
-              Today Unlocks
+              After You Check In
             </p>
             <p className="mt-2 text-sm leading-6 text-foreground/88">
-              Check in to see where to close the gap between the current you
-              and the desired reality you.
+              See where you are with what you want, what is close, and what to
+              focus on next.
             </p>
           </div>
         </div>
@@ -267,14 +267,14 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
         <HomeMiniLink
           href="/tune-in"
           icon={<Headphones className="h-4 w-4" aria-hidden />}
-          label="Tune In"
-          body="Play today's session"
+          label="Meditation"
+          body="Listen to today's session"
         />
         <HomeMiniLink
           href="/dashboard"
           icon={<BarChart3 className="h-4 w-4" aria-hidden />}
-          label="Patterns"
-          body="See what keeps repeating"
+          label="Progress"
+          body="See what keeps showing up"
         />
       </div>
     </div>
@@ -333,13 +333,13 @@ function getFirstName(user: AccountUser | null) {
 
 function buildHomeMessage(state: HomeState) {
   if (!state.latestCheckIn) {
-    return "Check in to see where you need to close the gap between the current you and the desired reality you.";
+    return "Check in to see where you are today with what you want.";
   }
 
   if (!state.todaysCheckIn) {
     return `Your last recorded state was ${state.latestCheckIn.beingScore.toFixed(
       1,
-    )}/10. Check in now to see where today's version of you is aligned, and where the gap needs attention.`;
+    )}/10. Check in now to see where you stand today and what to focus on next.`;
   }
 
   if (!state.todaysJournal?.content.trim()) {

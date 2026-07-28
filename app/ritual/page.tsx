@@ -162,7 +162,7 @@ export default function RitualPage() {
         <p className="clearpth-page-kicker">Journal</p>
         <h1 className="clearpth-page-title">Write It Out</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:mt-4 md:text-base">
-          One honest entry is enough. Name what the day revealed about the gap.
+          One honest entry is enough. Write what today showed you.
         </p>
         <div className="mt-5 md:mt-6">
           <DailyFlow
@@ -211,7 +211,7 @@ export default function RitualPage() {
             className="mt-5 min-h-[300px] rounded-2xl text-[16px] leading-7 md:min-h-[360px] md:rounded-md"
             value={draftContent}
             onChange={(event) => updateContent(event.target.value)}
-            placeholder="What did today reveal about the gap?"
+            placeholder="What did today show you?"
           />
 
           <div className="mt-4 flex flex-col gap-3 sm:mt-5 sm:flex-row sm:items-center sm:justify-between">
@@ -231,7 +231,7 @@ export default function RitualPage() {
 
         <aside className="rounded-2xl border border-border/65 bg-card/35 p-4 md:aura-glass md:rounded-lg md:p-5">
           <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground md:text-xs md:tracking-[0.24em]">
-            Journal Signal
+            Journal Notes
           </p>
           <div className="mt-5 grid gap-3">
             <JournalStat label="Saved entries" value={String(entries.length)} />

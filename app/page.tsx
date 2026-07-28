@@ -5,22 +5,22 @@ import { HomeHero } from "@/components/home-hero";
 
 const benefits = [
   {
-    title: "See the gap",
+    title: "See where you are",
     icon: Eye,
     description:
-      "Compare today's state to the life you already named.",
+      "Compare today to what you want.",
   },
   {
-    title: "Shift the state",
+    title: "Shift how you feel",
     icon: Sparkles,
     description:
-      "Move from wanting, waiting, or forcing into a steadier identity.",
+      "Move from stuck or scattered into something steadier.",
   },
   {
-    title: "Take the aligned step",
+    title: "Take the next step",
     icon: Footprints,
     description:
-      "Choose one grounded action that matches the life you are building.",
+      "Choose one clear action for today.",
   },
 ];
 
@@ -37,11 +37,11 @@ export default function HomePage() {
               How It Works
             </p>
             <p className="mt-2 font-serif text-3xl font-semibold leading-tight text-foreground md:text-4xl">
-              Desire becomes direction.
+              What you want becomes clearer.
             </p>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              ClearPth keeps your main desire in view, then turns each day into
-              a clearer state, decision, and next move.
+              ClearPth keeps what you want in view, then shows where you are
+              and what to focus on next.
             </p>
             <div className="mt-5 grid grid-cols-[auto_1fr] gap-4">
               <div className="flex flex-col items-center">
@@ -52,9 +52,9 @@ export default function HomePage() {
                 <span className="h-3 w-3 rounded-full bg-primary" />
               </div>
               <div className="grid gap-3">
-                <PathStep label="Name" body="Set the life, state, or outcome pulling on you." />
-                <PathStep label="Measure" body="See where today's thoughts, actions, and emotions do not yet match it." />
-                <PathStep label="Move" body="Take one grounded action from the state that can hold it." />
+                <PathStep label="Name" body="Say what you want." />
+                <PathStep label="Check" body="See where you are today." />
+                <PathStep label="Move" body="Take one clear next step." />
               </div>
             </div>
           </div>

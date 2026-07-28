@@ -226,11 +226,11 @@ export default function TuneInPage() {
     return (
       <main className="clearpth-page-shell">
         <section className="aura-glass mx-auto max-w-4xl rounded-[1.35rem] p-5 md:rounded-lg md:p-8">
-          <p className="clearpth-page-kicker">Tune In</p>
-          <h1 className="clearpth-page-title">Create today&apos;s signal first.</h1>
+          <p className="clearpth-page-kicker">Meditation</p>
+          <h1 className="clearpth-page-title">Check in first.</h1>
           <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground">
-            Your meditation is tailored from today&apos;s check-in. Complete the
-            check-in first, then return here for a guided session.
+            Your meditation is based on today&apos;s check-in. Complete the
+            check-in first, then return here.
           </p>
           <Button asChild className="mt-6">
             <Link href="/check-in">Begin Check In</Link>
@@ -246,11 +246,11 @@ export default function TuneInPage() {
   return (
     <main className="clearpth-page-shell">
       <section className="mx-auto max-w-5xl">
-        <p className="clearpth-page-kicker">Tune In</p>
+        <p className="clearpth-page-kicker">Meditation</p>
         <h1 className="clearpth-page-title">Today&apos;s Meditation</h1>
         <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
-          A short guided session shaped by today&apos;s check-in. Five minutes
-          or less, built to bring your state back into one line.
+          A short guided session based on today&apos;s check-in. Five minutes
+          or less.
         </p>
       </section>
 
@@ -262,7 +262,7 @@ export default function TuneInPage() {
                 <Headphones className="h-5 w-5" aria-hidden />
               </span>
               <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                {status === "loading" ? "Preparing" : "Guided Session"}
+                {status === "loading" ? "Preparing" : "Listen"}
               </p>
             </div>
             <h2 className="mt-4 font-serif text-3xl font-semibold leading-tight md:text-5xl">
@@ -421,7 +421,7 @@ function updateMediaSession(
   navigator.mediaSession.metadata = new MediaMetadata({
     title: meditation.title,
     artist: "ClearPth",
-    album: "Tune In",
+    album: "Meditation",
   });
   navigator.mediaSession.playbackState = playbackState;
 

@@ -113,61 +113,61 @@ function buildMetrics({
 }): BeingMetric[] {
   return [
     {
-      label: "Current Being",
+      label: "Current Score",
       value: latestScore === null ? "-" : latestScore.toFixed(1),
       detail:
         latestScore === null
-          ? "Complete a check-in to establish your current state."
-          : "Your most recent integrated state score.",
+          ? "Complete a check-in to create your first score."
+          : "Your most recent check-in score.",
     },
     {
-      label: "Average Being",
+      label: "Average Score",
       value: averageScore === null ? "-" : averageScore.toFixed(1),
       detail: `${totalCheckIns} check-in${totalCheckIns === 1 ? "" : "s"} shaping this reading.`,
     },
     {
-      label: "Being Trend",
+      label: "Score Trend",
       value: trend > 0.2 ? `+${trend.toFixed(1)}` : trend < -0.2 ? trend.toFixed(1) : "Stable",
       detail:
         trend > 0.2
-          ? "Your recorded Being is rising over time."
+          ? "Your score is rising over time."
           : trend < -0.2
-            ? "Your recorded Being is asking for repair and attention."
-            : "Your recorded Being is holding a steady range.",
+            ? "Your score is lower than before. Use it as information."
+            : "Your score is holding steady.",
     },
     {
-      label: "Integration Debt",
+      label: "Biggest Gap",
       value: integrationDebt.toFixed(1),
       detail:
         integrationDebt > 2
-          ? "A wide gap exists between your strongest and weakest pillar."
-          : "Your pillars are relatively close in strength.",
+          ? "One area is much lower than the others."
+          : "Your scores are fairly close together.",
     },
     {
-      label: "State Volatility",
+      label: "Score Swings",
       value: volatility.toFixed(1),
       detail:
         volatility > 1.4
-          ? "Your state has been swinging. Look for repeat triggers."
-          : "Your state is showing a workable level of consistency.",
+          ? "Your score has been swinging. Look for what keeps causing it."
+          : "Your score is fairly consistent.",
     },
     {
-      label: "Journal Rhythm",
+      label: "Journal Days",
       value: `${journalRhythm}%`,
       detail: "Saved journal entries across the last seven days.",
     },
     {
-      label: "Strongest Pillar",
+      label: "Helping Most",
       value: strongestPillar ?? "-",
       detail: strongestPillar
-        ? `${strongestPillar} is carrying the most coherence.`
+        ? `${strongestPillar} is helping most.`
         : "Complete check-ins to reveal this.",
     },
     {
-      label: "Growth Edge",
+      label: "Focus Area",
       value: weakestPillar ?? "-",
       detail: weakestPillar
-        ? `${weakestPillar} is where the debt of alignment is most visible.`
+        ? `${weakestPillar} has the most room to grow.`
         : "Complete check-ins to reveal this.",
     },
   ];
@@ -190,13 +190,13 @@ function buildLocalAnalysis({
 }): BeingDashboardAnalysis {
   if (averageScore === null) {
     return {
-      archetype: "Unmeasured State",
+      archetype: "Not Measured Yet",
       summary:
-        "ClearPth needs at least one check-in to begin reading the shape of your Being.",
+        "Complete one check-in to start seeing what is going on.",
       rootCause:
-        "The root cause is not yet visible because no check-in pattern has been recorded.",
+        "What is underneath is not visible yet because no check-ins have been recorded.",
       hiddenDebt:
-        "The first debt is visibility: the state cannot be refined until it is named.",
+        "The first step is visibility: you cannot change what you have not named.",
       leveragePoint:
         "Complete one check-in and one journal entry today.",
       nextPractice:
@@ -206,7 +206,7 @@ function buildLocalAnalysis({
 
   return {
     archetype: getArchetype(averageScore, trend, integrationDebt),
-    summary: `Your Being is averaging ${averageScore.toFixed(1)} with ${strongestPillar ?? "one pillar"} carrying the most force and ${weakestPillar ?? "one pillar"} asking for refinement.`,
+    summary: `Your average score is ${averageScore.toFixed(1)}. ${strongestPillar ?? "One area"} is helping most, and ${weakestPillar ?? "one area"} needs the most attention.`,
     rootCause: getRootCause({
       averageScore,
       trend,
@@ -216,16 +216,16 @@ function buildLocalAnalysis({
     }),
     hiddenDebt:
       integrationDebt > 2
-        ? `The main debt is imbalance: ${weakestPillar} is lagging behind the rest of the system.`
-        : "The main debt is subtle: your pillars are not far apart, so the work is consistency rather than overhaul.",
+        ? `The main issue is imbalance: ${weakestPillar} is lagging behind the rest.`
+        : "The main issue is consistency. Your scores are close, so small daily choices matter.",
     leveragePoint:
       journalRhythm < 60
-        ? "Use the daily journal to make self-honesty a visible rhythm."
-        : `Let ${strongestPillar ?? "your strongest pillar"} support direct repair in ${weakestPillar ?? "your weakest pillar"}.`,
+        ? "Use the daily journal to be honest with yourself."
+        : `Use ${strongestPillar ?? "what is working"} to support ${weakestPillar ?? "your focus area"}.`,
     nextPractice:
       trend < -0.2
         ? "Choose one stabilizing action for the next 24 hours and remove one draining input."
-        : "Choose one visible action that proves your chosen Being before the day becomes noisy.",
+        : "Choose one visible action before the day gets noisy.",
   };
 }
 
@@ -243,22 +243,22 @@ function getRootCause({
   weakestPillar: PillarName | null;
 }) {
   if (averageScore < 5 && journalRhythm < 50) {
-    return "The likely root cause is low continuity: the chosen identity is not yet being reinforced by a daily rhythm.";
+    return "The likely reason is lack of daily rhythm: what you want is not being supported by repeatable actions yet.";
   }
 
   if (integrationDebt > 2) {
-    return `The likely root cause is pillar imbalance: ${weakestPillar ?? "one pillar"} is not receiving enough direct attention to support the whole state.`;
+    return `The likely reason is imbalance: ${weakestPillar ?? "one area"} needs more direct attention.`;
   }
 
   if (trend < -0.2) {
-    return "The likely root cause is state leakage over time: your energy is being spent faster than it is being consciously restored.";
+    return "The likely reason is energy loss over time: your energy is being spent faster than it is being restored.";
   }
 
   if (averageScore < 6.5) {
-    return "The likely root cause is partial alignment: thought, action, and feeling are close enough to sense the right path, but not yet unified enough to carry momentum.";
+    return "The likely reason is mixed signals: your thoughts, actions, and feelings are close, but not fully working together yet.";
   }
 
-  return "The root cause is subtle refinement: the system is functioning, but the next level depends on consistency, precision, and fewer internal contradictions.";
+  return "The next step is refinement: things are working, but consistency will make them stronger.";
 }
 
 function buildPillarAverages(items: CheckInResult[]) {
@@ -290,11 +290,11 @@ function calculateJournalRhythm(journalEntries: JournalEntry[]) {
 }
 
 function getArchetype(score: number, trend: number, debt: number) {
-  if (score >= 8.5 && debt <= 1.2) return "Magnetic Coherence";
-  if (score >= 7 && trend > 0.2) return "Ascending Alignment";
-  if (debt > 2.5) return "Split Current";
-  if (score < 5.5) return "Rebuilding State";
-  return "Active Integration";
+  if (score >= 8.5 && debt <= 1.2) return "Strong And Clear";
+  if (score >= 7 && trend > 0.2) return "Improving";
+  if (debt > 2.5) return "Uneven";
+  if (score < 5.5) return "Needs Focus";
+  return "In Progress";
 }
 
 function average(values: number[]) {

@@ -185,8 +185,8 @@ export default function SettingsPage() {
               Account
             </p>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Adjust what you want so your check-ins, Guide, and pattern
-              analysis stay pointed in the right direction.
+              Adjust what you want so your check-ins, Talk, and progress
+              pages stay pointed in the right direction.
             </p>
             {accountMessage ? (
               <p className="mt-3 text-sm text-muted-foreground">

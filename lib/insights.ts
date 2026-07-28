@@ -33,32 +33,32 @@ export function buildPatternInsights(items: CheckInResult[]): PatternInsight[] {
 
   return [
     {
-      label: "Average Being",
+      label: "Average Score",
       value: average(items.map((item) => item.beingScore)).toFixed(1),
       detail: `${items.length} check-in${items.length === 1 ? "" : "s"} recorded in this browser.`,
     },
     {
-      label: "Strongest Pillar",
+      label: "Helping Most",
       value: strongest[0],
-      detail: `${strongest[0]} is carrying the most coherence across your entries.`,
+      detail: `${strongest[0]} is helping most across your entries.`,
     },
     {
-      label: "Growth Edge",
+      label: "Focus Area",
       value: weakest[0],
-      detail: `${weakest[0]} is asking for the most patient daily attention.`,
+      detail: `${weakest[0]} has the most room to grow right now.`,
     },
     {
       label: "Trend",
       value: trend > 0.2 ? `+${trend.toFixed(1)}` : trend < -0.2 ? trend.toFixed(1) : "Stable",
       detail:
         trend > 0.2
-          ? "Your Being score is rising from your earliest entry."
+          ? "Your score is rising from your earliest entry."
           : trend < -0.2
-            ? "Your Being score is lower than your earliest entry. Treat this as information, not judgment."
-            : "Your Being score is holding steady. Look for small levers, not dramatic corrections.",
+            ? "Your score is lower than your earliest entry. Treat this as information, not judgment."
+            : "Your score is holding steady. Look for small changes, not dramatic corrections.",
     },
     {
-      label: "Highest State",
+      label: "Highest Score",
       value: best.beingScore.toFixed(1),
       detail: `${best.stateLabel} on ${new Date(best.createdAt).toLocaleDateString()}.`,
     },

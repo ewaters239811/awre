@@ -147,9 +147,9 @@ export default function ReviewPage() {
         <div className="flex flex-col gap-5 border-b border-border/42 pb-6 md:flex-row md:items-end md:justify-between md:pb-8">
           <div>
             <p className="clearpth-page-kicker">Today</p>
-            <h1 className="clearpth-page-title">Today&apos;s Gap</h1>
+            <h1 className="clearpth-page-title">Today&apos;s Review</h1>
             <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
-              See how today&apos;s state relates to the life you already named.
+              See where you are, what is helping, and what to focus on next.
             </p>
           </div>
           <div className="flex w-fit items-center gap-3 rounded-full border border-border/42 bg-card/24 px-4 py-2 text-xs text-muted-foreground md:rounded-md md:py-3 md:text-sm">
@@ -170,7 +170,7 @@ export default function ReviewPage() {
       <section className="mx-auto mt-6 max-w-6xl overflow-hidden rounded-[1.35rem] border border-border/42 bg-card/20 md:mt-7 md:rounded-md">
         <div className="grid grid-cols-2 md:grid-cols-4">
           <ReviewStat
-            label="Score Today"
+            label="Score"
             value={latestTodayCheckIn?.beingScore.toFixed(1) ?? "-"}
           />
           <ReviewStat
@@ -181,7 +181,7 @@ export default function ReviewPage() {
             label="Journal"
             value={todayJournal?.content.trim() ? "Done" : "Open"}
           />
-          <ReviewStat label="Signal" value={report.signalLabel} />
+          <ReviewStat label="Status" value={report.signalLabel} />
         </div>
       </section>
 
@@ -191,11 +191,10 @@ export default function ReviewPage() {
             No check-in today
           </p>
             <h2 className="mt-3 font-serif text-3xl font-semibold md:text-4xl">
-            Today has not been measured yet.
+            You have not checked in today.
           </h2>
           <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
-            Complete one check-in to reveal today&apos;s state. Add a journal
-            entry if you want the pattern underneath the score to become clearer.
+            Complete one check-in to see where you are and what to focus on next.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Button asChild>
@@ -213,7 +212,7 @@ export default function ReviewPage() {
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden />
                 <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                  Primary Signal
+                  What Stands Out
                 </p>
               </div>
               <h2 className="mt-3 font-serif text-3xl font-semibold leading-tight md:mt-4 md:text-4xl">
@@ -246,14 +245,14 @@ export default function ReviewPage() {
                 <div className="flex items-center gap-3">
                   <Target className="h-5 w-5 text-primary" aria-hidden />
                   <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                    Today&apos;s Aligned Action
+                    Today&apos;s Next Step
                   </p>
                 </div>
                 <p className="mt-3 max-w-3xl font-serif text-2xl font-semibold leading-tight text-foreground md:text-3xl">
                   {alignedAction}
                 </p>
                 <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  This is the one visible step that closes the gap today.
+                  This is the one step to focus on today.
                 </p>
               </div>
               <Button
@@ -267,7 +266,7 @@ export default function ReviewPage() {
               </Button>
             </div>
             <Button asChild className="mt-4 w-full md:w-auto" variant="secondary">
-              <Link href="/tune-in">Open Today&apos;s Meditation</Link>
+              <Link href="/tune-in">Open Meditation</Link>
             </Button>
           </section>
 
@@ -285,14 +284,14 @@ export default function ReviewPage() {
           <div className="flex items-center gap-3">
             <NotebookPen className="h-5 w-5 text-primary" aria-hidden />
             <p className="text-xs uppercase tracking-[0.24em] text-primary">
-              Journal Prompt
+              Journal
             </p>
           </div>
         </div>
         <div className="px-5 py-4">
           <p className="text-sm leading-7 text-muted-foreground">
-            What did today reveal about the gap, and what is one cleaner step
-            you can take before the day ends?
+            What did today show you, and what is one clear step you can take
+            before the day ends?
           </p>
           <Button asChild className="mt-4" variant="secondary">
             <Link href="/ritual">Open Journal</Link>
@@ -343,25 +342,25 @@ function buildTodayReport(
   if (!checkIn) {
     return {
       signalLabel: "Unmeasured",
-      primaryTitle: "No signal recorded",
-      primaryDetail: "Today needs one honest check-in before it can be read.",
-      correctionTitle: "Create signal",
+      primaryTitle: "No check-in yet",
+      primaryDetail: "Check in first, then today can be reviewed.",
+      correctionTitle: "Check in",
       correctionDetail:
-        "Score Thinking, Willing, and Feeling, then name one choice your Being can make today.",
+        "Score your thoughts, actions, and emotions, then name one clear step.",
     };
   }
 
   const journalSignal = journal?.content.trim()
-    ? "Your journal adds context to the score, so the review has both measurement and texture."
-    : "A journal entry would add more context to the score before the day closes.";
+    ? "Your journal adds more context to today's score."
+    : "A journal entry would make today's review clearer.";
   const weakest = checkIn.weakestPillar;
   const strongest = checkIn.strongestPillar;
 
   if (checkIn.beingScore < 6) {
     return {
-      signalLabel: "Repair",
-      primaryTitle: `Today is asking for repair in ${weakest}.`,
-      primaryDetail: `${strongest} is still available as support, but ${weakest} is where the leak is most visible. ${journalSignal}`,
+      signalLabel: "Needs focus",
+      primaryTitle: `${weakest} could use more focus today.`,
+      primaryDetail: `${strongest} is helping you, and ${weakest} is the area with the most room to grow. ${journalSignal}`,
       correctionTitle: getCorrectionTitle(weakest),
       correctionDetail: getCorrectionDetail(weakest),
     };
@@ -370,18 +369,18 @@ function buildTodayReport(
   if (checkIn.beingScore >= 8) {
     return {
       signalLabel: "Clear",
-      primaryTitle: `${strongest} is carrying a clear signal today.`,
-      primaryDetail: `Protect the conditions that made this score possible. Do not chase intensity; repeat the simple pattern that created coherence. ${journalSignal}`,
-      correctionTitle: `Protect ${strongest}`,
+      primaryTitle: `${strongest} is working well today.`,
+      primaryDetail: `Protect what made this score possible. Keep the day simple and repeat what is working. ${journalSignal}`,
+      correctionTitle: `Protect what is working`,
       correctionDetail:
         "Choose one action that preserves today's clarity instead of spending it on distraction.",
     };
   }
 
   return {
-    signalLabel: "Active",
-    primaryTitle: `Today is workable through ${weakest}.`,
-    primaryDetail: `${strongest} is giving you enough stability to make one clean correction in ${weakest}. ${journalSignal}`,
+      signalLabel: "Workable",
+      primaryTitle: `${weakest} is the place to adjust.`,
+      primaryDetail: `${strongest} is giving you enough stability to make one clear change in ${weakest}. ${journalSignal}`,
     correctionTitle: getCorrectionTitle(weakest),
     correctionDetail: getCorrectionDetail(weakest),
   };

@@ -109,7 +109,7 @@ export function HistoryCalendar({
               }}
               title={
                 score
-                  ? `${score.toFixed(1)} Being score`
+                  ? `${score.toFixed(1)} score`
                   : "No check-in recorded"
               }
               className={cn(
