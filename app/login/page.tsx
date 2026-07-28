@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { syncLocalDataToAccount } from "@/lib/account-data";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
-const CONFIRMATION_REDIRECT_URL = "https://clearpth.io/auth/callback";
 const PASSWORD_RESET_REDIRECT_URL =
   "https://clearpth.io/auth/callback?next=/reset-password";
 
@@ -26,9 +25,7 @@ export default function LoginPage() {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resending, setResending] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
-  const [confirmationEmail, setConfirmationEmail] = useState("");
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -61,7 +58,6 @@ export default function LoginPage() {
               email,
               password,
               options: {
-                emailRedirectTo: CONFIRMATION_REDIRECT_URL,
                 data: {
                   full_name: name.trim(),
                 },
@@ -74,17 +70,17 @@ export default function LoginPage() {
       }
 
       if (mode === "sign-up" && !response.data.session) {
-        setConfirmationEmail(email.trim());
         setMode("sign-in");
         setPassword("");
+        setStatus("Account created. Sign in to start your setup.");
         return;
       }
 
       const syncResult = await syncLocalDataToAccount();
       setStatus(
         mode === "sign-up"
-          ? "Account created and signed in. Your record is connected to your profile."
-          : "Signed in. Your record is connected to your profile.",
+          ? "Account created. Taking you to setup."
+          : "Signed in. Taking you home.",
       );
       router.push(syncResult?.hasOnboardingProfile ? "/" : "/onboarding");
     } catch {
@@ -92,54 +88,6 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const resendConfirmation = async () => {
-    setError("");
-    setStatus("");
-
-    if (!isSupabaseConfigured()) {
-      setError("Supabase is not configured yet.");
-      return;
-    }
-
-    if (!email.trim()) {
-      setError("Enter the email address first.");
-      return;
-    }
-
-    setResending(true);
-
-    try {
-      const supabase = createSupabaseBrowserClient();
-      const { error: resendError } = await supabase.auth.resend({
-        type: "signup",
-        email: email.trim(),
-        options: {
-          emailRedirectTo: CONFIRMATION_REDIRECT_URL,
-        },
-      });
-
-      if (resendError) {
-        setError(resendError.message);
-        return;
-      }
-
-      setStatus(
-        "Confirmation email sent. Open it on this device and tap the link to return to ClearPth.",
-      );
-    } catch {
-      setError("Could not resend the confirmation email. Please try again.");
-    } finally {
-      setResending(false);
-    }
-  };
-
-  const editConfirmationEmail = () => {
-    setConfirmationEmail("");
-    setStatus("");
-    setError("");
-    setMode("sign-in");
   };
 
   const sendPasswordReset = async () => {
@@ -179,46 +127,6 @@ export default function LoginPage() {
       setSendingReset(false);
     }
   };
-
-  if (confirmationEmail) {
-    return (
-      <main className="container flex min-h-[calc(100dvh-9rem)] items-center py-8 md:min-h-[calc(100vh-5rem)] md:py-12">
-        <section className="aura-glass mx-auto max-w-xl rounded-lg p-6 md:p-8">
-          <p className="clearpth-page-kicker">Confirm Your Email</p>
-          <h1 className="mt-3 font-serif text-4xl font-semibold leading-tight">
-            One last step.
-          </h1>
-          <p className="mt-4 leading-7 text-muted-foreground">
-            We sent a confirmation link to {confirmationEmail}. Open that email
-            and tap the link to activate your account.
-          </p>
-
-          {error ? <p className="mt-4 text-sm text-primary">{error}</p> : null}
-          {status ? (
-            <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              {status}
-            </p>
-          ) : null}
-
-          <div className="mt-6 grid gap-3">
-            <Button
-              type="button"
-              disabled={resending}
-              onClick={resendConfirmation}
-            >
-              {resending ? "Sending..." : "Resend Confirmation Email"}
-            </Button>
-            <Button type="button" variant="secondary" onClick={editConfirmationEmail}>
-              Change Email Or Sign In
-            </Button>
-            <Button asChild variant="secondary">
-              <Link href="/">Return Home</Link>
-            </Button>
-          </div>
-        </section>
-      </main>
-    );
-  }
 
   return (
     <main className="container py-8 md:py-12">
@@ -306,16 +214,6 @@ export default function LoginPage() {
                 ? "Sign In"
                 : "Create Account"}
             <ArrowRight className="h-4 w-4" aria-hidden />
-          </Button>
-
-          <Button
-            type="button"
-            variant="secondary"
-            className="mt-3 w-full"
-            disabled={resending || loading}
-            onClick={resendConfirmation}
-          >
-            {resending ? "Sending..." : "Resend Confirmation Email"}
           </Button>
 
           {mode === "sign-in" ? (

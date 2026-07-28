@@ -76,7 +76,7 @@ supabase/schema.sql
 4. Restart the dev server.
 5. Open `/login` and create an account.
 
-For email confirmations to work on phones and other devices, set these in
+For password reset links to work on phones and other devices, set these in
 Supabase under **Authentication -> URL Configuration**:
 
 ```txt
@@ -85,12 +85,12 @@ Redirect URLs:
 https://clearpth.io/auth/callback
 ```
 
-The app sends new account confirmation emails to `/auth/callback`, where
-ClearPth completes the Supabase session and returns the user to Home.
+New accounts are designed to sign in immediately when email confirmation is
+disabled in Supabase. Password reset links use `/auth/callback`, where ClearPth
+completes the Supabase session and sends the user to the reset page.
 
 Personal records are account-first. Check-ins, journal entries, and setup
-profiles are saved only for signed-in users. Guest sessions can explore the app,
-but personal records are not saved.
+profiles are saved only for signed-in users.
 
 ## What Is Included
 
