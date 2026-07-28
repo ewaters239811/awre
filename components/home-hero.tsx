@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, BarChart3, Headphones, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DailyFlow } from "@/components/daily-flow";
 import { getCurrentAccount } from "@/lib/account-data";
@@ -198,7 +199,7 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
     ? hasJournalToday
       ? "Review Today"
       : "Write Today"
-    : "Begin Today";
+    : "Reveal Today's Gap";
 
   return (
     <div className="max-w-3xl pt-2 md:pt-0">
@@ -206,15 +207,29 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
         Welcome Back
       </p>
       <h1 className="max-w-2xl font-serif text-[2.5rem] font-semibold leading-[1.04] text-foreground sm:text-6xl lg:text-7xl">
-        Hi {firstName}. Let&apos;s close the gap.
+        Hi {firstName}. Align with your desired reality.
       </h1>
       <div className="aura-luxury-line mt-5 max-w-lg sm:mt-6" />
       <p className="mt-4 max-w-2xl text-[15px] leading-7 text-foreground/86 sm:mt-6 sm:text-2xl sm:leading-9">
         {buildHomeMessage(state)}
       </p>
 
-      <div className="mt-6 flex flex-col gap-3 sm:mt-7 sm:flex-row">
-        <Button asChild size="lg" className="w-full sm:w-auto">
+      <div className="mt-7 rounded-[1.55rem] border border-primary/24 bg-[linear-gradient(135deg,rgba(216,190,132,0.14),rgba(90,140,118,0.08))] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.22)] sm:mt-8 sm:max-w-xl sm:rounded-2xl sm:p-5">
+        <div className="flex items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/28 bg-background/36 text-primary">
+            <Sparkles className="h-5 w-5" aria-hidden />
+          </span>
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.16em] text-primary">
+              Today Unlocks
+            </p>
+            <p className="mt-2 text-sm leading-6 text-foreground/88">
+              Check in to see where to close the gap between the current you
+              and the desired reality you.
+            </p>
+          </div>
+        </div>
+        <Button asChild size="lg" className="mt-5 w-full">
           <Link href={nextHref}>
             {nextLabel}
             <ArrowRight className="h-4 w-4" aria-hidden />
@@ -248,13 +263,20 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
         />
       </div>
 
-      <Link
-        href="/dashboard"
-        className="mt-5 inline-flex text-sm font-medium text-muted-foreground transition hover:text-foreground"
-      >
-        View patterns
-        <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
-      </Link>
+      <div className="mt-5 grid gap-3 sm:max-w-xl sm:grid-cols-2">
+        <HomeMiniLink
+          href="/tune-in"
+          icon={<Headphones className="h-4 w-4" aria-hidden />}
+          label="Tune In"
+          body="Play today's session"
+        />
+        <HomeMiniLink
+          href="/dashboard"
+          icon={<BarChart3 className="h-4 w-4" aria-hidden />}
+          label="Patterns"
+          body="See what keeps repeating"
+        />
+      </div>
     </div>
   );
 }
@@ -272,6 +294,33 @@ function HomeStatus({ label, value }: { label: string; value: string }) {
   );
 }
 
+function HomeMiniLink({
+  href,
+  icon,
+  label,
+  body,
+}: {
+  href: string;
+  icon: ReactNode;
+  label: string;
+  body: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="rounded-[1.15rem] border border-border/42 bg-card/20 p-3.5 transition hover:-translate-y-0.5 hover:border-primary/28 hover:bg-card/34"
+    >
+      <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+        <span className="text-primary">{icon}</span>
+        {label}
+      </span>
+      <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+        {body}
+      </span>
+    </Link>
+  );
+}
+
 function getFirstName(user: AccountUser | null) {
   const name =
     user?.user_metadata?.full_name?.trim() ||
@@ -284,13 +333,13 @@ function getFirstName(user: AccountUser | null) {
 
 function buildHomeMessage(state: HomeState) {
   if (!state.latestCheckIn) {
-    return "Start with one honest check-in. See how close today feels to the life you already named.";
+    return "Check in to see where you need to close the gap between the current you and the desired reality you.";
   }
 
   if (!state.todaysCheckIn) {
     return `Your last recorded state was ${state.latestCheckIn.beingScore.toFixed(
       1,
-    )}/10. Measure today, notice the gap, then choose the next clean step.`;
+    )}/10. Check in now to see where today's version of you is aligned, and where the gap needs attention.`;
   }
 
   if (!state.todaysJournal?.content.trim()) {
