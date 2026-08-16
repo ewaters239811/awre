@@ -80,6 +80,6 @@ export async function POST(request: Request) {
 
 function parseVoiceSpeed(value: string | undefined) {
   const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return 0.78;
+  if (!Number.isFinite(parsed)) return 0.72;
   return Math.min(Math.max(parsed, 0.7), 1.2);
 }

@@ -39,7 +39,7 @@ these values to `.env.local`:
 ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
 ELEVENLABS_VOICE_ID=your_preferred_voice_id
 ELEVENLABS_MODEL=eleven_multilingual_v2
-ELEVENLABS_VOICE_SPEED=0.78
+ELEVENLABS_VOICE_SPEED=0.72
 ```
 
 `ELEVENLABS_VOICE_ID` is optional. If omitted, the app uses the ElevenLabs

@@ -10,10 +10,10 @@ type MeditationRequest = {
 
 const fallback: AiMeditation = {
   title: "Return To The Center",
-  intention: "Bring thought, action, and feeling back into one clean direction.",
-  durationSeconds: 300,
+  intention: "Slow down, settle your body, and return to one clear direction.",
+  durationSeconds: 240,
   script:
-    "Sit comfortably and let your shoulders drop. Take a slow breath in, and a slower breath out. Let the mind become simple. You do not need to solve the whole life from here. You only need to return to the state that can meet the next moment clearly. Notice the thought that has been taking the most space. Let it soften into one cleaner sentence: I can see what is here, and I can choose one true step. Now bring attention to the body. Feel your feet, your hands, your jaw, and the center of the chest. Let the body learn steadiness before the day asks for performance. If action has been delayed, do not judge it. See the delay as stored energy waiting for a clean direction. Imagine one small action becoming natural, visible, and complete. Now let the feeling underneath the day be present without letting it lead. Breathe as if your desired state is already allowed in the body. You are not waiting for the outside world to give you permission to become steady. You are practicing the state now. For the final breaths, gather thinking, willing, and feeling into one quiet line. One thought. One step. One state. When you are ready, open your eyes and carry that line into the next action.",
+    "Sit comfortably. Let your shoulders drop. Take a slow breath in. Pause. Let it out even slower. Again, breathe in. Let the body know there is nowhere else to be right now. Let the mind become simple. You do not need to solve everything from here. You only need to return to the state that can meet the next moment clearly. Notice the thought that has been taking the most space. Do not fight it. Let it pass through the room of your awareness. Now soften it into one cleaner sentence: I can see what is here, and I can choose one true step. Pause here. Feel your feet. Feel your hands. Feel the jaw unclench. Feel the center of the chest. Let the body learn steadiness before the day asks anything from you. If action has been delayed, do not judge it. See it as energy waiting for a clear direction. Imagine one small action becoming natural and complete. Now notice the feeling underneath the day. Let it be present without letting it lead. Breathe as if your desired state is already allowed in the body. You are not waiting for the outside world to give you permission to become steady. You are practicing the state now. For the final breaths, gather your thought, your next step, and your feeling into one quiet line. One thought. One step. One state. When you are ready, open your eyes and carry that line into the next action.",
   closingPrompt:
     "What one action would prove this state in the next hour?",
 };
@@ -39,8 +39,12 @@ export async function POST(request: Request) {
         "You write guided meditations for ClearPth, a self-reflection and personal growth app.",
         "ClearPth is not medical, therapy, diagnostic, or crisis support.",
         "Create one daily guided meditation tailored to the user's check-in.",
-        "The meditation must be no more than five minutes when read aloud at a calm pace.",
-        "Keep the script between 420 and 560 words.",
+        "The meditation should feel spacious and unrushed, usually two to four minutes when read aloud slowly.",
+        "Keep the script between 260 and 380 words.",
+        "Use short sentences and quiet pauses.",
+        "Add natural pause cues such as Pause, Stay here, or Take one more breath, but do not overuse them.",
+        "Prioritize silence, breath, and embodiment over explanation.",
+        "Do not pack the session with too many ideas.",
         "Use a grounded, premium, intimate, calm tone.",
         "Use the user's weakest pillar as the repair focus and strongest pillar as support.",
         "Use Thinking, Willing, Feeling, and Being as subtle internal structure, but do not make the meditation sound like a lecture.",
@@ -49,7 +53,7 @@ export async function POST(request: Request) {
         "Use gender-neutral language by default.",
         "Do not use markdown formatting, bullets, numbering, headings, or labels inside JSON values.",
         "Return only valid JSON with keys: title, intention, durationSeconds, script, closingPrompt.",
-        "durationSeconds must be 300 or less.",
+        "durationSeconds must be between 150 and 270.",
       ].join(" "),
       user: {
         thinkingScore: result.thinkingScore,
