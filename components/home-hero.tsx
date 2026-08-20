@@ -21,7 +21,7 @@ import {
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
-import type { CheckInResult, JournalEntry } from "@/lib/types";
+import type { CheckInResult, JournalEntry, OnboardingProfile } from "@/lib/types";
 
 type AccountUser = {
   email?: string;
@@ -39,6 +39,7 @@ type HomeState = {
   totalCheckIns: number;
   totalJournals: number;
   hasProfile: boolean;
+  profile: OnboardingProfile | null;
 };
 
 const RETURN_TO_COVER_KEY = "clearpth.returnToCoverFromSetup";
@@ -55,6 +56,7 @@ export function HomeHero() {
     totalCheckIns: 0,
     totalJournals: 0,
     hasProfile: false,
+    profile: null,
   });
   const [loaded, setLoaded] = useState(false);
   const [showCoverInsteadOfSetup, setShowCoverInsteadOfSetup] = useState(false);
@@ -74,7 +76,8 @@ export function HomeHero() {
       getCurrentAccount()
         .then((user) => {
           if (cancelled) return;
-          const hasProfile = Boolean(getOnboardingProfile());
+          const profile = getOnboardingProfile();
+          const hasProfile = Boolean(profile);
           if (hasProfile) {
             try {
               sessionStorage.removeItem(RETURN_TO_COVER_KEY);
@@ -91,6 +94,7 @@ export function HomeHero() {
             totalCheckIns: getCheckIns().length,
             totalJournals: getJournalEntries().length,
             hasProfile,
+            profile,
           });
         })
         .finally(() => {
@@ -200,6 +204,8 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
       ? "Review Today"
       : "Write Today"
     : "See Where You Are";
+  const desiredReality = getDesiredRealityLine(state.profile);
+  const desiredFeeling = state.profile?.desiredState.trim();
 
   return (
     <div className="max-w-3xl pt-2 md:pt-0">
@@ -214,6 +220,20 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
         {buildHomeMessage(state)}
       </p>
 
+      <div className="mt-6 rounded-[1.55rem] border border-primary/24 bg-card/26 p-4 shadow-[0_18px_48px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:mt-7 sm:max-w-xl sm:rounded-2xl sm:p-5">
+        <p className="text-[11px] uppercase tracking-[0.16em] text-primary">
+          What You Want
+        </p>
+        <p className="mt-2 font-serif text-2xl font-semibold leading-tight text-foreground sm:text-3xl">
+          {desiredReality}
+        </p>
+        {desiredFeeling ? (
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            Desired state: {desiredFeeling}
+          </p>
+        ) : null}
+      </div>
+
       <div className="mt-7 rounded-[1.55rem] border border-primary/24 bg-[linear-gradient(135deg,rgba(216,190,132,0.14),rgba(90,140,118,0.08))] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.22)] sm:mt-8 sm:max-w-xl sm:rounded-2xl sm:p-5">
         <div className="flex items-start gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/28 bg-background/36 text-primary">
@@ -224,8 +244,8 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
               After You Check In
             </p>
             <p className="mt-2 text-sm leading-6 text-foreground/88">
-              See where you are with what you want, what is close, and what to
-              focus on next.
+              Today will show where you are with this, what is close, and what
+              to focus on next.
             </p>
           </div>
         </div>
@@ -332,8 +352,10 @@ function getFirstName(user: AccountUser | null) {
 }
 
 function buildHomeMessage(state: HomeState) {
+  const desiredReality = getDesiredRealityLine(state.profile).toLowerCase();
+
   if (!state.latestCheckIn) {
-    return "Check in to see where you are today with what you want.";
+    return `Check in to see where you are today with ${desiredReality}.`;
   }
 
   if (!state.todaysCheckIn) {
@@ -349,4 +371,10 @@ function buildHomeMessage(state: HomeState) {
   }
 
   return `Today is complete. Let the pattern support your next decision.`;
+}
+
+function getDesiredRealityLine(profile: OnboardingProfile | null) {
+  const primaryGoal = profile?.primaryGoal.trim();
+
+  return primaryGoal || "the life you want";
 }

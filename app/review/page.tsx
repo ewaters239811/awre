@@ -18,13 +18,20 @@ import {
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
-import type { CheckInResult, JournalEntry, PillarName } from "@/lib/types";
+import type {
+  CheckInResult,
+  JournalEntry,
+  OnboardingProfile,
+  PillarName,
+} from "@/lib/types";
 
 type AiStatus = "idle" | "loading" | "ready" | "unavailable";
 
 export default function ReviewPage() {
   const [checkIns, setCheckIns] = useState<CheckInResult[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
+  const [onboardingProfile, setOnboardingProfile] =
+    useState<OnboardingProfile | null>(null);
   const [aiStatus, setAiStatus] = useState<AiStatus>("idle");
   const requestedAiFor = useRef<string | null>(null);
   const checkInTodayKey = useCurrentCheckInDateKey();
@@ -34,6 +41,7 @@ export default function ReviewPage() {
     queueMicrotask(() => {
       setCheckIns(getCheckIns());
       setJournalEntries(getJournalEntries());
+      setOnboardingProfile(getOnboardingProfile());
     });
   }, []);
 
@@ -44,7 +52,11 @@ export default function ReviewPage() {
   const todayJournal = journalEntries.find(
     (entry) => entry.date === calendarTodayKey,
   );
-  const report = buildTodayReport(latestTodayCheckIn, todayJournal);
+  const report = buildTodayReport(
+    latestTodayCheckIn,
+    todayJournal,
+    onboardingProfile,
+  );
   const alignedAction =
     todayJournal?.alignedAction?.trim() ||
     latestTodayCheckIn?.aiAlignment?.actionStep ||
@@ -149,7 +161,8 @@ export default function ReviewPage() {
             <p className="clearpth-page-kicker">Today</p>
             <h1 className="clearpth-page-title">Today&apos;s Review</h1>
             <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
-              See where you are, what is helping, and what to focus on next.
+              See where you are with what you want, what is close, and what to
+              focus on next.
             </p>
           </div>
           <div className="flex w-fit items-center gap-3 rounded-full border border-border/42 bg-card/24 px-4 py-2 text-xs text-muted-foreground md:rounded-md md:py-3 md:text-sm">
@@ -185,6 +198,37 @@ export default function ReviewPage() {
         </div>
       </section>
 
+      <section className="mx-auto mt-6 grid max-w-6xl gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+        <article className="rounded-[1.35rem] border border-primary/20 bg-primary/8 p-5 md:rounded-md md:p-6">
+          <div className="flex items-center gap-3">
+            <Target className="h-5 w-5 text-primary" aria-hidden />
+            <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
+              What You Want
+            </p>
+          </div>
+          <p className="mt-3 font-serif text-2xl font-semibold leading-tight md:text-3xl">
+            {getDesiredRealityLine(onboardingProfile)}
+          </p>
+          {onboardingProfile?.desiredState.trim() ? (
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Desired state: {onboardingProfile.desiredState.trim()}
+            </p>
+          ) : null}
+        </article>
+
+        <article className="rounded-[1.35rem] border border-border/42 bg-card/22 p-5 md:rounded-md md:p-6">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
+            The Gap Today
+          </p>
+          <p className="mt-3 font-serif text-2xl font-semibold leading-tight md:text-3xl">
+            {report.gapTitle}
+          </p>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground md:text-base md:leading-7">
+            {report.gapDetail}
+          </p>
+        </article>
+      </section>
+
       {!latestTodayCheckIn ? (
         <section className="mx-auto mt-9 max-w-6xl rounded-[1.35rem] border border-border/50 bg-card/24 p-5 md:rounded-md md:p-8">
           <p className="text-xs uppercase tracking-[0.24em] text-primary">
@@ -194,7 +238,8 @@ export default function ReviewPage() {
             You have not checked in today.
           </h2>
           <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
-            Complete one check-in to see where you are and what to focus on next.
+            Complete one check-in to see where you are with what you want and
+            what to focus on next.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Button asChild>
@@ -338,12 +383,18 @@ function ReviewStat({ label, value }: { label: string; value: string }) {
 function buildTodayReport(
   checkIn: CheckInResult | null,
   journal: JournalEntry | undefined,
+  profile: OnboardingProfile | null,
 ) {
+  const desiredReality = getDesiredRealityLine(profile).toLowerCase();
+  const desiredState = profile?.desiredState.trim();
+
   if (!checkIn) {
     return {
       signalLabel: "Unmeasured",
       primaryTitle: "No check-in yet",
       primaryDetail: "Check in first, then today can be reviewed.",
+      gapTitle: "Check in to see the gap.",
+      gapDetail: `ClearPth needs one check-in to compare today with ${desiredReality}.`,
       correctionTitle: "Check in",
       correctionDetail:
         "Score your thoughts, actions, and emotions, then name one clear step.",
@@ -361,6 +412,8 @@ function buildTodayReport(
       signalLabel: "Needs focus",
       primaryTitle: `${weakest} could use more focus today.`,
       primaryDetail: `${strongest} is helping you, and ${weakest} is the area with the most room to grow. ${journalSignal}`,
+      gapTitle: `${weakest} is the main gap.`,
+      gapDetail: buildGapDetail(weakest, desiredReality, desiredState),
       correctionTitle: getCorrectionTitle(weakest),
       correctionDetail: getCorrectionDetail(weakest),
     };
@@ -371,6 +424,8 @@ function buildTodayReport(
       signalLabel: "Clear",
       primaryTitle: `${strongest} is working well today.`,
       primaryDetail: `Protect what made this score possible. Keep the day simple and repeat what is working. ${journalSignal}`,
+      gapTitle: "The gap is narrow today.",
+      gapDetail: `You are close to ${desiredReality}. Protect the state that made this possible instead of scattering it.`,
       correctionTitle: `Protect what is working`,
       correctionDetail:
         "Choose one action that preserves today's clarity instead of spending it on distraction.",
@@ -381,6 +436,8 @@ function buildTodayReport(
       signalLabel: "Workable",
       primaryTitle: `${weakest} is the place to adjust.`,
       primaryDetail: `${strongest} is giving you enough stability to make one clear change in ${weakest}. ${journalSignal}`,
+      gapTitle: `${weakest} is the next adjustment.`,
+      gapDetail: buildGapDetail(weakest, desiredReality, desiredState),
     correctionTitle: getCorrectionTitle(weakest),
     correctionDetail: getCorrectionDetail(weakest),
   };
@@ -404,6 +461,28 @@ function getCorrectionDetail(pillar: PillarName) {
       "Choose the smallest useful action and complete it before seeking more certainty.",
     Feeling:
       "Let the emotion be present without giving it command. Breathe slowly, soften the body, and move from the state you are practicing.",
+  };
+
+  return details[pillar];
+}
+
+function getDesiredRealityLine(profile: OnboardingProfile | null) {
+  return profile?.primaryGoal.trim() || "the life you want";
+}
+
+function buildGapDetail(
+  pillar: PillarName,
+  desiredReality: string,
+  desiredState: string | undefined,
+) {
+  const statePhrase = desiredState
+    ? ` The state to practice is ${desiredState}.`
+    : "";
+
+  const details: Record<PillarName, string> = {
+    Thinking: `Your thoughts need to line up more cleanly with ${desiredReality}.${statePhrase}`,
+    Willing: `Your actions need to show more evidence of ${desiredReality}.${statePhrase}`,
+    Feeling: `Your emotions need more contact with the feeling of ${desiredReality}.${statePhrase}`,
   };
 
   return details[pillar];
