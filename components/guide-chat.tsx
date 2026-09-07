@@ -4,10 +4,13 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { Send, Square, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { saveGuideConversationToAccount } from "@/lib/account-data";
 import {
   createAssistantMessage,
   createConversation,
   createUserMessage,
+  getLatestGuideConversation,
+  saveGuideConversation,
 } from "@/lib/guide-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import type { GuideConversation } from "@/lib/types";
@@ -53,7 +56,7 @@ export function GuideChat() {
 
   useEffect(() => {
     queueMicrotask(() => {
-      const initial = createConversation();
+      const initial = getLatestGuideConversation() ?? createConversation();
       setActiveConversation(initial);
       setSuggestedPrompts(getSuggestionsForConversation(initial));
       setSpeechSupported("speechSynthesis" in window);
@@ -69,10 +72,14 @@ export function GuideChat() {
   }, [activeConversation?.messages]);
 
   const persistConversation = (conversation: GuideConversation) => {
-    setActiveConversation({
+    const nextConversation = {
       ...conversation,
       updatedAt: new Date().toISOString(),
-    });
+    };
+
+    setActiveConversation(nextConversation);
+    saveGuideConversation(nextConversation);
+    saveGuideConversationToAccount(nextConversation).catch(() => undefined);
   };
 
   const messages = activeConversation?.messages ?? [];
@@ -108,6 +115,9 @@ export function GuideChat() {
             role: message.role,
             content: message.content,
           })),
+          conversationMemory: buildConversationMemory(
+            conversationWithUserMessage,
+          ),
           onboardingProfile: getOnboardingProfile(),
         }),
       });
@@ -396,4 +406,19 @@ function buildLocalSuggestions(reply: string) {
   }
 
   return fallbackSuggestedPrompts;
+}
+
+function buildConversationMemory(conversation: GuideConversation) {
+  const olderMessages = conversation.messages.slice(0, -10);
+  const userMessages = olderMessages
+    .filter((message) => message.role === "user")
+    .map((message) => message.content.trim())
+    .filter(Boolean)
+    .slice(-8);
+
+  if (!userMessages.length) return "";
+
+  return userMessages
+    .map((message, index) => `${index + 1}. ${message}`)
+    .join("\n");
 }

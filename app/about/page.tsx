@@ -1,19 +1,23 @@
 const model = [
   {
-    title: "Thoughts shape what you notice",
-    body: "Your thoughts affect what you focus on and what story you tell yourself about the day.",
+    title: "Your want gives direction",
+    body: "What you want is your aim. ClearPth uses it as the anchor for the rest of the app.",
   },
   {
-    title: "Actions show what you are choosing",
-    body: "Your actions, habits, delays, and choices show what you are practicing in real life.",
+    title: "Thoughts shape what you notice",
+    body: "Your thoughts affect what you focus on and what story you tell yourself about what you want.",
   },
   {
     title: "Feelings affect how real it feels",
     body: "Your feelings influence how possible, safe, or believable your desired life feels today.",
   },
   {
+    title: "Doing shows what you are practicing",
+    body: "Your actions, habits, delays, and choices show whether your day is proving or contradicting what you want.",
+  },
+  {
     title: "Your state is the full picture",
-    body: "Your state is what happens when your thoughts, actions, and feelings are either working together or pulling apart.",
+    body: "Your state is what happens when what you want, what you think, what you feel, and what you do are either working together or pulling apart.",
   },
 ];
 
@@ -23,7 +27,7 @@ export default function AboutPage() {
       <section className="mx-auto max-w-4xl">
         <p className="clearpth-page-kicker">How ClearPth Works</p>
         <h1 className="clearpth-page-title">
-          Thoughts + Actions + Feelings
+          Want + Think + Feel + Do
         </h1>
         <p className="mt-6 text-lg leading-8 text-muted-foreground">
           ClearPth is a self-reflection app. It helps you see what you want,

@@ -1,4 +1,4 @@
-export type PillarName = "Thinking" | "Willing" | "Feeling";
+export type PillarName = "Thinking" | "Doing" | "Feeling";
 
 export type CheckInDraft = {
   thinkingScore: number;

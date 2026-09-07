@@ -1,6 +1,6 @@
 # ClearPth
 
-ClearPth is a free MVP self-reflection web app for aligning Thinking, Willing, and Feeling into a more practical state of Being.
+ClearPth is a free MVP self-reflection web app for helping users align what they want, what they think, what they feel, and what they do.
 
 ## Tech Stack
 

@@ -6,6 +6,7 @@ import type {
   PillarName,
 } from "@/lib/types";
 import { getCheckInDateKey } from "@/lib/alignment";
+import { displayPillarName } from "@/lib/pillars";
 
 export type BeingDashboardData = {
   metrics: BeingMetric[];
@@ -160,14 +161,14 @@ function buildMetrics({
       label: "Helping Most",
       value: strongestPillar ?? "-",
       detail: strongestPillar
-        ? `${strongestPillar} is helping most.`
+        ? `${displayPillarName(strongestPillar)} is helping most.`
         : "Complete check-ins to reveal this.",
     },
     {
       label: "Focus Area",
       value: weakestPillar ?? "-",
       detail: weakestPillar
-        ? `${weakestPillar} has the most room to grow.`
+        ? `${displayPillarName(weakestPillar)} has the most room to grow.`
         : "Complete check-ins to reveal this.",
     },
   ];
@@ -206,7 +207,7 @@ function buildLocalAnalysis({
 
   return {
     archetype: getArchetype(averageScore, trend, integrationDebt),
-    summary: `Your average score is ${averageScore.toFixed(1)}. ${strongestPillar ?? "One area"} is helping most, and ${weakestPillar ?? "one area"} needs the most attention.`,
+    summary: `Your average score is ${averageScore.toFixed(1)}. ${displayPillarName(strongestPillar)} is helping most, and ${displayPillarName(weakestPillar)} is the focus area.`,
     rootCause: getRootCause({
       averageScore,
       trend,
@@ -216,12 +217,12 @@ function buildLocalAnalysis({
     }),
     hiddenDebt:
       integrationDebt > 2
-        ? `The main issue is imbalance: ${weakestPillar} is lagging behind the rest.`
+        ? `The main issue is imbalance: ${displayPillarName(weakestPillar)} is not yet matching the rest.`
         : "The main issue is consistency. Your scores are close, so small daily choices matter.",
     leveragePoint:
       journalRhythm < 60
         ? "Use the daily journal to be honest with yourself."
-        : `Use ${strongestPillar ?? "what is working"} to support ${weakestPillar ?? "your focus area"}.`,
+        : `Use ${displayPillarName(strongestPillar)} to support ${displayPillarName(weakestPillar)}.`,
     nextPractice:
       trend < -0.2
         ? "Choose one stabilizing action for the next 24 hours and remove one draining input."
@@ -247,7 +248,7 @@ function getRootCause({
   }
 
   if (integrationDebt > 2) {
-    return `The likely reason is imbalance: ${weakestPillar ?? "one area"} needs more direct attention.`;
+    return `The likely reason is imbalance: ${displayPillarName(weakestPillar)} needs more direct attention.`;
   }
 
   if (trend < -0.2) {
@@ -264,7 +265,7 @@ function getRootCause({
 function buildPillarAverages(items: CheckInResult[]) {
   return {
     Thinking: average(items.map((item) => item.thinkingScore)),
-    Willing: average(items.map((item) => item.willingScore)),
+    Doing: average(items.map((item) => item.willingScore)),
     Feeling: average(items.map((item) => item.feelingScore)),
   } satisfies Record<PillarName, number>;
 }

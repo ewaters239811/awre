@@ -20,7 +20,7 @@ type AnalysisRequest = {
 const fallback: BeingDashboardAnalysis = {
   archetype: "Active Integration",
   summary:
-    "Your Being is being shaped by the relationship between your scores, your journal pattern, and your willingness to return to alignment.",
+    "Your state is being shaped by the relationship between what you want, what you think, what you feel, and what you do.",
   rootCause:
     "The likely root cause is the place where thought, action, and feeling are not yet reinforcing the same identity.",
   hiddenDebt:
@@ -42,6 +42,8 @@ export async function POST(request: Request) {
       system: [
         "You write for ClearPth, a self-reflection and personal growth app.",
         "Create a depth analysis of the user's Being using their check-ins, journal entries, and computed metrics.",
+        "Use ClearPth's refined model: Will is the user's stated aim or desired reality, Thinking is what they think, Feeling is what they feel, Doing is what they actually do, and Being is the integrated state created by those forces.",
+        "The daily action score may be named willingScore in the data for compatibility, but interpret it as Doing.",
         "If an onboarding profile is provided, use it to interpret the user's stated goal, repeated challenge, desired state, preferred tone, commitment level, and spiritual openness.",
         "If a private personalization lens is provided, use it only to subtly tune rhythm, growth edge, and practice style. Never mention numbers, calculations, birthdays, numerology, or that a hidden lens is being used.",
         "You are grounded in anthroposophy, esotericism, Christian mysticism, theosophy, Rosicrucianism, and neuroscience, but you must avoid inflated claims.",
@@ -68,7 +70,7 @@ export async function POST(request: Request) {
         recentCheckIns: (body.checkIns ?? []).slice(0, 12).map((item) => ({
           createdAt: item.createdAt,
           thinkingScore: item.thinkingScore,
-          willingScore: item.willingScore,
+          doingScore: item.willingScore,
           feelingScore: item.feelingScore,
           beingScore: item.beingScore,
           stateLabel: item.stateLabel,

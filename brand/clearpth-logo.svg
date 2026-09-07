@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">ClearPth Logo</title>
+  <desc id="desc">ClearPth wordmark with a refined geometric path emblem.</desc>
+  <defs>
+    <radialGradient id="bgGlow" cx="50%" cy="44%" r="60%">
+      <stop offset="0%" stop-color="#F3E7C2" stop-opacity="0.26" />
+      <stop offset="46%" stop-color="#6F876D" stop-opacity="0.11" />
+      <stop offset="100%" stop-color="#0A0A08" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="goldStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF1BC" />
+      <stop offset="44%" stop-color="#C9A75F" />
+      <stop offset="100%" stop-color="#806633" />
+    </linearGradient>
+    <linearGradient id="wordGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFF8E6" />
+      <stop offset="52%" stop-color="#E3C879" />
+      <stop offset="100%" stop-color="#F8EAC1" />
+    </linearGradient>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="24" stdDeviation="22" flood-color="#000000" flood-opacity="0.44" />
+    </filter>
+    <filter id="smallGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" fill="#080807" />
+  <circle cx="800" cy="405" r="520" fill="url(#bgGlow)" />
+
+  <g filter="url(#softShadow)">
+    <g transform="translate(704 174)">
+      <rect x="0" y="0" width="192" height="192" rx="44" fill="#10100E" stroke="#2F2A1D" stroke-width="2" />
+      <path
+        d="M96 24 150 96 96 168 42 96 96 24Z"
+        fill="none"
+        stroke="url(#goldStroke)"
+        stroke-width="8"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M67 113c9.8 12.4 26 18.2 42.2 13.9 17-4.5 29.1-19.4 29.8-36.1"
+        fill="none"
+        stroke="#FFF4CE"
+        stroke-width="9"
+        stroke-linecap="round"
+      />
+      <path
+        d="M126 76c-9.6-10.5-24.3-15-39-11.1-17 4.5-29.1 19.4-29.8 36.1"
+        fill="none"
+        stroke="#9E8D66"
+        stroke-width="9"
+        stroke-linecap="round"
+      />
+      <path
+        d="M96 56v80M62 96h68"
+        stroke="#F8EAC1"
+        stroke-width="4.5"
+        stroke-linecap="round"
+        opacity="0.72"
+      />
+      <circle cx="96" cy="96" r="10" fill="#FFF6D7" filter="url(#smallGlow)" />
+    </g>
+
+    <text
+      x="800"
+      y="498"
+      text-anchor="middle"
+      fill="url(#wordGradient)"
+      font-family="Georgia, 'Times New Roman', serif"
+      font-size="132"
+      font-weight="600"
+      letter-spacing="1.5"
+    >ClearPth</text>
+    <text
+      x="800"
+      y="575"
+      text-anchor="middle"
+      fill="#BFB8A5"
+      font-family="Inter, Arial, sans-serif"
+      font-size="28"
+      font-weight="500"
+      letter-spacing="6"
+    >CLOSE THE GAP</text>
+  </g>
+</svg>

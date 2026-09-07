@@ -47,7 +47,8 @@ export async function POST(request: Request) {
         "Do not pack the session with too many ideas.",
         "Use a grounded, premium, intimate, calm tone.",
         "Use the user's weakest pillar as the repair focus and strongest pillar as support.",
-        "Use Thinking, Willing, Feeling, and Being as subtle internal structure, but do not make the meditation sound like a lecture.",
+        "Use Will, Thinking, Feeling, Doing, and Being as subtle internal structure, but do not make the meditation sound like a lecture.",
+        "In ClearPth, Will is the user's aim, Doing is the user's actions, and Being is the integrated state.",
         "If the user wants an outer result, guide them into the state, feeling, or identity beneath it without using the word manifestation.",
         "Do not make medical, therapeutic, diagnostic, or guaranteed claims.",
         "Use gender-neutral language by default.",
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
       ].join(" "),
       user: {
         thinkingScore: result.thinkingScore,
-        willingScore: result.willingScore,
+        doingScore: result.willingScore,
         feelingScore: result.feelingScore,
         beingScore: result.beingScore,
         stateLabel: result.stateLabel,

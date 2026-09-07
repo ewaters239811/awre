@@ -446,7 +446,7 @@ function buildTodayReport(
 function getCorrectionTitle(pillar: PillarName) {
   const titles: Record<PillarName, string> = {
     Thinking: "Clean the interpretation",
-    Willing: "Take the first visible step",
+    Doing: "Take the first visible step",
     Feeling: "Regulate before deciding",
   };
 
@@ -457,7 +457,7 @@ function getCorrectionDetail(pillar: PillarName) {
   const details: Record<PillarName, string> = {
     Thinking:
       "Replace the dominant story with one cleaner sentence, then act from that sentence for the next hour.",
-    Willing:
+    Doing:
       "Choose the smallest useful action and complete it before seeking more certainty.",
     Feeling:
       "Let the emotion be present without giving it command. Breathe slowly, soften the body, and move from the state you are practicing.",
@@ -481,7 +481,7 @@ function buildGapDetail(
 
   const details: Record<PillarName, string> = {
     Thinking: `Your thoughts need to line up more cleanly with ${desiredReality}.${statePhrase}`,
-    Willing: `Your actions need to show more evidence of ${desiredReality}.${statePhrase}`,
+    Doing: `Your actions need to show more evidence of ${desiredReality}.${statePhrase}`,
     Feeling: `Your emotions need more contact with the feeling of ${desiredReality}.${statePhrase}`,
   };
 

@@ -19,6 +19,7 @@ import { getCheckInDateKey, getCheckIns } from "@/lib/alignment";
 import { buildBeingDashboardData } from "@/lib/being-analysis";
 import { getJournalEntries } from "@/lib/journal-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
+import { displayPillarName } from "@/lib/pillars";
 import type {
   BeingDashboardAnalysis,
   CheckInResult,
@@ -205,8 +206,8 @@ export function BeingDashboard() {
                   value={dashboard.pillarAverages.Thinking}
                 />
                 <PillarBar
-                  label="Willing"
-                  value={dashboard.pillarAverages.Willing}
+                  label="Doing"
+                  value={dashboard.pillarAverages.Doing}
                 />
                 <PillarBar
                   label="Feeling"
@@ -218,8 +219,9 @@ export function BeingDashboard() {
                   What Stands Out
                 </p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {dashboard.strongestPillar} is helping most right now.
-                  {dashboard.weakestPillar} needs the most attention.
+                  {displayPillarName(dashboard.strongestPillar)} is helping
+                  most right now. {displayPillarName(dashboard.weakestPillar)}
+                  is the focus area.
                 </p>
               </div>
             </div>
@@ -347,9 +349,9 @@ function SelectedPatternDay({ item }: { item: CheckInResult | null }) {
       <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-6 sm:grid-cols-2 lg:grid-cols-5">
         <MiniStat label="Score" value={item.beingScore.toFixed(1)} />
         <MiniStat label="Thinking" value={String(item.thinkingScore)} />
-        <MiniStat label="Willing" value={String(item.willingScore)} />
+        <MiniStat label="Doing" value={String(item.willingScore)} />
         <MiniStat label="Feeling" value={String(item.feelingScore)} />
-        <MiniStat label="Focus Area" value={item.weakestPillar} />
+        <MiniStat label="Focus Area" value={displayPillarName(item.weakestPillar)} />
       </div>
     </section>
   );
@@ -404,7 +406,7 @@ function RecentPatternRecords({ items }: { items: CheckInResult[] }) {
               <tr>
                 <th className="px-4 py-3 font-medium">Date</th>
                 <th className="px-4 py-3 font-medium">Thinking</th>
-                <th className="px-4 py-3 font-medium">Willing</th>
+                <th className="px-4 py-3 font-medium">Doing</th>
                 <th className="px-4 py-3 font-medium">Feeling</th>
                 <th className="px-4 py-3 font-medium">Score</th>
                 <th className="px-4 py-3 font-medium">State</th>
@@ -746,13 +748,13 @@ function buildPatternMirror(
   return {
     weekAverage: `${weekAverage.toFixed(1)} / 10`,
     biggestLeak: dashboard.weakestPillar
-      ? `${dashboard.weakestPillar} has room to grow`
+      ? `${displayPillarName(dashboard.weakestPillar)} has room to grow`
       : "Nothing visible yet",
     improvesScore: bestDay
-      ? `${bestDay.strongestPillar} plus ${actionSignal}`
+      ? `${displayPillarName(bestDay.strongestPillar)} plus ${actionSignal}`
       : "More check-ins needed",
     lowersScore: lowestDay
-      ? `${lowestDay.weakestPillar} dropping`
+      ? `${displayPillarName(lowestDay.weakestPillar)} dropping`
       : "More check-ins needed",
     adjustment: getPatternAdjustment(dashboard.weakestPillar),
   };
@@ -763,7 +765,7 @@ function getPatternAdjustment(pillar: PillarName | null) {
 
   const adjustments: Record<PillarName, string> = {
     Thinking: "Start by naming one clearer thought.",
-    Willing: "Choose one visible action and finish it.",
+    Doing: "Choose one visible action and finish it.",
     Feeling: "Calm your body before making the next important choice.",
   };
 
@@ -782,7 +784,7 @@ function getMissingBridge(pillar: PillarName | null, score: number) {
 
   const byPillar: Record<PillarName, string> = {
     Thinking: "Your thoughts need more clarity.",
-    Willing: "Your actions need more follow-through.",
+    Doing: "Your actions need more follow-through.",
     Feeling: "Your emotions need more steadiness.",
   };
 
@@ -796,7 +798,7 @@ function getBridgeMove(pillar: PillarName | null) {
 
   const moves: Record<PillarName, string> = {
     Thinking: "Name one truer sentence",
-    Willing: "Complete one visible action",
+    Doing: "Complete one visible action",
     Feeling: "Practice the state now",
   };
 

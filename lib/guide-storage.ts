@@ -53,6 +53,33 @@ export function getGuideConversations(): GuideConversation[] {
   }
 }
 
+export function getLatestGuideConversation() {
+  return getGuideConversations()[0] ?? null;
+}
+
+export function replaceGuideConversations(conversations: GuideConversation[]) {
+  if (!isBrowser()) return;
+
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(
+        conversations
+          .map((conversation) => ({
+            ...conversation,
+            title: getConversationTitle(conversation),
+          }))
+          .sort(
+            (a, b) =>
+              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+          ),
+      ),
+    );
+  } catch {
+    // Safari private browsing or storage limits can block writes.
+  }
+}
+
 export function saveGuideConversation(conversation: GuideConversation) {
   if (!isBrowser()) return;
 

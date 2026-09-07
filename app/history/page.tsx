@@ -8,6 +8,7 @@ import { HistoryCalendar } from "@/components/history-calendar";
 import { PatternInsights } from "@/components/pattern-insights";
 import { clearRemoteCheckIns } from "@/lib/account-data";
 import { clearCheckIns, getCheckInDateKey, getCheckIns } from "@/lib/alignment";
+import { displayPillarName } from "@/lib/pillars";
 import type { CheckInResult } from "@/lib/types";
 
 export default function HistoryPage() {
@@ -149,9 +150,9 @@ function SelectedDayCard({ item }: { item: CheckInResult | null }) {
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <MiniStat label="Score" value={item.beingScore.toFixed(1)} />
         <MiniStat label="Thinking" value={String(item.thinkingScore)} />
-        <MiniStat label="Willing" value={String(item.willingScore)} />
+        <MiniStat label="Doing" value={String(item.willingScore)} />
         <MiniStat label="Feeling" value={String(item.feelingScore)} />
-        <MiniStat label="Growth edge" value={item.weakestPillar} />
+        <MiniStat label="Growth edge" value={displayPillarName(item.weakestPillar)} />
       </div>
     </section>
   );
@@ -206,7 +207,7 @@ function RecentEntries({ items }: { items: CheckInResult[] }) {
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
               <MiniStat label="Think" value={String(item.thinkingScore)} />
-              <MiniStat label="Will" value={String(item.willingScore)} />
+              <MiniStat label="Do" value={String(item.willingScore)} />
               <MiniStat label="Feel" value={String(item.feelingScore)} />
             </div>
             <Button asChild variant="secondary" className="mt-4 w-full">
@@ -223,7 +224,7 @@ function RecentEntries({ items }: { items: CheckInResult[] }) {
               <tr>
                 <th className="px-4 py-3 font-medium">Date</th>
                 <th className="px-4 py-3 font-medium">Thinking</th>
-                <th className="px-4 py-3 font-medium">Willing</th>
+                <th className="px-4 py-3 font-medium">Doing</th>
                 <th className="px-4 py-3 font-medium">Feeling</th>
                 <th className="px-4 py-3 font-medium">Score</th>
                 <th className="px-4 py-3 font-medium">State</th>

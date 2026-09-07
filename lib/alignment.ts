@@ -1,6 +1,7 @@
 import type { CheckInDraft, CheckInResult, PillarName } from "@/lib/types";
 import { createId } from "@/lib/id";
 import { toCheckInDateKey } from "@/lib/date-key";
+import { normalizePillarName } from "@/lib/pillars";
 
 const STORAGE_KEY = "aura.checkIns.v1";
 export const CHECK_INS_CHANGED_EVENT = "clearpth:check-ins-changed";
@@ -13,7 +14,7 @@ type PillarScore = {
 export function buildResult(draft: CheckInDraft): CheckInResult {
   const pillars: PillarScore[] = [
     { name: "Thinking", score: draft.thinkingScore },
-    { name: "Willing", score: draft.willingScore },
+    { name: "Doing", score: draft.willingScore },
     { name: "Feeling", score: draft.feelingScore },
   ];
   const beingScore = roundToTenth(
@@ -50,7 +51,7 @@ export function getCheckIns(): CheckInResult[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? parsed.map(normalizeCheckIn) : [];
   } catch {
     return [];
   }
@@ -108,7 +109,7 @@ export function replaceCheckIns(results: CheckInResult[]) {
     (a, b) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(sorted));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(sorted.map(normalizeCheckIn)));
   emitStorageEvent(CHECK_INS_CHANGED_EVENT);
 }
 
@@ -139,7 +140,7 @@ function buildPrescription(
       identityAffirmation:
         "I am the one who brings my mind into order before my day demands it.",
     },
-    Willing: {
+    Doing: {
       thoughtCorrection:
         "Stop negotiating with avoided action; reduce it to the smallest honorable movement.",
       actionStep:
@@ -161,6 +162,21 @@ function buildPrescription(
   };
 
   return byWeakest[weakestPillar];
+}
+
+function normalizeCheckIn(checkIn: CheckInResult): CheckInResult {
+  const strongestPillar = normalizePillarName(
+    checkIn.strongestPillar as PillarName | "Willing",
+  );
+  const weakestPillar = normalizePillarName(
+    checkIn.weakestPillar as PillarName | "Willing",
+  );
+
+  return {
+    ...checkIn,
+    strongestPillar,
+    weakestPillar,
+  };
 }
 
 function roundToTenth(value: number) {

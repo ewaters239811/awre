@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Compass, Flame, RotateCcw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { displayPillarName } from "@/lib/pillars";
 import type { CheckInResult } from "@/lib/types";
 
 export function AlignmentResult({
@@ -55,8 +56,14 @@ export function AlignmentResult({
                 </p>
               </div>
               <div className="mt-5 grid gap-3 text-sm">
-                <Stat label="Helping most" value={result.strongestPillar} />
-                <Stat label="Needs attention" value={result.weakestPillar} />
+                <Stat
+                  label="Helping most"
+                  value={displayPillarName(result.strongestPillar)}
+                />
+                <Stat
+                  label="Focus area"
+                  value={displayPillarName(result.weakestPillar)}
+                />
                 <Stat label="Status" value={result.stateLabel} />
               </div>
             </article>
@@ -148,7 +155,11 @@ export function AlignmentResult({
 }
 
 function buildBeingSignature(result: CheckInResult) {
-  return `${result.strongestPillar} is helping you most today. ${result.weakestPillar} needs the most attention.`;
+  return `${displayPillarName(
+    result.strongestPillar,
+  )} is helping you most today. ${displayPillarName(
+    result.weakestPillar,
+  )} is the focus area.`;
 }
 
 function AiStatus({

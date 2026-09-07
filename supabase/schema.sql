@@ -89,3 +89,38 @@ create policy "Users can update own onboarding profile"
   on public.onboarding_profiles for update
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
+
+create table if not exists public.guide_conversations (
+  id text primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  title text not null,
+  created_at timestamptz not null,
+  updated_at timestamptz not null,
+  data jsonb not null
+);
+
+create index if not exists guide_conversations_user_updated_at_idx
+  on public.guide_conversations (user_id, updated_at desc);
+
+alter table public.guide_conversations enable row level security;
+
+drop policy if exists "Users can read own guide conversations" on public.guide_conversations;
+create policy "Users can read own guide conversations"
+  on public.guide_conversations for select
+  using (auth.uid() = user_id);
+
+drop policy if exists "Users can insert own guide conversations" on public.guide_conversations;
+create policy "Users can insert own guide conversations"
+  on public.guide_conversations for insert
+  with check (auth.uid() = user_id);
+
+drop policy if exists "Users can update own guide conversations" on public.guide_conversations;
+create policy "Users can update own guide conversations"
+  on public.guide_conversations for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+drop policy if exists "Users can delete own guide conversations" on public.guide_conversations;
+create policy "Users can delete own guide conversations"
+  on public.guide_conversations for delete
+  using (auth.uid() = user_id);

@@ -10,12 +10,22 @@ import {
   clearOnboardingProfile,
   saveOnboardingProfile,
 } from "@/lib/onboarding-storage";
-import { clearGuideConversations } from "@/lib/guide-storage";
+import {
+  clearGuideConversations,
+  replaceGuideConversations,
+} from "@/lib/guide-storage";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
-import type { CheckInResult, JournalEntry, OnboardingProfile } from "@/lib/types";
+import { normalizePillarName } from "@/lib/pillars";
+import type {
+  CheckInResult,
+  GuideConversation,
+  JournalEntry,
+  OnboardingProfile,
+} from "@/lib/types";
 
 export type AccountSyncResult = {
   checkIns: number;
+  guideConversations: number;
   journalEntries: number;
   hasOnboardingProfile: boolean;
 };
@@ -75,15 +85,22 @@ export async function syncLocalDataToAccount(): Promise<AccountSyncResult | null
 
   if (!user) return null;
 
-  const [remoteCheckIns, remoteJournalEntries, remoteProfile] =
+  const [
+    remoteCheckIns,
+    remoteJournalEntries,
+    remoteProfile,
+    remoteGuideConversations,
+  ] =
     await Promise.all([
       fetchRemoteCheckIns(),
       fetchRemoteJournalEntries(),
       fetchRemoteOnboardingProfile(),
+      fetchRemoteGuideConversations().catch(() => []),
     ]);
 
   replaceCheckIns(remoteCheckIns);
   replaceJournalEntries(remoteJournalEntries);
+  replaceGuideConversations(remoteGuideConversations);
 
   if (remoteProfile) {
     saveOnboardingProfile(remoteProfile);
@@ -91,6 +108,7 @@ export async function syncLocalDataToAccount(): Promise<AccountSyncResult | null
 
   return {
     checkIns: remoteCheckIns.length,
+    guideConversations: remoteGuideConversations.length,
     journalEntries: remoteJournalEntries.length,
     hasOnboardingProfile: Boolean(remoteProfile),
   };
@@ -127,6 +145,28 @@ export async function saveJournalEntryToAccount(entry: JournalEntry) {
       created_at: entry.createdAt,
       updated_at: entry.updatedAt,
       data: entry,
+    },
+    { onConflict: "id" },
+  );
+
+  if (error) throw error;
+}
+
+export async function saveGuideConversationToAccount(
+  conversation: GuideConversation,
+) {
+  const userId = await getCurrentUserId();
+  if (!userId) throw new Error("Sign in before saving guide memory.");
+
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase.from("guide_conversations").upsert(
+    {
+      id: conversation.id,
+      user_id: userId,
+      title: conversation.title,
+      created_at: conversation.createdAt,
+      updated_at: conversation.updatedAt,
+      data: conversation,
     },
     { onConflict: "id" },
   );
@@ -186,6 +226,18 @@ export async function fetchRemoteOnboardingProfile() {
   return (data as JsonRow<OnboardingProfile> | null)?.data ?? null;
 }
 
+export async function fetchRemoteGuideConversations() {
+  const supabase = createSupabaseBrowserClient();
+  const { data, error } = await supabase
+    .from("guide_conversations")
+    .select("data")
+    .order("updated_at", { ascending: false })
+    .limit(1);
+
+  if (error) throw error;
+  return ((data ?? []) as JsonRow<GuideConversation>[]).map((row) => row.data);
+}
+
 export async function clearRemoteCheckIns() {
   if (!isSupabaseConfigured()) return;
 
@@ -216,5 +268,11 @@ function normalizeCheckIn(checkIn: CheckInResult): CheckInResult {
   return {
     ...checkIn,
     checkInDate,
+    strongestPillar: normalizePillarName(
+      checkIn.strongestPillar as CheckInResult["strongestPillar"] | "Willing",
+    ),
+    weakestPillar: normalizePillarName(
+      checkIn.weakestPillar as CheckInResult["weakestPillar"] | "Willing",
+    ),
   };
 }

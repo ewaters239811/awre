@@ -10,6 +10,7 @@ type ChatMessage = {
 
 type GuideRequest = {
   messages?: ChatMessage[];
+  conversationMemory?: string;
   onboardingProfile?: OnboardingProfile | null;
 };
 
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as GuideRequest;
     const messages = body.messages ?? [];
+    const conversationMemory = body.conversationMemory?.trim() ?? "";
     const personalizationLens = buildPersonalizationLens(
       body.onboardingProfile ?? null,
     );
@@ -85,11 +87,14 @@ export async function POST(request: Request) {
         "Keep the tone premium, grounded, clear, and spiritually serious.",
         "Use gender-neutral language by default: say person, self, life, presence, or identity rather than man, woman, masculine, feminine, he, she, his, or her.",
         "Only use gendered language if the user explicitly states their gender or asks you to reflect it.",
-        "Help the user work with daily challenges through the ClearPth model: Thinking, Willing, Feeling, and Being.",
+        "Help the user work with daily challenges through the ClearPth model: Will, Thinking, Feeling, Doing, and Being.",
+        "In ClearPth, Will means what the user wants or aims toward. Thinking means what they think about it. Feeling means what they feel about it. Doing means what they actually do. Being means the integrated state created by those forces.",
         "If the user is simply greeting you, respond warmly and naturally like a normal conversation. Do not analyze, prescribe, or force the ClearPth model until the user names something real they want help with.",
         "If the user's message is casual, unclear, or very short, ask a gentle conversational question before giving advice.",
-        "Use only the current chat conversation as user-specific context.",
+        "Use only the current chat conversation and the provided conversationMemory as user-specific context.",
+        "conversationMemory contains older user messages from this same Guide chat. Use it to remember repeated wants, language, concerns, and patterns, but do not quote it unless useful.",
         "Do not use, mention, or infer details from check-ins, journal entries, saved history, goals, or onboarding answers in the chat.",
+        "Do not pretend to remember more than the supplied conversation and conversationMemory. If memory is thin, ask naturally.",
         "If a private personalization lens is provided, use it only to subtly tune rhythm, growth edge, and practice style. Never mention numbers, calculations, birthdays, numerology, or that a hidden lens is being used.",
         "Do not introduce personal facts, relationships, plans, events, or previous situations unless the user explicitly wrote them in the current chat.",
         "If the user's prompt is broad, respond to the broad prompt. Ask one natural question if more context would help.",
@@ -114,6 +119,7 @@ export async function POST(request: Request) {
       ].join(" "),
       user: {
         conversation: messages.slice(-10),
+        conversationMemory,
         personalizationLens,
       },
     });

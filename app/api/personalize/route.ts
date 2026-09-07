@@ -50,6 +50,8 @@ export async function POST(request: Request) {
         "You write for ClearPth, a self-reflection and personal growth app.",
         "ClearPth is not medical, therapy, diagnostic, or crisis support.",
         "Create a personalized alignment result using the user's scores and answers.",
+        "Use ClearPth's refined model: Will is the user's stated aim or desired reality, Thinking is what they think, Feeling is what they feel, Doing is what they actually do, and Being is the integrated state.",
+        "The daily action score may be named willingScore in older data for compatibility, but interpret it as Doing.",
         "Use a premium, grounded, mystical, clean tone without sounding clinical.",
         "Look for the root issue beneath the user's surface answers: the desired feeling, identity, shadow pattern, projection, unmet need, or avoided inner shift.",
         "If recent journal entries are provided, use them as private context for repeated patterns, emotional charges, avoided actions, and root issue clues.",
@@ -69,7 +71,7 @@ export async function POST(request: Request) {
       ].join(" "),
       user: {
         thinkingScore: result.thinkingScore,
-        willingScore: result.willingScore,
+        doingScore: result.willingScore,
         feelingScore: result.feelingScore,
         beingScore: result.beingScore,
         stateLabel: result.stateLabel,

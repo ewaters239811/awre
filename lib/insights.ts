@@ -14,7 +14,7 @@ export function buildPatternInsights(items: CheckInResult[]): PatternInsight[] {
   );
   const averages = {
     Thinking: average(items.map((item) => item.thinkingScore)),
-    Willing: average(items.map((item) => item.willingScore)),
+    Doing: average(items.map((item) => item.willingScore)),
     Feeling: average(items.map((item) => item.feelingScore)),
   } satisfies Record<PillarName, number>;
 
