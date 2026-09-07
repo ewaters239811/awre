@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Send, Square, Volume2 } from "lucide-react";
+import { Plus, Send, Square, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { saveGuideConversationToAccount } from "@/lib/account-data";
@@ -10,6 +10,7 @@ import {
   createConversation,
   createUserMessage,
   getLatestGuideConversation,
+  clearGuideConversations,
   saveGuideConversation,
 } from "@/lib/guide-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
@@ -90,6 +91,19 @@ export function GuideChat() {
     lastMessage?.role === "assistant";
   const shouldShowEntryPaths =
     !isSending && messages.length === 1 && lastMessage?.role === "assistant";
+
+  const startFreshConversation = () => {
+    if (isSending) return;
+
+    window.speechSynthesis?.cancel();
+    setSpeakingMessageId(null);
+    setInput("");
+
+    const freshConversation = createConversation();
+    clearGuideConversations();
+    persistConversation(freshConversation);
+    setSuggestedPrompts(fallbackSuggestedPrompts);
+  };
 
   const sendMessage = async (event?: FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
@@ -187,14 +201,31 @@ export function GuideChat() {
     <section className="mx-auto max-w-4xl md:mt-9">
       <div className="flex min-h-[calc(100dvh-9rem)] flex-col overflow-hidden rounded-none border-border/42 bg-transparent md:aura-glass md:min-h-[680px] md:rounded-lg">
         <div className="border-b border-border/35 pb-6 pt-4 md:p-6">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-            Talk It Out
-          </p>
-          <h1 className="mt-1 font-serif text-[2rem] font-semibold leading-tight md:mt-2 md:text-4xl">
-            What&apos;s on your mind?
-          </h1>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
+                Talk It Out
+              </p>
+              <h1 className="mt-1 font-serif text-[2rem] font-semibold leading-tight md:mt-2 md:text-4xl">
+                What&apos;s on your mind?
+              </h1>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="shrink-0 rounded-full px-3 text-xs"
+              onClick={startFreshConversation}
+              disabled={isSending || !activeConversation}
+              aria-label="Start a new chat"
+            >
+              <Plus className="h-3.5 w-3.5" aria-hidden />
+              New
+            </Button>
+          </div>
           <p className="mt-3 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
             Talk through a want, mood, decision, delay, or repeating thought.
+            This conversation will pick up where you left off.
           </p>
         </div>
 
@@ -410,15 +441,21 @@ function buildLocalSuggestions(reply: string) {
 
 function buildConversationMemory(conversation: GuideConversation) {
   const olderMessages = conversation.messages.slice(0, -10);
-  const userMessages = olderMessages
-    .filter((message) => message.role === "user")
-    .map((message) => message.content.trim())
-    .filter(Boolean)
-    .slice(-8);
+  const memoryMessages = olderMessages
+    .map((message) => ({
+      role: message.role === "user" ? "User" : "Guide",
+      content: truncateMemoryText(message.content.trim()),
+    }))
+    .filter((message) => message.content)
+    .slice(-12);
 
-  if (!userMessages.length) return "";
+  if (!memoryMessages.length) return "";
 
-  return userMessages
-    .map((message, index) => `${index + 1}. ${message}`)
+  return memoryMessages
+    .map((message) => `${message.role}: ${message.content}`)
     .join("\n");
+}
+
+function truncateMemoryText(value: string) {
+  return value.length > 240 ? `${value.slice(0, 237).trim()}...` : value;
 }
