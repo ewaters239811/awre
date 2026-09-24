@@ -319,7 +319,7 @@ export function GuideChat() {
           onSubmit={sendMessage}
         >
           <Textarea
-            className="min-h-16 rounded-[1.5rem] border-white/[0.1] bg-card/42 text-[16px] leading-6 shadow-[0_16px_44px_rgba(0,0,0,0.28)] backdrop-blur-xl md:min-h-20 md:rounded-2xl"
+            className="min-h-16 rounded-[1.5rem] border-white/[0.1] !bg-transparent text-[16px] leading-6 text-foreground shadow-[inset_0_1px_0_rgba(244,239,228,0.05),0_16px_44px_rgba(0,0,0,0.22)] backdrop-blur-xl placeholder:text-foreground/38 focus-visible:bg-card/10 md:min-h-20 md:rounded-2xl"
             value={input}
             onChange={(event) => setInput(event.target.value)}
             placeholder="What is on your mind?"
