@@ -36,7 +36,7 @@ export function DailyFlow({
       </div>
       <div className="mt-3 h-1 overflow-hidden rounded-full bg-muted/70">
         <div
-          className="h-full rounded-full bg-[linear-gradient(90deg,#d8be84,#f4efe4,#91b39e)] transition-all duration-500"
+          className="h-full rounded-full bg-[linear-gradient(90deg,#a6bb9a,#f4efe4,#d1b97e)] transition-all duration-500"
           style={{ width: `${(completedSteps / steps.length) * 100}%` }}
         />
       </div>
@@ -51,7 +51,7 @@ export function DailyFlow({
               className={cn(
                 "rounded-2xl border px-2 py-3 text-xs transition sm:rounded-lg sm:px-3 sm:py-3 sm:text-sm",
                 complete
-                  ? "border-primary/35 bg-[linear-gradient(135deg,rgba(216,190,132,0.18),rgba(90,140,118,0.12))] text-foreground shadow-[0_8px_20px_rgba(0,0,0,0.16)]"
+                  ? "border-primary/35 bg-[linear-gradient(135deg,rgba(166,187,154,0.2),rgba(209,185,126,0.08))] text-foreground shadow-[0_8px_20px_rgba(0,0,0,0.16)]"
                   : "border-border/55 bg-background/24 text-muted-foreground hover:border-foreground/25 hover:text-foreground",
               )}
             >

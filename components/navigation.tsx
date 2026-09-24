@@ -117,7 +117,7 @@ export function Navigation() {
               className={cn(
                 "rounded-full px-3.5 py-2 text-sm text-muted-foreground transition hover:bg-white/[0.04] hover:text-foreground",
                 pathname === link.href &&
-                  "bg-[linear-gradient(135deg,#f4efe4,#d8be84)] text-background shadow-[0_8px_20px_rgba(0,0,0,0.2)] hover:text-background",
+                  "bg-[linear-gradient(135deg,#f4efe4,#a6bb9a)] text-background shadow-[0_8px_20px_rgba(0,0,0,0.2)] hover:text-background",
               )}
             >
               {link.label}
@@ -169,7 +169,7 @@ function MobileTabBar({ pathname }: { pathname: string }) {
               className={cn(
                 "flex min-h-[3.25rem] flex-col items-center justify-center gap-1 rounded-[1.25rem] px-0.5 py-2 text-[9px] font-medium leading-none text-muted-foreground transition duration-200",
                 active &&
-                  "bg-[linear-gradient(135deg,#f4efe4,#d8be84_58%,#91b39e)] text-background shadow-[0_10px_26px_rgba(0,0,0,0.32),0_0_24px_rgba(216,190,132,0.14)]",
+                  "bg-[linear-gradient(135deg,#f4efe4,#a6bb9a_62%,#d1b97e)] text-background shadow-[0_10px_26px_rgba(0,0,0,0.32),0_0_24px_rgba(166,187,154,0.16)]",
               )}
             >
               <Icon className="h-4 w-4" aria-hidden />

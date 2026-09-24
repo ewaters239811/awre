@@ -32,7 +32,7 @@ export default function HomePage() {
 
         <div className="hidden rounded-xl border border-border/38 bg-card/18 p-4 backdrop-blur-xl md:block md:rounded-lg md:p-6">
           <div className="relative overflow-hidden rounded-md border border-border/45 bg-card/38 p-5">
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-[#bfa46a] to-primary" />
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-[#d1b97e] to-primary" />
             <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
               How It Works
             </p>
@@ -47,7 +47,7 @@ export default function HomePage() {
               <div className="flex flex-col items-center">
                 <span className="h-3 w-3 rounded-full bg-primary" />
                 <span className="aura-path-line my-1 w-px flex-1 rounded-full" />
-                <span className="h-3 w-3 rounded-full bg-[#bfa46a]" />
+                <span className="h-3 w-3 rounded-full bg-[#d1b97e]" />
                 <span className="aura-path-line my-1 w-px flex-1 rounded-full" />
                 <span className="h-3 w-3 rounded-full bg-primary" />
               </div>
