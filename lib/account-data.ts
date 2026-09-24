@@ -14,6 +14,7 @@ import {
   clearGuideConversations,
   replaceGuideConversations,
 } from "@/lib/guide-storage";
+import { clearMeditationCompletions } from "@/lib/meditation-storage";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { normalizePillarName } from "@/lib/pillars";
 import type {
@@ -52,6 +53,7 @@ export function clearLocalAccountData() {
   replaceJournalEntries([]);
   clearOnboardingProfile();
   clearGuideConversations();
+  clearMeditationCompletions();
 
   try {
     localStorage.removeItem("clearpth.beingAnalysis.v1");

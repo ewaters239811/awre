@@ -198,23 +198,23 @@ export function GuideChat() {
   };
 
   return (
-    <section className="mx-auto max-w-4xl md:mt-9">
-      <div className="flex min-h-[calc(100dvh-9rem)] flex-col overflow-hidden rounded-none border-border/42 bg-transparent md:aura-glass md:min-h-[680px] md:rounded-lg">
-        <div className="border-b border-border/35 pb-6 pt-4 md:p-6">
+    <section className="mx-auto max-w-4xl md:mt-8">
+      <div className="flex min-h-[calc(100dvh-8.25rem)] flex-col overflow-hidden rounded-none bg-transparent md:min-h-[720px]">
+        <div className="pb-5 pt-2 md:pb-7 md:pt-4">
           <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                Talk It Out
+            <div className="min-w-0">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-primary/85 md:text-xs md:tracking-[0.26em]">
+                ClearPth Guide
               </p>
-              <h1 className="mt-1 font-serif text-[2rem] font-semibold leading-tight md:mt-2 md:text-4xl">
-                What&apos;s on your mind?
+              <h1 className="mt-2 font-serif text-[2.45rem] font-semibold leading-[0.98] text-foreground md:text-5xl">
+                Talk through what&apos;s here.
               </h1>
             </div>
             <Button
               type="button"
               variant="secondary"
               size="sm"
-              className="shrink-0 rounded-full px-3 text-xs"
+              className="shrink-0 rounded-full border-white/[0.08] bg-card/36 px-3 text-xs"
               onClick={startFreshConversation}
               disabled={isSending || !activeConversation}
               aria-label="Start a new chat"
@@ -223,13 +223,13 @@ export function GuideChat() {
               New
             </Button>
           </div>
-          <p className="mt-3 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
-            Talk through a want, mood, decision, delay, or repeating thought.
-            This conversation will pick up where you left off.
+          <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
+            A private place to name the pattern, find the root, and choose one
+            clean move.
           </p>
         </div>
 
-        <div className="min-h-[310px] flex-1 space-y-5 overflow-y-auto py-6 md:max-h-[58vh] md:min-h-[420px] md:p-6">
+        <div className="min-h-[310px] flex-1 space-y-6 overflow-y-auto py-6 md:max-h-[62vh] md:min-h-[460px] md:pr-2">
           {activeConversation?.messages.map((message) => (
             <div
               key={message.createdAt}
@@ -240,17 +240,22 @@ export function GuideChat() {
             >
               <div
                 className={cn(
-                  "max-w-[92%] rounded-[1.2rem] border px-4 py-3.5 text-[15px] leading-7 shadow-sm sm:max-w-[82%] md:rounded-md md:px-5 md:py-4 md:text-[15px] md:leading-7",
+                  "max-w-[92%] px-4 py-3.5 text-[15px] leading-7 sm:max-w-[82%] md:px-5 md:py-4 md:text-[15px] md:leading-7",
                   message.role === "user"
-                    ? "border-foreground/25 bg-foreground text-background"
-                    : "border-border/42 bg-card/52 text-muted-foreground",
+                    ? "rounded-[1.45rem] border border-white/[0.08] bg-card/50 text-foreground shadow-[0_14px_36px_rgba(0,0,0,0.22)] backdrop-blur-xl"
+                    : "rounded-none border-0 bg-transparent pl-0 text-foreground/78 shadow-none",
                 )}
               >
+                {message.role === "assistant" ? (
+                  <p className="mb-2 text-[10px] uppercase tracking-[0.18em] text-primary/76">
+                    ClearPth
+                  </p>
+                ) : null}
                 <p>{message.content}</p>
                 {message.role === "assistant" && speechSupported ? (
                   <button
                     type="button"
-                    className="mt-3 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/45 px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-foreground/35 hover:bg-accent"
+                    className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-card/28 px-3 py-1.5 text-xs font-medium text-foreground/82 transition hover:border-primary/25 hover:bg-card/42"
                     onClick={() =>
                       toggleReadAloud(message.createdAt, message.content)
                     }
@@ -274,7 +279,7 @@ export function GuideChat() {
             </div>
           ))}
           {isSending ? (
-              <div className="max-w-[92%] rounded-[1.2rem] border border-border/42 bg-card/52 px-4 py-3 text-sm text-muted-foreground sm:max-w-[82%] md:rounded-md">
+              <div className="max-w-[92%] rounded-full border border-white/[0.07] bg-card/34 px-4 py-3 text-sm text-muted-foreground sm:max-w-[82%]">
               Thinking with you...
             </div>
           ) : null}
@@ -285,7 +290,7 @@ export function GuideChat() {
                   key={path.label}
                   type="button"
                   onClick={() => setInput(path.prompt)}
-                  className="rounded-[1.2rem] border border-border/45 bg-card/32 px-4 py-3 text-left text-sm leading-5 text-foreground transition hover:border-foreground/30 hover:bg-accent/60 md:rounded-md"
+                  className="rounded-full border border-primary/14 bg-card/28 px-4 py-3 text-left text-sm leading-5 text-foreground/82 transition hover:border-primary/30 hover:bg-card/44"
                 >
                   {path.label}
                 </button>
@@ -299,7 +304,7 @@ export function GuideChat() {
                   key={prompt}
                   type="button"
                   onClick={() => setInput(prompt)}
-                  className="min-w-[13rem] rounded-full border border-border/45 bg-card/32 px-3 py-2 text-left text-xs leading-5 text-foreground transition hover:border-foreground/30 hover:bg-accent/60 md:min-w-0"
+                  className="min-w-[13rem] rounded-full border border-primary/14 bg-card/28 px-3 py-2 text-left text-xs leading-5 text-foreground/82 transition hover:border-primary/30 hover:bg-card/44 md:min-w-0"
                 >
                   {prompt}
                 </button>
@@ -310,15 +315,15 @@ export function GuideChat() {
         </div>
 
         <form
-          className="sticky bottom-0 border-t border-border/35 bg-background/90 py-4 backdrop-blur-xl md:bg-card/28 md:p-6"
+          className="sticky bottom-0 border-t border-white/[0.05] bg-background/88 py-4 backdrop-blur-2xl md:bg-transparent md:pb-2 md:pt-5"
           onSubmit={sendMessage}
         >
           <Textarea
-            className="min-h-20 rounded-[1.2rem] text-[16px] leading-6 md:min-h-24 md:rounded-md"
+            className="min-h-16 rounded-[1.5rem] border-white/[0.1] bg-card/42 text-[16px] leading-6 shadow-[0_16px_44px_rgba(0,0,0,0.28)] backdrop-blur-xl md:min-h-20 md:rounded-2xl"
             value={input}
             onChange={(event) => setInput(event.target.value)}
             placeholder="What is on your mind?"
-            rows={3}
+            rows={2}
           />
           <div className="mt-3 flex justify-end">
             <Button

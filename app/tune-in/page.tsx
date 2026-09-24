@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { saveCheckInToAccount } from "@/lib/account-data";
 import { getCheckInForDate, updateCheckIn } from "@/lib/alignment";
+import { markMeditationCompleted } from "@/lib/meditation-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import type { AiMeditation, CheckInResult } from "@/lib/types";
@@ -136,6 +137,7 @@ export default function TuneInPage() {
             stopAmbientBed();
             setAudioPlaying(false);
             setAudioPaused(false);
+            markMeditationCompleted(todayKey);
           });
         }
         return next;
@@ -143,7 +145,7 @@ export default function TuneInPage() {
     }, 1000);
 
     return () => window.clearInterval(timer);
-  }, [timerRunning, remainingSeconds]);
+  }, [timerRunning, remainingSeconds, todayKey]);
 
   const resetSession = () => {
     setTimerRunning(false);
@@ -354,6 +356,7 @@ export default function TuneInPage() {
           onEnded={() => {
             stopAmbientBed();
             updateMediaSession("none", meditation);
+            markMeditationCompleted(todayKey);
             setAudioPlaying(false);
             setAudioPaused(false);
             setTimerRunning(false);

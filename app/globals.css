@@ -67,9 +67,10 @@ body {
   touch-action: manipulation;
   line-height: 1.65;
   background:
-    linear-gradient(132deg, rgba(216, 190, 132, 0.13), transparent 28%),
-    linear-gradient(28deg, transparent 55%, rgba(90, 140, 118, 0.11) 76%, transparent 100%),
-    linear-gradient(180deg, #12100d 0%, #090908 52%, #12110f 100%);
+    radial-gradient(circle at 18% 16%, rgba(216, 190, 132, 0.16), transparent 30%),
+    radial-gradient(circle at 82% 42%, rgba(90, 140, 118, 0.09), transparent 28%),
+    radial-gradient(circle at 55% 86%, rgba(216, 190, 132, 0.1), transparent 36%),
+    linear-gradient(180deg, #13110f 0%, #080807 50%, #11100d 100%);
   background-attachment: fixed;
   background-size: auto;
 }
@@ -83,18 +84,20 @@ body {
 
 html.light body {
   background:
-    linear-gradient(132deg, rgba(216, 190, 132, 0.13), transparent 28%),
-    linear-gradient(28deg, transparent 55%, rgba(90, 140, 118, 0.11) 76%, transparent 100%),
-    linear-gradient(180deg, #12100d 0%, #090908 52%, #12110f 100%);
+    radial-gradient(circle at 18% 16%, rgba(216, 190, 132, 0.16), transparent 30%),
+    radial-gradient(circle at 82% 42%, rgba(90, 140, 118, 0.09), transparent 28%),
+    radial-gradient(circle at 55% 86%, rgba(216, 190, 132, 0.1), transparent 36%),
+    linear-gradient(180deg, #13110f 0%, #080807 50%, #11100d 100%);
   background-attachment: fixed;
   background-size: auto;
 }
 
 html.dark body {
   background:
-    linear-gradient(132deg, rgba(216, 190, 132, 0.13), transparent 28%),
-    linear-gradient(28deg, transparent 55%, rgba(90, 140, 118, 0.11) 76%, transparent 100%),
-    linear-gradient(180deg, #12100d 0%, #090908 52%, #12110f 100%);
+    radial-gradient(circle at 18% 16%, rgba(216, 190, 132, 0.16), transparent 30%),
+    radial-gradient(circle at 82% 42%, rgba(90, 140, 118, 0.09), transparent 28%),
+    radial-gradient(circle at 55% 86%, rgba(216, 190, 132, 0.1), transparent 36%),
+    linear-gradient(180deg, #13110f 0%, #080807 50%, #11100d 100%);
 }
 
 ::selection {
@@ -138,6 +141,37 @@ html.light ::-webkit-scrollbar-thumb {
   border: 1px solid rgba(216, 190, 132, 0.12);
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
   backdrop-filter: blur(22px);
+}
+
+.clearpth-orb {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(244, 239, 228, 0.09);
+  background:
+    radial-gradient(circle at 34% 22%, rgba(244, 239, 228, 0.32), transparent 16%),
+    radial-gradient(circle at 58% 62%, rgba(216, 190, 132, 0.24), transparent 28%),
+    radial-gradient(circle at 50% 50%, rgba(244, 239, 228, 0.08), transparent 52%),
+    rgba(23, 21, 18, 0.58);
+  box-shadow:
+    inset -28px -34px 54px rgba(0, 0, 0, 0.34),
+    inset 18px 16px 38px rgba(244, 239, 228, 0.08),
+    0 26px 80px rgba(0, 0, 0, 0.32);
+}
+
+.clearpth-orb::before {
+  content: "";
+  position: absolute;
+  inset: 14%;
+  border-radius: inherit;
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.3), transparent 66%);
+  filter: blur(10px);
+}
+
+.clearpth-soft-glow {
+  box-shadow:
+    0 0 0 1px rgba(216, 190, 132, 0.1),
+    0 18px 60px rgba(0, 0, 0, 0.34),
+    0 0 44px rgba(216, 190, 132, 0.08);
 }
 
 html.light .aura-glass {
@@ -256,22 +290,22 @@ textarea {
   content: "";
   position: absolute;
   inset: -20% -10%;
-  opacity: 0.24;
-  filter: blur(44px);
+  opacity: 0.2;
+  filter: blur(54px);
   transform-origin: center;
 }
 
 .aura-animated-backdrop::before {
   background:
-    linear-gradient(100deg, transparent 0 18%, rgba(216, 190, 132, 0.16) 26%, transparent 42%),
-    linear-gradient(150deg, transparent 0 44%, rgba(244, 239, 228, 0.07) 56%, transparent 70%);
+    radial-gradient(circle at 22% 18%, rgba(216, 190, 132, 0.2), transparent 24%),
+    linear-gradient(150deg, transparent 0 44%, rgba(244, 239, 228, 0.06) 56%, transparent 70%);
   animation: aura-drift 18s ease-in-out infinite alternate;
 }
 
 .aura-animated-backdrop::after {
   background:
-    linear-gradient(24deg, transparent 0 36%, rgba(90, 140, 118, 0.12) 48%, transparent 58%),
-    linear-gradient(122deg, transparent 0 58%, rgba(216, 190, 132, 0.12) 68%, transparent 78%);
+    radial-gradient(circle at 72% 72%, rgba(90, 140, 118, 0.14), transparent 26%),
+    linear-gradient(122deg, transparent 0 58%, rgba(216, 190, 132, 0.1) 68%, transparent 78%);
   animation: aura-drift-reverse 22s ease-in-out infinite alternate;
 }
 

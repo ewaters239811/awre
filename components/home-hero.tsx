@@ -4,9 +4,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, BarChart3, Headphones, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  CheckCircle2,
+  Circle,
+  Headphones,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DailyFlow } from "@/components/daily-flow";
 import { getCurrentAccount } from "@/lib/account-data";
 import {
   CHECK_INS_CHANGED_EVENT,
@@ -18,6 +23,10 @@ import {
   getJournalEntries,
   getJournalEntryForDate,
 } from "@/lib/journal-storage";
+import {
+  MEDITATION_COMPLETED_EVENT,
+  hasMeditationCompletionForDate,
+} from "@/lib/meditation-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
@@ -36,6 +45,7 @@ type HomeState = {
   latestCheckIn: CheckInResult | null;
   todaysCheckIn: CheckInResult | null;
   todaysJournal: JournalEntry | null;
+  hasMeditatedToday: boolean;
   totalCheckIns: number;
   totalJournals: number;
   hasProfile: boolean;
@@ -53,6 +63,7 @@ export function HomeHero() {
     latestCheckIn: null,
     todaysCheckIn: null,
     todaysJournal: null,
+    hasMeditatedToday: false,
     totalCheckIns: 0,
     totalJournals: 0,
     hasProfile: false,
@@ -91,6 +102,7 @@ export function HomeHero() {
             latestCheckIn: getLatestCheckIn(),
             todaysCheckIn: getCheckInForDate(checkInToday),
             todaysJournal: getJournalEntryForDate(calendarToday),
+            hasMeditatedToday: hasMeditationCompletionForDate(calendarToday),
             totalCheckIns: getCheckIns().length,
             totalJournals: getJournalEntries().length,
             hasProfile,
@@ -104,10 +116,12 @@ export function HomeHero() {
 
     queueMicrotask(refreshHomeState);
     window.addEventListener(CHECK_INS_CHANGED_EVENT, refreshHomeState);
+    window.addEventListener(MEDITATION_COMPLETED_EVENT, refreshHomeState);
 
     return () => {
       cancelled = true;
       window.removeEventListener(CHECK_INS_CHANGED_EVENT, refreshHomeState);
+      window.removeEventListener(MEDITATION_COMPLETED_EVENT, refreshHomeState);
     };
   }, [checkInToday, calendarToday]);
 
@@ -194,60 +208,63 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
   const firstName = useMemo(() => getFirstName(state.user), [state.user]);
   const hasCheckedInToday = Boolean(state.todaysCheckIn);
   const hasJournalToday = Boolean(state.todaysJournal?.content.trim());
-  const nextHref = hasCheckedInToday
-    ? hasJournalToday
-      ? "/review"
-      : "/ritual"
-    : "/check-in";
-  const nextLabel = hasCheckedInToday
-    ? hasJournalToday
-      ? "Review Today"
-      : "Write Today"
-    : "See Where You Are";
-  const desiredReality = getDesiredRealityLine(state.profile);
-  const desiredFeeling = state.profile?.desiredState.trim();
+  const hasMeditatedToday = state.hasMeditatedToday;
+  const nextHref = !hasCheckedInToday
+    ? "/check-in"
+    : !hasJournalToday
+      ? "/ritual"
+      : !hasMeditatedToday
+        ? "/tune-in"
+        : "/review";
+  const nextLabel = !hasCheckedInToday
+    ? "Check In"
+    : !hasJournalToday
+      ? "Write Current State"
+      : !hasMeditatedToday
+        ? "Meditate"
+        : "Review Today";
+  const currentScore =
+    state.todaysCheckIn?.beingScore ?? state.latestCheckIn?.beingScore;
+  const dailyInsight = buildDailyInsight(state);
 
   return (
-    <div className="max-w-3xl pt-2 md:pt-0">
-      <p className="mb-3 text-[11px] uppercase tracking-[0.16em] text-primary sm:mb-4 sm:text-sm sm:tracking-[0.24em]">
-        Welcome Back
-      </p>
-      <h1 className="max-w-2xl font-serif text-[2.5rem] font-semibold leading-[1.04] text-foreground sm:text-6xl lg:text-7xl">
-        Hi {firstName}. Align with what you want.
-      </h1>
-      <div className="aura-luxury-line mt-5 max-w-lg sm:mt-6" />
-      <p className="mt-4 max-w-2xl text-[15px] leading-7 text-foreground/86 sm:mt-6 sm:text-2xl sm:leading-9">
-        {buildHomeMessage(state)}
-      </p>
-
-      <div className="mt-6 rounded-[1.55rem] border border-primary/24 bg-card/26 p-4 shadow-[0_18px_48px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:mt-7 sm:max-w-xl sm:rounded-2xl sm:p-5">
-        <p className="text-[11px] uppercase tracking-[0.16em] text-primary">
-          What You Want
-        </p>
-        <p className="mt-2 font-serif text-2xl font-semibold leading-tight text-foreground sm:text-3xl">
-          {desiredReality}
-        </p>
-        {desiredFeeling ? (
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Desired state: {desiredFeeling}
+    <div className="relative max-w-3xl pt-2 md:pt-0">
+      <div className="pointer-events-none absolute -left-12 top-2 hidden h-20 w-20 rounded-full bg-primary/10 blur-2xl sm:block" />
+      <div className="grid items-start gap-7 sm:grid-cols-[1fr_auto] sm:gap-8">
+        <div>
+          <p className="text-[1.35rem] font-light leading-none text-foreground/64 sm:text-3xl">
+            Welcome back,
           </p>
-        ) : null}
+          <h1 className="mt-2 max-w-2xl font-serif text-[4rem] font-semibold leading-[0.9] text-foreground sm:text-7xl lg:text-8xl">
+            {firstName}.
+          </h1>
+          <p className="mt-6 max-w-xl text-[15px] leading-7 text-foreground/78 sm:mt-8 sm:text-xl sm:leading-8">
+            {buildHomeMessage(state)}
+          </p>
+        </div>
+        <CurrentStateRing score={currentScore} />
       </div>
 
-      <div className="mt-7 rounded-[1.55rem] border border-primary/24 bg-[linear-gradient(135deg,rgba(216,190,132,0.14),rgba(90,140,118,0.08))] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.22)] sm:mt-8 sm:max-w-xl sm:rounded-2xl sm:p-5">
-        <div className="flex items-start gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/28 bg-background/36 text-primary">
-            <Sparkles className="h-5 w-5" aria-hidden />
-          </span>
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.16em] text-primary">
-              After You Check In
-            </p>
-            <p className="mt-2 text-sm leading-6 text-foreground/88">
-              Today will show where you are with this, what is close, and what
-              to focus on next.
-            </p>
-          </div>
+      <section className="mt-8 sm:mt-10 sm:max-w-xl">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-foreground/72">
+          Today
+        </p>
+        <div className="mt-4 grid gap-3">
+          <HomeTask
+            done={hasCheckedInToday}
+            label="Check in"
+            href="/check-in"
+          />
+          <HomeTask
+            done={hasJournalToday}
+            label="Write about your current state"
+            href="/ritual"
+          />
+          <HomeTask
+            done={hasMeditatedToday}
+            label="Meditate"
+            href="/tune-in"
+          />
         </div>
         <Button asChild size="lg" className="mt-5 w-full">
           <Link href={nextHref}>
@@ -255,35 +272,18 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </Button>
-      </div>
+      </section>
 
-      <div className="mt-6 rounded-[1.35rem] border border-border/42 bg-card/24 px-4 py-3.5 sm:mt-7 sm:max-w-xl sm:rounded-xl">
-        <div className="grid grid-cols-3 gap-3 text-center">
-          <HomeStatus
-            label="Last"
-            value={
-              state.latestCheckIn
-                ? state.latestCheckIn.beingScore.toFixed(1)
-                : "Open"
-            }
-          />
-          <HomeStatus
-            label="Today"
-            value={hasCheckedInToday ? "Done" : "Ready"}
-          />
-          <HomeStatus label="Journal" value={hasJournalToday ? "Done" : "Open"} />
-        </div>
-      </div>
+      <section className="mt-10 sm:mt-12 sm:max-w-2xl">
+        <p className="font-serif text-[2.55rem] font-semibold uppercase leading-none tracking-[0.14em] text-foreground sm:text-5xl">
+          Daily Insight
+        </p>
+        <p className="mt-5 max-w-xl text-[15px] leading-7 text-muted-foreground sm:text-lg sm:leading-8">
+          {dailyInsight}
+        </p>
+      </section>
 
-      <div className="mt-4 sm:mt-5 sm:max-w-xl">
-        <DailyFlow
-          checkedIn={hasCheckedInToday}
-          readToday={hasCheckedInToday}
-          journaled={hasJournalToday}
-        />
-      </div>
-
-      <div className="mt-5 grid gap-3 sm:max-w-xl sm:grid-cols-2">
+      <div className="mt-8 grid gap-3 sm:max-w-xl sm:grid-cols-2">
         <HomeMiniLink
           href="/tune-in"
           icon={<Headphones className="h-4 w-4" aria-hidden />}
@@ -301,17 +301,73 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
   );
 }
 
-function HomeStatus({ label, value }: { label: string; value: string }) {
+function CurrentStateRing({ score }: { score?: number }) {
+  const label = typeof score === "number" ? score.toFixed(1) : "0";
+
   return (
-    <div className="min-w-0">
-      <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-        {label}
-      </p>
-      <p className="mt-1 truncate text-sm font-medium text-foreground">
-        {value}
-      </p>
+    <div className="clearpth-orb mx-auto flex h-36 w-36 shrink-0 items-center justify-center rounded-full sm:h-44 sm:w-44">
+      <div className="relative z-10 text-center">
+        <p className="font-serif text-5xl font-semibold leading-none text-primary drop-shadow-[0_0_20px_rgba(216,190,132,0.38)] sm:text-6xl">
+          {label}
+        </p>
+        <p className="mt-2 text-[10px] uppercase tracking-[0.18em] text-foreground/66">
+          Current State
+        </p>
       </div>
+    </div>
   );
+}
+
+function HomeTask({
+  done,
+  label,
+  href,
+}: {
+  done: boolean;
+  label: string;
+  href: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex min-h-16 items-center gap-4 rounded-full border border-primary/14 bg-card/30 px-5 py-3 text-foreground/82 shadow-[inset_0_1px_0_rgba(244,239,228,0.05)] backdrop-blur-xl transition hover:border-primary/30 hover:bg-card/44"
+    >
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-primary/16 bg-background/20 text-primary">
+        {done ? (
+          <CheckCircle2 className="h-4 w-4" aria-hidden />
+        ) : (
+          <Circle className="h-4 w-4 opacity-45" aria-hidden />
+        )}
+      </span>
+      <span className="text-[1rem] leading-6 text-foreground/82 transition group-hover:text-foreground">
+        {label}
+      </span>
+    </Link>
+  );
+}
+
+function buildDailyInsight(state: HomeState) {
+  const desiredReality = getDesiredRealityLine(state.profile).toLowerCase();
+
+  if (!state.latestCheckIn) {
+    return `Start by measuring your state against ${desiredReality}. The app becomes useful the moment you give it one honest signal.`;
+  }
+
+  if (!state.todaysCheckIn) {
+    return `Your last state was ${state.latestCheckIn.beingScore.toFixed(
+      1,
+    )}/10. Today is not a repeat unless you move through it unconsciously.`;
+  }
+
+  if (!state.todaysJournal?.content.trim()) {
+    return `You have measured the day. Now name the pattern in a few honest lines so it does not stay vague.`;
+  }
+
+  if (!state.hasMeditatedToday) {
+    return `Your current state is named. Now let the body catch up with what the mind has seen.`;
+  }
+
+  return `The day has a signal now. Let the next action prove the version of you that your desired life requires.`;
 }
 
 function HomeMiniLink({
@@ -368,6 +424,10 @@ function buildHomeMessage(state: HomeState) {
     return `Today is measured at ${state.todaysCheckIn.beingScore.toFixed(
       1,
     )}/10. Write a few honest lines to complete the day.`;
+  }
+
+  if (!state.hasMeditatedToday) {
+    return "Your check-in and journal are done. Meditate to settle the state into your body.";
   }
 
   return `Today is complete. Let the pattern support your next decision.`;

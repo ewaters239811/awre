@@ -72,10 +72,10 @@ export function Navigation() {
 
   return (
     <>
-    <header className="sticky top-0 z-50 border-b border-border/35 bg-background/76 backdrop-blur-2xl">
+    <header className="sticky top-0 z-50 border-b border-white/[0.04] bg-background/58 backdrop-blur-2xl">
       <nav className="container flex h-14 items-center justify-between lg:h-20">
         <Link href="/" className="flex items-center gap-3">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-primary/22 bg-[linear-gradient(145deg,rgba(216,190,132,0.18),rgba(90,140,118,0.08))] text-foreground shadow-sm lg:h-9 lg:w-9 lg:rounded-lg">
+          <span className="clearpth-soft-glow flex h-8 w-8 items-center justify-center rounded-xl border border-primary/18 bg-card/28 text-foreground lg:h-9 lg:w-9 lg:rounded-lg">
             <svg
               viewBox="0 0 36 36"
               className="h-4 w-4 lg:h-6 lg:w-6"
@@ -104,18 +104,18 @@ export function Navigation() {
               <circle cx="18" cy="18" r="2.2" fill="currentColor" />
             </svg>
           </span>
-          <span className="text-[15px] font-semibold tracking-normal text-foreground lg:text-xl">
+          <span className="text-[15px] font-semibold tracking-normal text-foreground/95 lg:text-xl">
             ClearPth
           </span>
         </Link>
 
-        <div className="hidden items-center gap-1 rounded-full border border-border/42 bg-card/24 p-1 lg:flex">
+        <div className="hidden items-center gap-1 rounded-full border border-white/[0.06] bg-card/18 p-1 shadow-[inset_0_1px_0_rgba(244,239,228,0.06)] lg:flex">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                "rounded-full px-3.5 py-2 text-sm text-muted-foreground transition hover:bg-accent/55 hover:text-foreground",
+                "rounded-full px-3.5 py-2 text-sm text-muted-foreground transition hover:bg-white/[0.04] hover:text-foreground",
                 pathname === link.href &&
                   "bg-[linear-gradient(135deg,#f4efe4,#d8be84)] text-background shadow-[0_8px_20px_rgba(0,0,0,0.2)] hover:text-background",
               )}
@@ -138,7 +138,7 @@ export function Navigation() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 rounded-full border border-border/40 bg-card/20 lg:hidden"
+            className="h-10 w-10 rounded-full border border-white/[0.08] bg-card/26 shadow-[0_14px_34px_rgba(0,0,0,0.22)] backdrop-blur-xl lg:hidden"
             aria-label={isSettings ? "Go back" : "Open settings"}
             onClick={openSettingsOrGoBack}
           >
@@ -154,8 +154,8 @@ export function Navigation() {
 
 function MobileTabBar({ pathname }: { pathname: string }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-background via-background/92 to-transparent px-3 pb-[calc(env(safe-area-inset-bottom)+0.7rem)] pt-5 backdrop-blur-xl lg:hidden">
-      <div className="mx-auto grid max-w-[26rem] grid-cols-6 gap-1 rounded-[1.45rem] border border-border/42 bg-card/78 p-1.5 shadow-[0_18px_48px_rgba(0,0,0,0.34)]">
+    <nav className="fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-background via-background/88 to-transparent px-3 pb-[calc(env(safe-area-inset-bottom)+0.7rem)] pt-6 backdrop-blur-xl lg:hidden">
+      <div className="mx-auto grid max-w-[26rem] grid-cols-6 gap-1 rounded-[1.65rem] border border-white/[0.09] bg-card/76 p-1.5 shadow-[0_20px_60px_rgba(0,0,0,0.48),inset_0_1px_0_rgba(244,239,228,0.08)] backdrop-blur-2xl">
         {mobileLinks.map((link) => {
           const Icon = link.icon;
           const active =
@@ -167,9 +167,9 @@ function MobileTabBar({ pathname }: { pathname: string }) {
               key={link.href}
               href={link.href}
               className={cn(
-                "flex min-h-[3.15rem] flex-col items-center justify-center gap-1 rounded-[1.05rem] px-0.5 py-2 text-[9px] font-medium leading-none text-muted-foreground transition",
+                "flex min-h-[3.25rem] flex-col items-center justify-center gap-1 rounded-[1.25rem] px-0.5 py-2 text-[9px] font-medium leading-none text-muted-foreground transition duration-200",
                 active &&
-                  "bg-[linear-gradient(135deg,#f4efe4,#d8be84_58%,#91b39e)] text-background shadow-[0_8px_20px_rgba(0,0,0,0.22)]",
+                  "bg-[linear-gradient(135deg,#f4efe4,#d8be84_58%,#91b39e)] text-background shadow-[0_10px_26px_rgba(0,0,0,0.32),0_0_24px_rgba(216,190,132,0.14)]",
               )}
             >
               <Icon className="h-4 w-4" aria-hidden />
