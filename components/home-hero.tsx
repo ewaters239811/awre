@@ -17,7 +17,6 @@ import {
   CHECK_INS_CHANGED_EVENT,
   getCheckInForDate,
   getCheckIns,
-  getLatestCheckIn,
 } from "@/lib/alignment";
 import {
   getJournalEntries,
@@ -30,7 +29,12 @@ import {
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
-import type { CheckInResult, JournalEntry, OnboardingProfile } from "@/lib/types";
+import type {
+  CheckInResult,
+  JournalEntry,
+  OnboardingProfile,
+  PillarName,
+} from "@/lib/types";
 
 type AccountUser = {
   email?: string;
@@ -42,6 +46,7 @@ type AccountUser = {
 
 type HomeState = {
   user: AccountUser | null;
+  checkIns: CheckInResult[];
   latestCheckIn: CheckInResult | null;
   todaysCheckIn: CheckInResult | null;
   todaysJournal: JournalEntry | null;
@@ -60,6 +65,7 @@ export function HomeHero() {
   const calendarToday = useCurrentDateKey();
   const [state, setState] = useState<HomeState>({
     user: null,
+    checkIns: [],
     latestCheckIn: null,
     todaysCheckIn: null,
     todaysJournal: null,
@@ -89,6 +95,7 @@ export function HomeHero() {
           if (cancelled) return;
           const profile = getOnboardingProfile();
           const hasProfile = Boolean(profile);
+          const checkIns = getCheckIns();
           if (hasProfile) {
             try {
               sessionStorage.removeItem(RETURN_TO_COVER_KEY);
@@ -99,11 +106,12 @@ export function HomeHero() {
           setShowCoverInsteadOfSetup(shouldShowCover);
           setState({
             user,
-            latestCheckIn: getLatestCheckIn(),
+            checkIns,
+            latestCheckIn: checkIns[0] ?? null,
             todaysCheckIn: getCheckInForDate(checkInToday),
             todaysJournal: getJournalEntryForDate(calendarToday),
             hasMeditatedToday: hasMeditationCompletionForDate(calendarToday),
-            totalCheckIns: getCheckIns().length,
+            totalCheckIns: checkIns.length,
             totalJournals: getJournalEntries().length,
             hasProfile,
             profile,
@@ -225,7 +233,7 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
         : "Review Today";
   const currentScore =
     state.todaysCheckIn?.beingScore ?? state.latestCheckIn?.beingScore;
-  const dailyInsight = buildDailyInsight(state);
+  const alignmentNote = buildAlignmentNote(state);
 
   return (
     <div className="relative max-w-3xl pt-2 md:pt-0">
@@ -276,10 +284,10 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
 
       <section className="mt-10 sm:mt-12 sm:max-w-2xl">
         <p className="font-serif text-[2.55rem] font-semibold uppercase leading-none tracking-[0.14em] text-foreground sm:text-5xl">
-          Daily Insight
+          Alignment Note
         </p>
         <p className="mt-5 max-w-xl text-[15px] leading-7 text-muted-foreground sm:text-lg sm:leading-8">
-          {dailyInsight}
+          {alignmentNote}
         </p>
       </section>
 
@@ -346,28 +354,56 @@ function HomeTask({
   );
 }
 
-function buildDailyInsight(state: HomeState) {
-  const desiredReality = getDesiredRealityLine(state.profile).toLowerCase();
+function buildAlignmentNote(state: HomeState) {
+  const historicalPattern = getHistoricalGapPattern(state.checkIns);
 
-  if (!state.latestCheckIn) {
-    return `Start by measuring your state against ${desiredReality}. The app becomes useful the moment you give it one honest signal.`;
+  if (!historicalPattern) {
+    return "The gap is still unmeasured because ClearPth needs one honest check-in to compare your current state with your desired reality.";
   }
 
-  if (!state.todaysCheckIn) {
-    return `Your last state was ${state.latestCheckIn.beingScore.toFixed(
-      1,
-    )}/10. Today is not a repeat unless you move through it unconsciously.`;
+  if (historicalPattern.averageBeing >= 8.5) {
+    return "Your history shows the gap is narrowing; the work now is protecting the consistency that keeps you aligned with your desired reality.";
   }
 
-  if (!state.todaysJournal?.content.trim()) {
-    return `You have measured the day. Now name the pattern in a few honest lines so it does not stay vague.`;
+  return getHistoricalGapReason(historicalPattern.weakestPillar);
+}
+
+function getHistoricalGapReason(weakest: PillarName) {
+  if (weakest === "Thinking") {
+    return "The deeper gap is perception: your history shows your mind still rehearses the old reality more than it sees your desired reality.";
   }
 
-  if (!state.hasMeditatedToday) {
-    return `Your current state is named. Now let the body catch up with what the mind has seen.`;
+  if (weakest === "Doing") {
+    return "The deeper gap is consistency: your history shows your actions have not repeated the identity your desired reality requires.";
   }
 
-  return `The day has a signal now. Let the next action prove the version of you that your desired life requires.`;
+  return "The deeper gap is emotional loyalty: your history shows your state still returns to what is familiar instead of resting in your desired reality.";
+}
+
+function getHistoricalGapPattern(checkIns: CheckInResult[]) {
+  if (checkIns.length === 0) return null;
+
+  const totals = checkIns.reduce(
+    (current, checkIn) => ({
+      thinking: current.thinking + checkIn.thinkingScore,
+      doing: current.doing + checkIn.willingScore,
+      feeling: current.feeling + checkIn.feelingScore,
+      being: current.being + checkIn.beingScore,
+    }),
+    { thinking: 0, doing: 0, feeling: 0, being: 0 },
+  );
+
+  const count = checkIns.length;
+  const averages = [
+    { pillar: "Thinking" as const, score: totals.thinking / count },
+    { pillar: "Doing" as const, score: totals.doing / count },
+    { pillar: "Feeling" as const, score: totals.feeling / count },
+  ];
+
+  return {
+    averageBeing: totals.being / count,
+    weakestPillar: averages.sort((a, b) => a.score - b.score)[0].pillar,
+  };
 }
 
 function HomeMiniLink({
