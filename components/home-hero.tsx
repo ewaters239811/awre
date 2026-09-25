@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { getCurrentAccount } from "@/lib/account-data";
 import {
   CHECK_INS_CHANGED_EVENT,
+  getCheckInDateKey,
   getCheckInForDate,
   getCheckIns,
 } from "@/lib/alignment";
@@ -27,6 +28,7 @@ import {
   hasMeditationCompletionForDate,
 } from "@/lib/meditation-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
+import { toCheckInDateKey } from "@/lib/date-key";
 import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
 import type {
@@ -234,6 +236,7 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
   const currentScore =
     state.todaysCheckIn?.beingScore ?? state.latestCheckIn?.beingScore;
   const alignmentNote = buildAlignmentNote(state);
+  const streak = buildStreakStats(state.checkIns, state.todaysCheckIn);
 
   return (
     <div className="relative max-w-3xl pt-2 md:pt-0">
@@ -249,6 +252,10 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
           <p className="mt-6 max-w-xl text-[15px] leading-7 text-foreground/78 sm:mt-8 sm:text-xl sm:leading-8">
             {buildHomeMessage(state)}
           </p>
+          <StreakRhythm
+            streak={streak.currentStreak}
+            checkedInToday={streak.checkedInToday}
+          />
         </div>
         <CurrentStateRing score={currentScore} />
       </div>
@@ -322,6 +329,27 @@ function CurrentStateRing({ score }: { score?: number }) {
           Current State
         </p>
       </div>
+    </div>
+  );
+}
+
+function StreakRhythm({
+  streak,
+  checkedInToday,
+}: {
+  streak: number;
+  checkedInToday: boolean;
+}) {
+  return (
+    <div className="mt-5 inline-flex max-w-full items-center gap-3 rounded-full border border-primary/14 bg-card/28 px-4 py-2.5 text-sm text-foreground/84 shadow-[inset_0_1px_0_rgba(244,239,228,0.05)] backdrop-blur-xl">
+      <span className="flex h-2.5 w-2.5 shrink-0 rounded-full bg-primary shadow-[0_0_18px_rgba(166,187,154,0.34)]" />
+      <span className="font-medium text-foreground">
+        {streak}-day streak
+      </span>
+      <span className="h-1 w-1 rounded-full bg-muted-foreground/45" />
+      <span className="truncate text-muted-foreground">
+        {checkedInToday ? "Rhythm kept today." : "Check in to keep your rhythm."}
+      </span>
     </div>
   );
 }
@@ -403,6 +431,33 @@ function getHistoricalGapPattern(checkIns: CheckInResult[]) {
   return {
     averageBeing: totals.being / count,
     weakestPillar: averages.sort((a, b) => a.score - b.score)[0].pillar,
+  };
+}
+
+function buildStreakStats(
+  checkIns: CheckInResult[],
+  todaysCheckIn: CheckInResult | null,
+) {
+  const dates = new Set(checkIns.map((item) => getCheckInDateKey(item)));
+  const todayKey = todaysCheckIn
+    ? getCheckInDateKey(todaysCheckIn)
+    : toCheckInDateKey(new Date());
+  const checkedInToday = Boolean(todaysCheckIn) || dates.has(todayKey);
+  const cursor = new Date(`${todayKey}T12:00:00`);
+  let currentStreak = 0;
+
+  if (!checkedInToday) {
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  while (dates.has(toCheckInDateKey(cursor))) {
+    currentStreak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  return {
+    currentStreak,
+    checkedInToday,
   };
 }
 
