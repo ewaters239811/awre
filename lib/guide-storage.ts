@@ -7,7 +7,7 @@ export function createOpeningMessage(): GuideMessage {
   return {
     role: "assistant",
     content:
-      "Hi. I am here with you. You can bring me a challenge, a feeling, a desire, or even just what has been sitting on your mind today.",
+      "I am here. Tell me what is on your mind today, and we will find what needs to become clear.",
     createdAt: new Date().toISOString(),
   };
 }

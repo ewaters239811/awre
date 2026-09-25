@@ -4,7 +4,10 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { Plus, Send, Square, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { saveGuideConversationToAccount } from "@/lib/account-data";
+import {
+  getCurrentAccount,
+  saveGuideConversationToAccount,
+} from "@/lib/account-data";
 import {
   createAssistantMessage,
   createConversation,
@@ -18,9 +21,9 @@ import type { GuideConversation } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const fallbackSuggestedPrompts = [
-  "What is underneath this?",
-  "What feeling am I trying to get from the outside?",
-  "What is one practical thing I can do?",
+  "Go deeper.",
+  "Name the root.",
+  "Give me the next move.",
 ];
 
 const entryPaths = [
@@ -44,6 +47,7 @@ const entryPaths = [
 export function GuideChat() {
   const [activeConversation, setActiveConversation] =
     useState<GuideConversation | null>(null);
+  const [firstName, setFirstName] = useState("there");
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(
@@ -62,6 +66,10 @@ export function GuideChat() {
       setSuggestedPrompts(getSuggestionsForConversation(initial));
       setSpeechSupported("speechSynthesis" in window);
     });
+
+    getCurrentAccount()
+      .then((user) => setFirstName(getFirstName(user)))
+      .catch(() => setFirstName("there"));
 
     return () => {
       window.speechSynthesis?.cancel();
@@ -91,6 +99,7 @@ export function GuideChat() {
     lastMessage?.role === "assistant";
   const shouldShowEntryPaths =
     !isSending && messages.length === 1 && lastMessage?.role === "assistant";
+  const patternLabel = getPatternLabel(activeConversation);
 
   const startFreshConversation = () => {
     if (isSending) return;
@@ -204,10 +213,10 @@ export function GuideChat() {
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="text-[11px] uppercase tracking-[0.22em] text-primary/85 md:text-xs md:tracking-[0.26em]">
-                ClearPth Guide
+                Mirror
               </p>
               <h1 className="mt-2 font-serif text-[2.45rem] font-semibold leading-[0.98] text-foreground md:text-5xl">
-                Talk through what&apos;s here.
+                {firstName}, what are you carrying?
               </h1>
             </div>
             <Button
@@ -224,9 +233,18 @@ export function GuideChat() {
             </Button>
           </div>
           <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
-            A private place to name the pattern, find the root, and choose one
-            clean move.
+            A private mirror for what stands between you and your desired
+            reality.
           </p>
+          {messages.length > 1 ? (
+            <button
+              type="button"
+              onClick={() => setInput("Continue from what we were working through last time.")}
+              className="mt-4 rounded-full border border-primary/14 bg-card/24 px-4 py-2 text-left text-xs leading-5 text-foreground/78 transition hover:border-primary/30 hover:bg-card/40"
+            >
+              Continue from last time
+            </button>
+          ) : null}
         </div>
 
         <div className="min-h-[310px] flex-1 space-y-6 overflow-y-auto py-6 md:max-h-[62vh] md:min-h-[460px] md:pr-2">
@@ -281,6 +299,11 @@ export function GuideChat() {
           {isSending ? (
               <div className="max-w-[92%] rounded-full border border-white/[0.07] bg-card/34 px-4 py-3 text-sm text-muted-foreground sm:max-w-[82%]">
               Thinking with you...
+            </div>
+          ) : null}
+          {patternLabel ? (
+            <div className="inline-flex max-w-full rounded-full border border-primary/14 bg-primary/8 px-3 py-1.5 text-[11px] leading-5 text-primary/90">
+              Pattern named: {patternLabel}
             </div>
           ) : null}
           {shouldShowEntryPaths ? (
@@ -414,30 +437,90 @@ function getSuggestionsForConversation(conversation: GuideConversation) {
   return fallbackSuggestedPrompts;
 }
 
+function getFirstName(user: {
+  email?: string;
+  user_metadata?: { full_name?: string; name?: string };
+} | null) {
+  const name =
+    user?.user_metadata?.full_name?.trim() ||
+    user?.user_metadata?.name?.trim() ||
+    user?.email?.split("@")[0] ||
+    "there";
+
+  return name.split(/\s+/)[0];
+}
+
+function getPatternLabel(conversation: GuideConversation | null) {
+  if (!conversation || conversation.messages.length < 3) return "";
+
+  const combined = conversation.messages
+    .slice(-8)
+    .map((message) => message.content.toLowerCase())
+    .join(" ");
+
+  if (combined.includes("avoid") || combined.includes("procrastinat")) {
+    return "avoiding the next honest action";
+  }
+
+  if (
+    combined.includes("worth") ||
+    combined.includes("value") ||
+    combined.includes("validation")
+  ) {
+    return "looking outside for proof of value";
+  }
+
+  if (
+    combined.includes("bored") ||
+    combined.includes("numb") ||
+    combined.includes("empty")
+  ) {
+    return "seeking aliveness without direction";
+  }
+
+  if (
+    combined.includes("fear") ||
+    combined.includes("anxious") ||
+    combined.includes("worry")
+  ) {
+    return "letting fear lead perception";
+  }
+
+  if (
+    combined.includes("mood") ||
+    combined.includes("feeling") ||
+    combined.includes("state")
+  ) {
+    return "letting state decide identity";
+  }
+
+  return "returning to the same inner question";
+}
+
 function buildLocalSuggestions(reply: string) {
   const lowerReply = reply.toLowerCase();
 
   if (lowerReply.includes("value") || lowerReply.includes("worth")) {
     return [
-      "Where am I still outsourcing my sense of value?",
-      "What would calm self-respect do next?",
-      "How can I ask for what I want without needing it to define me?",
+      "Name the root.",
+      "What would self-respect do?",
+      "Go deeper.",
     ];
   }
 
   if (lowerReply.includes("action") || lowerReply.includes("avoid")) {
     return [
-      "What is the smallest action that would break the delay?",
-      "What feeling appears right before I avoid this?",
-      "Who would I be if this action was already normal for me?",
+      "Give me the next move.",
+      "What am I avoiding feeling?",
+      "Who would I be if this was normal?",
     ];
   }
 
   if (lowerReply.includes("feeling") || lowerReply.includes("state")) {
     return [
-      "How can I practice that state before anything changes?",
-      "What outer thing am I making responsible for this feeling?",
-      "What would this look like in my body today?",
+      "How do I practice that state?",
+      "What am I making responsible for this?",
+      "What would this feel like in my body?",
     ];
   }
 

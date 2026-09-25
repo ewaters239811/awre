@@ -2,66 +2,23 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import {
-  Activity,
-  ArrowRight,
-  BarChart3,
-  CalendarDays,
-  CheckCircle2,
-  Compass,
-  Gauge,
-  TrendingDown,
-  TrendingUp,
-} from "lucide-react";
+import { BarChart3, CalendarDays, Compass, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HistoryCalendar } from "@/components/history-calendar";
 import { getCheckInDateKey, getCheckIns } from "@/lib/alignment";
 import { buildBeingDashboardData } from "@/lib/being-analysis";
-import { getJournalEntries } from "@/lib/journal-storage";
-import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import { displayPillarName } from "@/lib/pillars";
-import type {
-  BeingDashboardAnalysis,
-  CheckInResult,
-  JournalEntry,
-  OnboardingProfile,
-  PillarName,
-} from "@/lib/types";
+import type { CheckInResult, PillarName } from "@/lib/types";
 
-type CachedBeingAnalysis = {
-  signature: string;
-  analysis: BeingDashboardAnalysis;
-  createdAt: string;
-};
-
-type GapInsight = {
-  currentState: string;
-  desiredState: string;
-  bridgePillar: PillarName | null;
-  supportPillar: PillarName | null;
-  distanceLabel: string;
-  progress: number;
-  missingBridge: string;
+type PatternSummary = {
+  title: string;
+  reason: string;
+  focusPillar: PillarName | null;
   nextMove: string;
 };
 
-type PatternMirror = {
-  weekAverage: string;
-  biggestLeak: string;
-  improvesScore: string;
-  lowersScore: string;
-  adjustment: string;
-};
-
-const ANALYSIS_CACHE_KEY = "clearpth.beingAnalysis.v1";
-
 export function BeingDashboard() {
   const [checkIns, setCheckIns] = useState<CheckInResult[]>([]);
-  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
-  const [onboardingProfile, setOnboardingProfile] =
-    useState<OnboardingProfile | null>(null);
-  const [analysis, setAnalysis] = useState<BeingDashboardAnalysis | null>(null);
-  const [isReading, setIsReading] = useState(false);
   const [selectedCheckIn, setSelectedCheckIn] = useState<CheckInResult | null>(
     null,
   );
@@ -71,109 +28,36 @@ export function BeingDashboard() {
       const savedCheckIns = getCheckIns();
       setCheckIns(savedCheckIns);
       setSelectedCheckIn(savedCheckIns[0] ?? null);
-      setJournalEntries(getJournalEntries());
-      setOnboardingProfile(getOnboardingProfile());
     });
   }, []);
 
   const dashboard = useMemo(
-    () => buildBeingDashboardData(checkIns, journalEntries),
-    [checkIns, journalEntries],
+    () => buildBeingDashboardData(checkIns, []),
+    [checkIns],
   );
-
-  useEffect(() => {
-    if (checkIns.length === 0) {
-      queueMicrotask(() => setAnalysis(dashboard.localAnalysis));
-      return;
-    }
-
-    const signature = buildAnalysisSignature(
-      checkIns,
-      journalEntries,
-      onboardingProfile,
-    );
-    const cached = getCachedAnalysis(signature);
-
-    if (cached) {
-      queueMicrotask(() => {
-        setAnalysis(cached.analysis);
-        setIsReading(false);
-      });
-      return;
-    }
-
-    const controller = new AbortController();
-    queueMicrotask(() => setIsReading(true));
-
-    fetch("/api/being-analysis", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        checkIns,
-        onboardingProfile,
-        journalEntries: journalEntries.slice(0, 12).map((entry) => ({
-          date: entry.date,
-          content: entry.content,
-        })),
-        metrics: {
-          latestScore: dashboard.latestScore,
-          averageScore: dashboard.averageScore,
-          trend: dashboard.trend,
-          volatility: dashboard.volatility,
-          integrationDebt: dashboard.integrationDebt,
-          journalRhythm: dashboard.journalRhythm,
-          weakestPillar: dashboard.weakestPillar,
-          strongestPillar: dashboard.strongestPillar,
-          pillarAverages: dashboard.pillarAverages,
-        },
-      }),
-      signal: controller.signal,
-    })
-      .then((response) => response.json())
-      .then((payload: { enabled?: boolean; data?: BeingDashboardAnalysis }) => {
-        const nextAnalysis = payload.data ?? dashboard.localAnalysis;
-        setAnalysis(nextAnalysis);
-
-        if (payload.enabled !== false && payload.data) {
-          saveCachedAnalysis({
-            signature,
-            analysis: nextAnalysis,
-            createdAt: new Date().toISOString(),
-          });
-        }
-      })
-      .catch(() => setAnalysis(dashboard.localAnalysis))
-      .finally(() => setIsReading(false));
-
-    return () => controller.abort();
-  }, [checkIns, dashboard, journalEntries, onboardingProfile]);
-
-  const gapInsight = useMemo(
-    () => buildGapInsight(dashboard, onboardingProfile),
-    [dashboard, onboardingProfile],
-  );
-  const patternMirror = useMemo(
-    () => buildPatternMirror(checkIns, journalEntries, dashboard),
-    [checkIns, journalEntries, dashboard],
+  const pattern = useMemo(
+    () => buildPatternSummary(checkIns, dashboard),
+    [checkIns, dashboard],
   );
 
   return (
     <main className="clearpth-page-shell">
-      <section className="mx-auto max-w-6xl">
-        <p className="clearpth-page-kicker">Progress</p>
-        <h1 className="clearpth-page-title">What Keeps Showing Up?</h1>
+      <section className="mx-auto max-w-5xl">
+        <p className="clearpth-page-kicker">Pattern</p>
+        <h1 className="clearpth-page-title">What Keeps Repeating?</h1>
         <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
-          See your scores over time and what deserves more focus.
+          Track the pattern that keeps pulling you toward or away from your
+          desired reality.
         </p>
       </section>
 
       {checkIns.length === 0 ? (
-        <section className="aura-glass mx-auto mt-9 max-w-6xl rounded-[1.35rem] p-5 md:rounded-lg md:p-6">
+        <section className="aura-glass mx-auto mt-9 max-w-5xl rounded-[1.35rem] p-5 md:rounded-lg md:p-6">
           <h2 className="font-serif text-3xl font-semibold">
-            No check-ins yet.
+            No pattern yet.
           </h2>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            Complete a check-in to start seeing your progress.
+            Complete a check-in to begin seeing what repeats.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Button asChild>
@@ -186,125 +70,111 @@ export function BeingDashboard() {
         </section>
       ) : (
         <>
-          <section className="mx-auto mt-9 grid max-w-6xl gap-5 lg:mt-10 lg:grid-cols-[0.86fr_1.14fr]">
-            <div className="aura-glass rounded-[1.35rem] p-5 md:rounded-lg md:p-7">
+          <section className="aura-glass mx-auto mt-9 max-w-5xl rounded-[1.35rem] p-5 md:rounded-lg md:p-7">
+            <div className="grid gap-7 lg:grid-cols-[1fr_220px] lg:items-start">
+              <div>
+                <div className="flex items-center gap-3">
+                  <Compass className="h-5 w-5 text-primary" aria-hidden />
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
+                    Your Pattern
+                  </p>
+                </div>
+                <h2 className="mt-4 font-serif text-3xl font-semibold leading-tight md:text-5xl">
+                  {pattern.title}
+                </h2>
+                <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
+                  {pattern.reason}
+                </p>
+              </div>
+
+              <div className="rounded-[1.3rem] border border-border/65 bg-card/40 p-4 text-center md:rounded-md">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Current State
+                </p>
+                <p className="mt-3 font-serif text-6xl font-semibold leading-none text-primary">
+                  {dashboard.latestScore?.toFixed(1) ?? "-"}
+                </p>
+                <p className="mt-2 text-sm text-muted-foreground">out of 10</p>
+              </div>
+            </div>
+
+            <div className="mt-7 grid gap-3 md:grid-cols-3">
+              <PatternStat
+                label="Focus"
+                value={
+                  pattern.focusPillar
+                    ? displayPillarName(pattern.focusPillar)
+                    : "Unmeasured"
+                }
+                detail="The area most often behind the gap."
+              />
+              <PatternStat
+                label="Average"
+                value={
+                  dashboard.averageScore === null
+                    ? "Unmeasured"
+                    : `${dashboard.averageScore.toFixed(1)} / 10`
+                }
+                detail="Your overall state across check-ins."
+              />
+              <PatternStat
+                label="Next Move"
+                value={pattern.nextMove}
+                detail="Keep it simple enough to repeat."
+              />
+            </div>
+          </section>
+
+          <section className="mx-auto mt-8 grid max-w-5xl gap-5 lg:grid-cols-[0.72fr_1.28fr]">
+            <section className="rounded-[1.35rem] border border-border/42 bg-card/20 p-5 md:aura-glass md:rounded-lg md:p-6">
               <div className="flex items-center gap-3">
                 <Gauge className="h-5 w-5 text-primary" aria-hidden />
                 <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                  Current Score
+                  Pillars
                 </p>
               </div>
-              <div className="mt-6 flex items-end gap-3">
-                <span className="font-serif text-7xl font-semibold leading-none text-primary sm:text-8xl">
-                  {dashboard.latestScore?.toFixed(1) ?? "-"}
-                </span>
-                <span className="pb-3 text-xl text-muted-foreground">/ 10</span>
-              </div>
-              <div className="mt-6 grid gap-3">
+              <div className="mt-6 grid gap-4">
                 <PillarBar
                   label="Thinking"
                   value={dashboard.pillarAverages.Thinking}
+                  active={pattern.focusPillar === "Thinking"}
                 />
                 <PillarBar
                   label="Doing"
                   value={dashboard.pillarAverages.Doing}
+                  active={pattern.focusPillar === "Doing"}
                 />
                 <PillarBar
                   label="Feeling"
                   value={dashboard.pillarAverages.Feeling}
+                  active={pattern.focusPillar === "Feeling"}
                 />
               </div>
-              <div className="mt-6 rounded-[1.15rem] border border-primary/18 bg-primary/8 p-4 md:rounded-md">
-                <p className="text-[11px] uppercase tracking-[0.16em] text-primary md:text-xs md:tracking-[0.2em]">
-                  What Stands Out
-                </p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {displayPillarName(dashboard.strongestPillar)} is helping
-                  most right now. {displayPillarName(dashboard.weakestPillar)}
-                  is the focus area.
-                </p>
-              </div>
-            </div>
+            </section>
 
-            <div className="aura-glass rounded-[1.35rem] p-5 md:rounded-lg md:p-7">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                    Progress Reading
-                  </p>
-                  <h2 className="mt-2 font-serif text-3xl font-semibold leading-tight">
-                    {analysis?.archetype ?? "Reading your progress"}
-                  </h2>
-                </div>
-                {isReading ? (
-                  <span className="rounded-full border border-border/42 bg-card/30 px-3 py-2 text-xs text-muted-foreground md:rounded-md">
-                    Reading
-                  </span>
-                ) : null}
-              </div>
-              <div className="mt-6 grid gap-3 md:gap-4">
-                <AnalysisBlock label="Summary" body={analysis?.summary} />
-                <AnalysisBlock label="What Is Underneath" body={analysis?.rootCause} />
-                <AnalysisBlock label="What Needs More Focus" body={analysis?.hiddenDebt} />
-                <AnalysisBlock
-                  label="Best Place To Start"
-                  body={analysis?.leveragePoint}
-                />
-                <AnalysisBlock label="Next Step" body={analysis?.nextPractice} />
-              </div>
-            </div>
-          </section>
-
-          <GapInsightCard insight={gapInsight} />
-
-          <PatternMirrorSection mirror={patternMirror} />
-
-          <section className="mx-auto mt-9 grid max-w-6xl gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-4">
-            {dashboard.metrics.map((metric) => (
-              <article key={metric.label} className="rounded-[1.2rem] border border-border/42 bg-card/20 p-4 md:aura-glass md:rounded-lg md:p-5">
-                <div className="flex items-center gap-3">
-                  <MetricIcon label={metric.label} />
-                  <p className="text-[10px] uppercase tracking-[0.14em] text-primary md:text-xs md:tracking-[0.22em]">
-                    {metric.label}
-                  </p>
-                </div>
-                <p className="mt-2 font-serif text-3xl font-semibold md:mt-3 md:text-4xl">
-                  {metric.value}
-                </p>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  {metric.detail}
-                </p>
-              </article>
-            ))}
-          </section>
-
-          <section className="mx-auto mt-9 max-w-6xl rounded-[1.35rem] border border-border/42 bg-card/20 p-4 md:aura-glass md:rounded-lg md:p-6">
-            <div className="flex items-center justify-between gap-4">
+            <section className="rounded-[1.35rem] border border-border/42 bg-card/20 p-5 md:aura-glass md:rounded-lg md:p-6">
               <div className="flex items-center gap-3">
                 <BarChart3 className="h-5 w-5 text-primary" aria-hidden />
                 <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                  Score Over Time
+                  State Over Time
                 </p>
               </div>
-              <p className="hidden text-xs text-muted-foreground sm:block">
-                Recent check-ins, oldest to newest
-              </p>
-            </div>
-            <ScoreTrendChart timeline={dashboard.timeline} />
+              <ScoreTrendChart timeline={dashboard.timeline} />
+            </section>
           </section>
 
-          <section className="mx-auto mt-9 max-w-6xl">
+          <section className="mx-auto mt-9 max-w-5xl">
             <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                  Calendar
+                  Check-In History
                 </p>
                 <h2 className="mt-2 font-serif text-3xl font-semibold leading-tight">
-                  Your Recorded Days
+                  Recorded Days
                 </h2>
               </div>
               <p className="text-sm text-muted-foreground">
-                Data below, meaning above.
+                The calendar is here when you want the details.
               </p>
             </div>
             <HistoryCalendar
@@ -313,7 +183,6 @@ export function BeingDashboard() {
               onSelect={setSelectedCheckIn}
             />
             <SelectedPatternDay item={selectedCheckIn} />
-            <RecentPatternRecords items={checkIns} />
           </section>
         </>
       )}
@@ -321,11 +190,33 @@ export function BeingDashboard() {
   );
 }
 
+function PatternStat({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <article className="rounded-2xl border border-border/65 bg-card/35 p-4 md:rounded-md">
+      <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground md:text-xs md:tracking-[0.2em]">
+        {label}
+      </p>
+      <p className="mt-2 text-lg font-medium leading-snug text-foreground">
+        {value}
+      </p>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{detail}</p>
+    </article>
+  );
+}
+
 function SelectedPatternDay({ item }: { item: CheckInResult | null }) {
   if (!item) return null;
 
   return (
-    <section className="mt-8 rounded-2xl border border-border/65 bg-card/35 p-4 md:aura-glass md:rounded-lg md:p-6">
+    <section className="mt-6 rounded-2xl border border-border/65 bg-card/35 p-4 md:aura-glass md:rounded-lg md:p-6">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex items-center gap-3">
@@ -346,91 +237,15 @@ function SelectedPatternDay({ item }: { item: CheckInResult | null }) {
         </Button>
       </div>
 
-      <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-6 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-6 lg:grid-cols-5">
         <MiniStat label="Score" value={item.beingScore.toFixed(1)} />
         <MiniStat label="Thinking" value={String(item.thinkingScore)} />
         <MiniStat label="Doing" value={String(item.willingScore)} />
         <MiniStat label="Feeling" value={String(item.feelingScore)} />
-        <MiniStat label="Focus Area" value={displayPillarName(item.weakestPillar)} />
-      </div>
-    </section>
-  );
-}
-
-function RecentPatternRecords({ items }: { items: CheckInResult[] }) {
-  return (
-    <section className="mt-8">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-            Recent Check-Ins
-          </p>
-          <h2 className="mt-2 font-serif text-3xl font-semibold">
-            Your Latest Scores
-          </h2>
-        </div>
-        <p className="hidden text-sm text-muted-foreground sm:block">
-          {items.length} total check-in{items.length === 1 ? "" : "s"}
-        </p>
-      </div>
-
-      <div className="mt-5 grid gap-3 md:hidden">
-        {items.slice(0, 8).map((item) => (
-          <article key={item.id} className="rounded-2xl border border-border/65 bg-card/35 p-4">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="font-medium">
-                  {formatDateKey(getCheckInDateKey(item))}
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {item.stateLabel}
-                </p>
-              </div>
-              <p className="font-serif text-3xl font-semibold">
-                {item.beingScore.toFixed(1)}
-              </p>
-            </div>
-            <div className="mt-4 grid grid-cols-3 gap-2">
-              <MiniStat label="Think" value={String(item.thinkingScore)} />
-              <MiniStat label="Act" value={String(item.willingScore)} />
-              <MiniStat label="Feel" value={String(item.feelingScore)} />
-            </div>
-          </article>
-        ))}
-      </div>
-
-      <div className="aura-glass mt-5 hidden overflow-hidden rounded-lg border border-border md:block">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left text-sm">
-            <thead className="bg-accent/35 text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3 font-medium">Date</th>
-                <th className="px-4 py-3 font-medium">Thinking</th>
-                <th className="px-4 py-3 font-medium">Doing</th>
-                <th className="px-4 py-3 font-medium">Feeling</th>
-                <th className="px-4 py-3 font-medium">Score</th>
-                <th className="px-4 py-3 font-medium">State</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr
-                  key={item.id}
-                  className="border-t border-border/55 transition hover:bg-accent/25"
-                >
-                  <td className="px-4 py-4">
-                    {formatDateKey(getCheckInDateKey(item))}
-                  </td>
-                  <td className="px-4 py-4">{item.thinkingScore}</td>
-                  <td className="px-4 py-4">{item.willingScore}</td>
-                  <td className="px-4 py-4">{item.feelingScore}</td>
-                  <td className="px-4 py-4">{item.beingScore.toFixed(1)}</td>
-                  <td className="px-4 py-4 text-primary">{item.stateLabel}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <MiniStat
+          label="Focus"
+          value={displayPillarName(item.weakestPillar)}
+        />
       </div>
     </section>
   );
@@ -442,29 +257,29 @@ function MiniStat({ label, value }: { label: string; value: string }) {
       <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground md:text-xs md:tracking-[0.18em]">
         {label}
       </p>
-      <p className="mt-2 truncate text-lg font-medium text-foreground md:text-xl">{value}</p>
+      <p className="mt-2 truncate text-lg font-medium text-foreground md:text-xl">
+        {value}
+      </p>
     </article>
   );
 }
 
-function MetricIcon({ label }: { label: string }) {
-  const className = "h-4 w-4 text-primary";
-
-  if (label.toLowerCase().includes("trend")) {
-    return <Activity className={className} aria-hidden />;
-  }
-
-  if (label.toLowerCase().includes("gap")) {
-    return <Compass className={className} aria-hidden />;
-  }
-
-  return <Gauge className={className} aria-hidden />;
-}
-
-function PillarBar({ label, value }: { label: PillarName; value: number }) {
+function PillarBar({
+  label,
+  value,
+  active,
+}: {
+  label: PillarName;
+  value: number;
+  active: boolean;
+}) {
   return (
-    <div>
-      <div className="flex justify-between text-sm">
+    <div
+      className={
+        active ? "rounded-md border border-primary/20 bg-primary/8 p-3" : ""
+      }
+    >
+      <div className="flex justify-between gap-3 text-sm">
         <span className="text-muted-foreground">{label}</span>
         <span className="text-primary">{value.toFixed(1)}</span>
       </div>
@@ -478,331 +293,45 @@ function PillarBar({ label, value }: { label: PillarName; value: number }) {
   );
 }
 
-function AnalysisBlock({
-  label,
-  body,
-}: {
-  label: string;
-  body?: string;
-}) {
-  return (
-    <article className="rounded-2xl border border-border/55 bg-card/55 p-4 md:rounded-md">
-      <p className="text-[11px] uppercase tracking-[0.16em] text-primary md:text-xs md:tracking-[0.2em]">{label}</p>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground md:text-base md:leading-7">
-        {body ?? "Reading the pattern..."}
-      </p>
-    </article>
-  );
-}
-
-function GapInsightCard({ insight }: { insight: GapInsight }) {
-  return (
-    <section className="aura-glass mx-auto mt-8 max-w-6xl rounded-2xl p-5 md:rounded-lg md:p-7">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-        <div className="max-w-2xl">
-          <div className="flex items-center gap-3">
-            <Compass className="h-5 w-5 text-primary" aria-hidden />
-            <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-              Focus Area
-            </p>
-          </div>
-          <h2 className="mt-3 font-serif text-3xl font-semibold leading-tight md:mt-4 md:text-4xl">
-            {insight.missingBridge}
-          </h2>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground md:mt-4 md:text-base md:leading-7">
-            Focus on the part of today that feels least connected to what you
-            want.
-          </p>
-        </div>
-
-        <div className="w-full max-w-sm rounded-2xl border border-border/70 bg-card/45 p-4 md:rounded-md">
-          <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-muted-foreground">
-            <span>Progress</span>
-            <span>{insight.progress}%</span>
-          </div>
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-primary"
-              style={{ width: `${insight.progress}%` }}
-            />
-          </div>
-          <p className="mt-3 text-sm text-muted-foreground">
-            {insight.distanceLabel}
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-7 grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-stretch">
-        <GapState label="Current" value={insight.currentState} />
-        <div className="hidden items-center justify-center md:flex">
-          <span className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card">
-            <ArrowRight className="h-4 w-4 text-primary" aria-hidden />
-          </span>
-        </div>
-        <GapState label="Desired" value={insight.desiredState} />
-      </div>
-
-      <div className="mt-4 grid gap-4 md:grid-cols-3">
-        <GapDetail
-          label="Focus Area"
-          value={insight.bridgePillar ?? "-"}
-          detail={
-            insight.bridgePillar
-              ? `${insight.bridgePillar} has the most room to grow.`
-              : "Complete check-ins to see what to focus on."
-          }
-        />
-        <GapDetail
-          label="Support"
-          value={insight.supportPillar ?? "-"}
-          detail={
-            insight.supportPillar
-              ? `Use ${insight.supportPillar} as support.`
-              : "What helps you will appear after more check-ins."
-          }
-        />
-        <GapDetail
-          label="Next Move"
-          value={insight.nextMove}
-          detail="Do this before adding more complexity."
-        />
-      </div>
-    </section>
-  );
-}
-
-function PatternMirrorSection({ mirror }: { mirror: PatternMirror }) {
-  const cards = [
-    {
-      label: "This Week",
-      value: mirror.weekAverage,
-      detail: "Your average score over the last seven days.",
-      icon: Gauge,
-    },
-    {
-      label: "Focus Area",
-      value: mirror.biggestLeak,
-      detail: "The area with the most room to grow.",
-      icon: TrendingDown,
-    },
-    {
-      label: "Raises Score",
-      value: mirror.improvesScore,
-      detail: "What seems to help on better days.",
-      icon: TrendingUp,
-    },
-    {
-      label: "Lowers Score",
-      value: mirror.lowersScore,
-      detail: "What seems connected to lower days.",
-      icon: Compass,
-    },
-    {
-      label: "Adjustment",
-      value: mirror.adjustment,
-      detail: "One simple adjustment to practice next.",
-      icon: CheckCircle2,
-    },
-  ];
-
-  return (
-    <section className="mx-auto mt-8 max-w-6xl">
-      <div className="mb-5">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-          What Helps And Hurts
-        </p>
-        <h2 className="mt-2 font-serif text-3xl font-semibold leading-tight md:text-4xl">
-          What your check-ins are showing.
-        </h2>
-      </div>
-      <div className="grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-5">
-        {cards.map((card) => {
-          const Icon = card.icon;
-
-          return (
-            <article
-              key={card.label}
-              className="rounded-2xl border border-border/65 bg-card/35 p-4 md:aura-glass md:rounded-lg md:p-5"
-            >
-              <div className="flex items-center gap-3">
-                <Icon className="h-4 w-4 text-primary" aria-hidden />
-                <p className="text-[10px] uppercase tracking-[0.14em] text-primary md:text-xs md:tracking-[0.22em]">
-                  {card.label}
-                </p>
-              </div>
-              <p className="mt-3 text-lg font-medium leading-snug text-foreground">
-                {card.value}
-              </p>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                {card.detail}
-              </p>
-            </article>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-function GapState({ label, value }: { label: string; value: string }) {
-  return (
-    <article className="rounded-2xl border border-border/70 bg-card/45 p-4 md:rounded-md md:p-5">
-      <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground md:text-xs md:tracking-[0.22em]">
-        {label}
-      </p>
-      <p className="mt-2 font-serif text-2xl font-semibold leading-tight text-foreground md:mt-3 md:text-3xl">
-        {value}
-      </p>
-    </article>
-  );
-}
-
-function GapDetail({
-  label,
-  value,
-  detail,
-}: {
-  label: string;
-  value: string;
-  detail: string;
-}) {
-  return (
-    <article className="rounded-2xl border border-border/70 bg-card/35 p-4 md:rounded-md">
-      <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground md:text-xs md:tracking-[0.2em]">
-        {label}
-      </p>
-      <p className="mt-2 text-lg font-medium text-foreground">{value}</p>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{detail}</p>
-    </article>
-  );
-}
-
-function buildGapInsight(
-  dashboard: ReturnType<typeof buildBeingDashboardData>,
-  onboardingProfile: OnboardingProfile | null,
-): GapInsight {
-  const latestScore = dashboard.latestScore ?? 0;
-  const desiredState =
-    onboardingProfile?.desiredState.trim() || "Clear and steady";
-  const bridgePillar = dashboard.weakestPillar;
-  const supportPillar = dashboard.strongestPillar;
-  const nextThreshold = getNextThreshold(latestScore);
-  const pointsToThreshold = Math.max(0, nextThreshold.score - latestScore);
-  const progress = Math.round(Math.min((latestScore / nextThreshold.score) * 100, 100));
-
-  return {
-    currentState:
-      dashboard.latestScore === null
-        ? "Unmeasured"
-        : `${latestScore.toFixed(1)} / 10`,
-    desiredState,
-    bridgePillar,
-    supportPillar,
-    distanceLabel:
-      dashboard.latestScore === null
-        ? "Complete a check-in to see where to focus."
-        : `${pointsToThreshold.toFixed(1)} points from ${nextThreshold.label}.`,
-    progress,
-    missingBridge: getMissingBridge(bridgePillar, latestScore),
-    nextMove: getBridgeMove(bridgePillar),
-  };
-}
-
-function buildPatternMirror(
+function buildPatternSummary(
   checkIns: CheckInResult[],
-  journalEntries: JournalEntry[],
   dashboard: ReturnType<typeof buildBeingDashboardData>,
-): PatternMirror {
-  if (checkIns.length === 0) {
+): PatternSummary {
+  if (checkIns.length === 0 || !dashboard.weakestPillar) {
     return {
-      weekAverage: "Unmeasured",
-      biggestLeak: "No check-ins yet",
-      improvesScore: "Complete check-ins",
-      lowersScore: "Not visible yet",
-      adjustment: "Complete today's check-in",
+      title: "Your pattern is still forming.",
+      reason: "Complete a few check-ins so ClearPth can show what repeats.",
+      focusPillar: null,
+      nextMove: "Check in",
     };
   }
 
-  const sorted = [...checkIns].sort(
-    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-  );
-  const recentWeek = sorted.filter((item) => {
-    const checkInDate = new Date(`${getCheckInDateKey(item)}T12:00:00`);
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-    sevenDaysAgo.setHours(0, 0, 0, 0);
-    return checkInDate >= sevenDaysAgo;
-  });
-  const weekItems = recentWeek.length ? recentWeek : sorted.slice(-7);
-  const weekAverage = averageScore(weekItems.map((item) => item.beingScore));
-  const bestDay = [...sorted].sort((a, b) => b.beingScore - a.beingScore)[0];
-  const lowestDay = [...sorted].sort((a, b) => a.beingScore - b.beingScore)[0];
-  const completedActions = journalEntries.filter(
-    (entry) => entry.alignedActionCompletedAt,
-  ).length;
-  const actionSignal =
-    completedActions > 0
-      ? "completed next steps"
-      : "strong action scores";
+  const focusPillar = dashboard.weakestPillar;
+  const byPillar: Record<PillarName, Omit<PatternSummary, "focusPillar">> = {
+    Thinking: {
+      title: "Your thoughts are the main gap.",
+      reason:
+        "Your check-ins show that perception is the area most often lagging behind the life you want.",
+      nextMove: "Name one truer thought",
+    },
+    Doing: {
+      title: "Your follow-through is the main gap.",
+      reason:
+        "Your check-ins show that action is the area most often lagging behind what you say matters.",
+      nextMove: "Finish one visible action",
+    },
+    Feeling: {
+      title: "Your inner state is the main gap.",
+      reason:
+        "Your check-ins show that emotion is the area most often pulling you back toward what feels familiar.",
+      nextMove: "Practice the state now",
+    },
+  };
 
   return {
-    weekAverage: `${weekAverage.toFixed(1)} / 10`,
-    biggestLeak: dashboard.weakestPillar
-      ? `${displayPillarName(dashboard.weakestPillar)} has room to grow`
-      : "Nothing visible yet",
-    improvesScore: bestDay
-      ? `${displayPillarName(bestDay.strongestPillar)} plus ${actionSignal}`
-      : "More check-ins needed",
-    lowersScore: lowestDay
-      ? `${displayPillarName(lowestDay.weakestPillar)} dropping`
-      : "More check-ins needed",
-    adjustment: getPatternAdjustment(dashboard.weakestPillar),
+    ...byPillar[focusPillar],
+    focusPillar,
   };
-}
-
-function getPatternAdjustment(pillar: PillarName | null) {
-  if (!pillar) return "Complete one check-in today.";
-
-  const adjustments: Record<PillarName, string> = {
-    Thinking: "Start by naming one clearer thought.",
-    Doing: "Choose one visible action and finish it.",
-    Feeling: "Calm your body before making the next important choice.",
-  };
-
-  return adjustments[pillar];
-}
-
-function getNextThreshold(score: number) {
-  if (score < 6) return { label: "stable", score: 6 };
-  if (score < 7.5) return { label: "clear action", score: 7.5 };
-  if (score < 9) return { label: "strong", score: 9 };
-  return { label: "very strong", score: 10 };
-}
-
-function getMissingBridge(pillar: PillarName | null, score: number) {
-  if (!pillar) return "Check in to see where to focus.";
-
-  const byPillar: Record<PillarName, string> = {
-    Thinking: "Your thoughts need more clarity.",
-    Doing: "Your actions need more follow-through.",
-    Feeling: "Your emotions need more steadiness.",
-  };
-
-  if (score < 6) return `${byPillar[pillar]} Stabilize it first.`;
-  if (score < 7.5) return `${byPillar[pillar]} Make it repeatable.`;
-  return `${byPillar[pillar]} Protect it under pressure.`;
-}
-
-function getBridgeMove(pillar: PillarName | null) {
-  if (!pillar) return "Check in";
-
-  const moves: Record<PillarName, string> = {
-    Thinking: "Name one truer sentence",
-    Doing: "Complete one visible action",
-    Feeling: "Practice the state now",
-  };
-
-  return moves[pillar];
 }
 
 function ScoreTrendChart({
@@ -822,127 +351,103 @@ function ScoreTrendChart({
   const latest = timeline[timeline.length - 1];
 
   return (
-    <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_260px]">
-      <div className="rounded-md border border-border/70 bg-card/45 p-4">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-medium text-foreground">
-              Score Trend
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {timeline.length} recorded day{timeline.length === 1 ? "" : "s"}
-            </p>
-          </div>
-          <div className="rounded-md border border-border bg-background/60 px-3 py-2 text-right">
-            <p className="text-xs text-muted-foreground">Latest</p>
-            <p className="font-serif text-2xl font-semibold">
-              {latest.score.toFixed(1)}
-            </p>
-          </div>
+    <div className="mt-6">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-medium text-foreground">Score Trend</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {timeline.length} recorded day{timeline.length === 1 ? "" : "s"}
+          </p>
         </div>
-
-        <MobileScoreTrend timeline={timeline} />
-
-        <div className="hidden lg:block">
-          <svg
-            viewBox="0 0 720 280"
-            className="h-auto min-h-[260px] w-full text-foreground"
-            role="img"
-            aria-label="Score line graph over time"
-          >
-            {[0, 2.5, 5, 7.5, 10].map((score) => {
-              const y = scoreToY(score);
-
-              return (
-                <g key={score}>
-                  <line
-                    x1="56"
-                    x2="688"
-                    y1={y}
-                    y2={y}
-                    className="stroke-border"
-                    strokeDasharray={score === 0 ? "0" : "4 6"}
-                  />
-                  <text
-                    x="22"
-                    y={y + 4}
-                    className="fill-muted-foreground text-[12px]"
-                  >
-                    {score}
-                  </text>
-                </g>
-              );
-            })}
-
-            <line x1="56" x2="56" y1="28" y2="240" className="stroke-border" />
-            <line x1="56" x2="688" y1="240" y2="240" className="stroke-border" />
-
-            {chart.areaPath ? (
-              <path d={chart.areaPath} className="fill-primary/10" />
-            ) : null}
-            {chart.linePath ? (
-              <path
-                d={chart.linePath}
-                className="fill-none stroke-primary"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            ) : null}
-
-            {chart.points.map((point, index) => (
-              <g key={`${point.date}-${index}`}>
-                <circle
-                  cx={point.x}
-                  cy={point.y}
-                  r="5"
-                  className="fill-background stroke-primary"
-                  strokeWidth="3"
-                />
-                <text
-                  x={point.x}
-                  y={point.y - 12}
-                  textAnchor="middle"
-                  className="fill-foreground text-[12px]"
-                >
-                  {point.score.toFixed(1)}
-                </text>
-              </g>
-            ))}
-
-            {chart.points.map((point, index) => (
-              <text
-                key={`${point.date}-${index}-label`}
-                x={point.x}
-                y="264"
-                textAnchor="middle"
-                className="fill-muted-foreground text-[11px]"
-              >
-                {formatShortDate(point.date)}
-              </text>
-            ))}
-          </svg>
+        <div className="rounded-md border border-border bg-background/60 px-3 py-2 text-right">
+          <p className="text-xs text-muted-foreground">Latest</p>
+          <p className="font-serif text-2xl font-semibold">
+            {latest.score.toFixed(1)}
+          </p>
         </div>
       </div>
 
-      <div className="hidden rounded-md border border-border/70 bg-card/45 p-4 lg:block">
-        <p className="text-sm font-medium text-foreground">Recent Scores</p>
-        <div className="mt-4 divide-y divide-border/60">
-          {timeline
-            .slice(-6)
-            .reverse()
-            .map((point, index) => (
-              <div
-                key={`${point.date}-${index}`}
-                className="flex items-center justify-between gap-4 py-3 text-sm"
+      <MobileScoreTrend timeline={timeline} />
+
+      <div className="hidden lg:block">
+        <svg
+          viewBox="0 0 720 280"
+          className="h-auto min-h-[260px] w-full text-foreground"
+          role="img"
+          aria-label="Score line graph over time"
+        >
+          {[0, 2.5, 5, 7.5, 10].map((score) => {
+            const y = scoreToY(score);
+
+            return (
+              <g key={score}>
+                <line
+                  x1="56"
+                  x2="688"
+                  y1={y}
+                  y2={y}
+                  className="stroke-border"
+                  strokeDasharray={score === 0 ? "0" : "4 6"}
+                />
+                <text
+                  x="22"
+                  y={y + 4}
+                  className="fill-muted-foreground text-[12px]"
+                >
+                  {score}
+                </text>
+              </g>
+            );
+          })}
+
+          <line x1="56" x2="56" y1="28" y2="240" className="stroke-border" />
+          <line x1="56" x2="688" y1="240" y2="240" className="stroke-border" />
+
+          {chart.areaPath ? (
+            <path d={chart.areaPath} className="fill-primary/10" />
+          ) : null}
+          {chart.linePath ? (
+            <path
+              d={chart.linePath}
+              className="fill-none stroke-primary"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ) : null}
+
+          {chart.points.map((point, index) => (
+            <g key={`${point.date}-${index}`}>
+              <circle
+                cx={point.x}
+                cy={point.y}
+                r="5"
+                className="fill-background stroke-primary"
+                strokeWidth="3"
+              />
+              <text
+                x={point.x}
+                y={point.y - 12}
+                textAnchor="middle"
+                className="fill-foreground text-[12px]"
               >
-                <span className="text-muted-foreground">{point.date}</span>
-                <span className="font-medium text-foreground">
-                  {point.score.toFixed(1)}
-                </span>
-              </div>
-            ))}
-        </div>
+                {point.score.toFixed(1)}
+              </text>
+            </g>
+          ))}
+
+          {chart.points.map((point, index) => (
+            <text
+              key={`${point.date}-${index}-label`}
+              x={point.x}
+              y="264"
+              textAnchor="middle"
+              className="fill-muted-foreground text-[11px]"
+            >
+              {formatShortDate(point.date)}
+            </text>
+          ))}
+        </svg>
       </div>
     </div>
   );
@@ -1026,84 +531,4 @@ function formatShortDate(date: string) {
 
 function formatDateKey(dateKey: string) {
   return new Date(`${dateKey}T12:00:00`).toLocaleDateString();
-}
-
-function averageScore(values: number[]) {
-  if (values.length === 0) return 0;
-  return values.reduce((sum, value) => sum + value, 0) / values.length;
-}
-
-function buildAnalysisSignature(
-  checkIns: CheckInResult[],
-  journalEntries: JournalEntry[],
-  onboardingProfile: OnboardingProfile | null,
-) {
-  const checkInSignal = checkIns
-    .map((item) =>
-      [
-        item.id,
-        item.createdAt,
-        item.thinkingScore,
-        item.willingScore,
-        item.feelingScore,
-        item.dominantThought,
-        item.avoidedAction,
-        item.currentFeeling,
-        item.highestBeingChoice,
-      ].join("|"),
-    )
-    .join("::");
-  const journalSignal = journalEntries
-    .slice(0, 12)
-    .map((entry) =>
-      [entry.id, entry.date, entry.content.trim()].join("|"),
-    )
-    .join("::");
-  const profileSignal = onboardingProfile
-    ? [
-        onboardingProfile.primaryGoal,
-        onboardingProfile.currentChallenge,
-        onboardingProfile.desiredState,
-        onboardingProfile.birthDate ?? "",
-        onboardingProfile.practiceStyle,
-        onboardingProfile.spiritualOpenness,
-        onboardingProfile.commitmentLevel,
-        onboardingProfile.guidanceTone,
-      ].join("|")
-    : "no-profile";
-
-  return simpleHash(`${checkInSignal}--${journalSignal}--${profileSignal}`);
-}
-
-function getCachedAnalysis(signature: string) {
-  if (typeof window === "undefined") return null;
-
-  try {
-    const raw = localStorage.getItem(ANALYSIS_CACHE_KEY);
-    if (!raw) return null;
-    const cached = JSON.parse(raw) as CachedBeingAnalysis;
-    return cached.signature === signature ? cached : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveCachedAnalysis(cached: CachedBeingAnalysis) {
-  if (typeof window === "undefined") return;
-
-  try {
-    localStorage.setItem(ANALYSIS_CACHE_KEY, JSON.stringify(cached));
-  } catch {
-    // If storage is unavailable, the dashboard still works without caching.
-  }
-}
-
-function simpleHash(value: string) {
-  let hash = 0;
-
-  for (let index = 0; index < value.length; index += 1) {
-    hash = Math.imul(31, hash) + value.charCodeAt(index);
-  }
-
-  return String(hash >>> 0);
 }
