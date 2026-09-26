@@ -4,6 +4,7 @@ import "./globals.css";
 import { AmbientNoise } from "@/components/ambient-noise";
 import { AccountSync } from "@/components/account-sync";
 import { Navigation } from "@/components/navigation";
+import { PasswordRecoveryRedirect } from "@/components/password-recovery-redirect";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
 const geistMono = Geist_Mono({
@@ -29,6 +30,7 @@ export default function RootLayout({
         <Navigation />
         {children}
         <AccountSync />
+        <PasswordRecoveryRedirect />
         <AmbientNoise />
       </body>
     </html>

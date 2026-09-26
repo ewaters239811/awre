@@ -8,9 +8,6 @@ import { Button } from "@/components/ui/button";
 import { syncLocalDataToAccount } from "@/lib/account-data";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
-const PASSWORD_RESET_REDIRECT_URL =
-  "https://clearpth.io/auth/callback?next=/reset-password";
-
 export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState<"sign-in" | "sign-up">(() =>
@@ -110,7 +107,7 @@ export default function LoginPage() {
       const supabase = createSupabaseBrowserClient();
       const { error: resetError } =
         await supabase.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: PASSWORD_RESET_REDIRECT_URL,
+          redirectTo: getPasswordResetRedirectUrl(),
         });
 
       if (resetError) {
@@ -235,4 +232,13 @@ export default function LoginPage() {
       </section>
     </main>
   );
+}
+
+function getPasswordResetRedirectUrl() {
+  const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  const origin =
+    configuredOrigin && configuredOrigin.length > 0
+      ? configuredOrigin.replace(/\/+$/, "")
+      : window.location.origin;
+  return new URL("/reset-password", origin).toString();
 }

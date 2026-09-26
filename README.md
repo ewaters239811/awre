@@ -59,6 +59,7 @@ their login profile with Supabase.
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_api_url
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+NEXT_PUBLIC_SITE_URL=https://clearpth.io
 ```
 
 If your Supabase dashboard only shows an `anon` key, this also works:
@@ -83,11 +84,26 @@ Supabase under **Authentication -> URL Configuration**:
 Site URL: https://clearpth.io
 Redirect URLs:
 https://clearpth.io/auth/callback
+https://clearpth.io/auth/confirm
+https://clearpth.io/reset-password
 ```
 
 New accounts are designed to sign in immediately when email confirmation is
-disabled in Supabase. Password reset links use `/auth/callback`, where ClearPth
-completes the Supabase session and sends the user to the reset page.
+disabled in Supabase.
+
+For the most reliable password reset flow, update the Supabase
+**Authentication -> Email Templates -> Reset Password** link to use the recovery
+token hash:
+
+```html
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password">
+  Reset your password
+</a>
+```
+
+ClearPth verifies that recovery token at `/auth/confirm`, creates the temporary
+Supabase session, and sends the user to `/reset-password` to choose a new
+password.
 
 Personal records are account-first. Check-ins, journal entries, and setup
 profiles are saved only for signed-in users.

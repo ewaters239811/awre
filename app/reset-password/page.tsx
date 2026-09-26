@@ -27,6 +27,56 @@ export default function ResetPasswordPage() {
 
       try {
         const supabase = createSupabaseBrowserClient();
+        const hashParams = new URLSearchParams(
+          window.location.hash.replace(/^#/, ""),
+        );
+        const queryParams = new URLSearchParams(window.location.search);
+        const accessToken = hashParams.get("access_token");
+        const refreshToken = hashParams.get("refresh_token");
+        const hashError =
+          hashParams.get("error_description") ?? hashParams.get("error");
+        const queryError =
+          queryParams.get("error_description") ?? queryParams.get("error");
+        const linkError = hashError ?? queryError;
+
+        if (linkError) {
+          setError(linkError.replace(/\+/g, " "));
+        }
+
+        if (accessToken && refreshToken) {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+
+          if (sessionError) {
+            setHasSession(false);
+            setError("This reset link is expired or already used.");
+            return;
+          }
+
+          window.history.replaceState(
+            null,
+            "",
+            `${window.location.pathname}${window.location.search}`,
+          );
+        }
+
+        const code = queryParams.get("code");
+
+        if (code) {
+          const { error: codeError } =
+            await supabase.auth.exchangeCodeForSession(code);
+
+          if (codeError) {
+            setHasSession(false);
+            setError("This reset link is expired or already used.");
+            return;
+          }
+
+          window.history.replaceState(null, "", window.location.pathname);
+        }
+
         const { data } = await supabase.auth.getSession();
         setHasSession(Boolean(data.session));
       } catch {
@@ -112,6 +162,7 @@ export default function ResetPasswordPage() {
               This reset link is missing, expired, or already used. Request a
               new password reset link and open it on this device.
             </p>
+            {error ? <p className="mt-4 text-sm text-primary">{error}</p> : null}
             <Button asChild className="mt-6 w-full" variant="secondary">
               <Link href="/login">Return To Sign In</Link>
             </Button>
