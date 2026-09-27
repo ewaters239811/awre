@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
-  CheckCircle2,
   Headphones,
   Pause,
   RefreshCw,
@@ -22,18 +21,21 @@ type MeditationStatus = "idle" | "loading" | "ready" | "unavailable";
 
 const fallbackMeditation: AiMeditation = {
   title: "Return To The Center",
-  intention: "Bring today back into one clear line.",
+  intention: "Let the noise settle until the clear thing can be felt.",
   durationSeconds: 300,
   script:
-    "Sit comfortably and let the body become still. Let the shoulders drop. Let the jaw soften. Take one slow breath in, and one slower breath out. Notice the state you brought with you. You do not have to fix it by force. You only have to meet it honestly. Let the thought that has been loudest become simple. Beneath the noise, there is one cleaner sentence available. Let that sentence be: I can return to myself and choose one true step. Now bring attention to the part of you that acts. If action has been delayed, do not make it a verdict on who you are. Let it become energy waiting for direction. See one small action becoming visible and complete. Feel how the body changes when the next step is no longer dramatic. Now notice the feeling running underneath the day. Let it be present, but let it release command. Breathe as if your desired state is already safe to practice now. For the final breaths, gather thought, action, and feeling into one line. One clear thought. One honest action. One steadier feeling. When you open your eyes, carry that line into the next moment.",
-  closingPrompt: "What one step would make this state visible today?",
+    "Let the body become still. Let the shoulders drop. Let the jaw soften. Take one slow breath in, and one slower breath out. Notice the state you brought with you. You do not have to fix it by force. You only have to meet it honestly. Let the thought that has been loudest become simple. Beneath the noise, there is a clearer knowing available. Let that knowing arrive without pressure. Now bring attention to the part of you that wants life to feel more aligned. Do not push it. Let it become quiet enough to be understood. Feel your feet. Feel your hands. Feel the center of the chest. Let the body learn steadiness before the day asks anything from you. If something has felt unclear, do not make it a verdict on who you are. See it as a signal asking to be listened to. Let the feeling underneath the day be present without letting it take command. Breathe as if your desired state is already allowed in the body. You are not waiting for the outside world to give you permission to become steady. You are practicing the state now. For the final breaths, gather thought, feeling, and desire into one quiet center. Let the body remember what is true. When you are ready, return with more space around the day.",
+  closingPrompt: "What feels clearer now?",
 };
 
 export default function TuneInPage() {
   const todayKey = useCurrentCheckInDateKey();
   const [checkIn, setCheckIn] = useState<CheckInResult | null>(null);
   const [status, setStatus] = useState<MeditationStatus>("idle");
-  const [remainingSeconds, setRemainingSeconds] = useState(300);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [audioDurationSeconds, setAudioDurationSeconds] = useState<number | null>(
+    null,
+  );
   const [timerRunning, setTimerRunning] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioPaused, setAudioPaused] = useState(false);
@@ -81,10 +83,10 @@ export default function TuneInPage() {
       checkIn.aiMeditationContextSignature !== contextSignature;
 
     if (!shouldGenerate && checkIn.aiMeditation) {
-      const savedDuration = Math.min(checkIn.aiMeditation.durationSeconds, 300);
       queueMicrotask(() => {
         setStatus("ready");
-        setRemainingSeconds(savedDuration);
+        setElapsedSeconds(0);
+        setAudioDurationSeconds(null);
       });
       return;
     }
@@ -114,22 +116,35 @@ export default function TuneInPage() {
         updateCheckIn(updated);
         saveCheckInToAccount(updated).catch(() => undefined);
         setCheckIn(updated);
-        setRemainingSeconds(nextMeditation.durationSeconds);
+        setElapsedSeconds(0);
+        setAudioDurationSeconds(null);
         setStatus(payload.enabled === false ? "unavailable" : "ready");
       })
       .catch(() => {
         setStatus("unavailable");
-        setRemainingSeconds(fallbackMeditation.durationSeconds);
+        setElapsedSeconds(0);
+        setAudioDurationSeconds(null);
       });
   }, [checkIn, contextSignature]);
 
   useEffect(() => {
-    if (!timerRunning || remainingSeconds <= 0) return;
+    const sessionDuration = getSessionDurationSeconds(
+      meditation,
+      audioDurationSeconds,
+    );
+
+    if (
+      !timerRunning ||
+      audioPlaying ||
+      elapsedSeconds >= sessionDuration
+    ) {
+      return;
+    }
 
     const timer = window.setInterval(() => {
-      setRemainingSeconds((current) => {
-        const next = Math.max(current - 1, 0);
-        if (next === 0) {
+      setElapsedSeconds((current) => {
+        const next = Math.min(current + 1, sessionDuration);
+        if (next >= sessionDuration) {
           queueMicrotask(() => {
             setTimerRunning(false);
             audioRef.current?.pause();
@@ -145,11 +160,18 @@ export default function TuneInPage() {
     }, 1000);
 
     return () => window.clearInterval(timer);
-  }, [timerRunning, remainingSeconds, todayKey]);
+  }, [
+    timerRunning,
+    audioPlaying,
+    elapsedSeconds,
+    meditation,
+    audioDurationSeconds,
+    todayKey,
+  ]);
 
   const resetSession = () => {
     setTimerRunning(false);
-    setRemainingSeconds(Math.min(meditation.durationSeconds, 300));
+    setElapsedSeconds(0);
     audioRef.current?.pause();
     if (audioRef.current) audioRef.current.currentTime = 0;
     stopAmbientBed();
@@ -204,6 +226,7 @@ export default function TuneInPage() {
         audioRef.current.currentTime = 0;
         await audioRef.current.play();
       }
+      setElapsedSeconds(0);
       await startAmbientBed();
       updateMediaSession("playing", meditation);
       setAudioPlaying(true);
@@ -219,6 +242,7 @@ export default function TuneInPage() {
     updateMediaSession("paused", meditation);
     if (audioRef.current) audioRef.current.currentTime = 0;
     stopAmbientBed();
+    setElapsedSeconds(0);
     setAudioPlaying(false);
     setAudioPaused(false);
     setTimerRunning(false);
@@ -242,91 +266,86 @@ export default function TuneInPage() {
     );
   }
 
-  const progress =
-    100 - Math.round((remainingSeconds / Math.min(meditation.durationSeconds, 300)) * 100);
+  const sessionDuration = getSessionDurationSeconds(
+    meditation,
+    audioDurationSeconds,
+  );
+  const progress = Math.round((elapsedSeconds / sessionDuration) * 100);
+  const listeningState = getListeningState({
+    audioStatus,
+    audioPlaying,
+    audioPaused,
+    progress,
+    status,
+  });
 
   return (
-    <main className="clearpth-page-shell">
-      <section className="mx-auto max-w-5xl">
-        <p className="clearpth-page-kicker">Meditation</p>
-        <h1 className="clearpth-page-title">Today&apos;s Meditation</h1>
-        <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
-          A short guided session based on today&apos;s check-in. Five minutes
-          or less.
+    <main className="container flex min-h-[calc(100dvh-7rem)] items-center justify-center py-8 md:min-h-[calc(100vh-5rem)] md:py-14">
+      <section className="relative mx-auto w-full max-w-3xl text-center">
+        <div className="pointer-events-none absolute inset-x-0 top-10 mx-auto h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
+        <p className="clearpth-page-kicker">Tune In</p>
+        <h1 className="mt-3 font-serif text-[2.55rem] font-semibold leading-[1.02] text-foreground sm:text-6xl">
+          Your Tune In
+        </h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Made from today&apos;s check-in.
         </p>
-      </section>
 
-      <section className="aura-glass mx-auto mt-9 max-w-5xl rounded-[1.35rem] p-5 md:rounded-lg md:p-8">
-        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/22 bg-primary/8 text-primary md:rounded-md">
-                <Headphones className="h-5 w-5" aria-hidden />
-              </span>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                {status === "loading" ? "Preparing" : "Listen"}
-              </p>
-            </div>
-            <h2 className="mt-4 font-serif text-3xl font-semibold leading-tight md:text-5xl">
-              {meditation.title}
-            </h2>
-            <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground">
-              {meditation.intention}
-            </p>
-          </div>
-
-          <div className="rounded-[1.2rem] border border-border/42 bg-card/24 p-4 text-center md:min-w-44 md:rounded-md">
-            <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-              Time
-            </p>
-            <p className="mt-2 font-serif text-4xl font-semibold text-primary">
-              {formatTime(remainingSeconds)}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-7 h-2 overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-primary transition-all"
-            style={{ width: `${Math.max(0, Math.min(progress, 100))}%` }}
-          />
-        </div>
-
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <Button
+        <div className="aura-glass clearpth-meditation-stage mx-auto mt-9 rounded-[2rem] px-5 py-10 sm:px-8 sm:py-12">
+          <button
             type="button"
-            size="lg"
+            className={`clearpth-breath-orb mx-auto flex h-52 w-52 items-center justify-center rounded-full outline-none transition focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait disabled:opacity-80 sm:h-64 sm:w-64 ${
+              audioPlaying && !audioPaused ? "is-listening" : ""
+            }`}
             disabled={status === "loading" || audioStatus === "loading"}
             onClick={toggleMeditationAudio}
+            style={
+              {
+                "--meditation-progress": `${Math.max(
+                  0,
+                  Math.min(progress, 100),
+                )}%`,
+              } as CSSProperties
+            }
+            aria-label={getTuneInControlLabel({
+              audioPlaying,
+              audioPaused,
+              audioStatus,
+            })}
           >
-            {audioPlaying && !audioPaused ? (
-              <Pause className="h-4 w-4" aria-hidden />
-            ) : (
-              <Volume2 className="h-4 w-4" aria-hidden />
-            )}
-            {audioStatus === "loading"
-              ? "Creating Audio"
-              : audioPlaying && !audioPaused
-              ? "Pause Meditation"
-              : audioPaused
-                ? "Resume Meditation"
-                : "Play Meditation"}
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            size="lg"
-            disabled={!audioPlaying}
-            onClick={stopMeditationAudio}
-          >
-            <Square className="h-4 w-4" aria-hidden />
-            Stop
-          </Button>
-          <Button type="button" variant="secondary" size="lg" onClick={resetSession}>
-            <RefreshCw className="h-4 w-4" aria-hidden />
-            Reset
-          </Button>
-        </div>
+            <div className="relative z-10 text-center">
+              {audioPlaying && !audioPaused ? (
+                <Pause className="mx-auto h-9 w-9 text-primary/90" aria-hidden />
+              ) : audioPaused ? (
+                <Volume2 className="mx-auto h-9 w-9 text-primary/90" aria-hidden />
+              ) : (
+                <Headphones className="mx-auto h-9 w-9 text-primary/90" aria-hidden />
+              )}
+              <p className="mt-5 px-8 font-serif text-2xl font-semibold leading-tight text-foreground sm:text-3xl">
+                {listeningState.message}
+              </p>
+            </div>
+          </button>
+
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <button
+              type="button"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-primary/16 bg-card/24 px-6 text-sm font-medium text-muted-foreground shadow-[inset_0_1px_0_rgba(244,239,228,0.06)] backdrop-blur-xl transition hover:border-primary/30 hover:bg-card/38 hover:text-foreground disabled:pointer-events-none disabled:opacity-35"
+              disabled={!audioPlaying}
+              onClick={stopMeditationAudio}
+            >
+              <Square className="h-4 w-4" aria-hidden />
+              Stop
+            </button>
+            <button
+              type="button"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-primary/16 bg-card/24 px-6 text-sm font-medium text-muted-foreground shadow-[inset_0_1px_0_rgba(244,239,228,0.06)] backdrop-blur-xl transition hover:border-primary/30 hover:bg-card/38 hover:text-foreground"
+              onClick={resetSession}
+            >
+              <RefreshCw className="h-4 w-4" aria-hidden />
+              Reset
+            </button>
+          </div>
 
         {status === "unavailable" ? (
           <p className="mt-4 rounded-md border border-border/70 bg-card/45 px-4 py-3 text-sm text-muted-foreground">
@@ -349,14 +368,16 @@ export default function TuneInPage() {
             const audio = event.currentTarget;
             if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
 
-            setRemainingSeconds(
-              Math.max(Math.ceil(audio.duration - audio.currentTime), 0),
-            );
+            setAudioDurationSeconds(Math.ceil(audio.duration));
+            setElapsedSeconds(Math.floor(audio.currentTime));
           }}
           onEnded={() => {
             stopAmbientBed();
             updateMediaSession("none", meditation);
             markMeditationCompleted(todayKey);
+            if (audioRef.current?.duration && Number.isFinite(audioRef.current.duration)) {
+              setElapsedSeconds(Math.ceil(audioRef.current.duration));
+            }
             setAudioPlaying(false);
             setAudioPaused(false);
             setTimerRunning(false);
@@ -370,32 +391,7 @@ export default function TuneInPage() {
             setTimerRunning(false);
           }}
         />
-      </section>
-
-      <section className="mx-auto mt-7 grid max-w-5xl gap-5 lg:grid-cols-[1.15fr_0.85fr]">
-        <article className="rounded-[1.35rem] border border-border/42 bg-card/20 p-5 md:rounded-md md:p-6">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-            Script
-          </p>
-          <p className="mt-4 whitespace-pre-line text-[15px] leading-8 text-muted-foreground md:text-base md:leading-8">
-            {meditation.script}
-          </p>
-        </article>
-
-        <aside className="rounded-[1.35rem] border border-primary/18 bg-primary/8 p-5 md:rounded-md md:p-6">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden />
-            <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-              After
-            </p>
-          </div>
-          <p className="mt-4 font-serif text-2xl font-semibold leading-tight">
-            {meditation.closingPrompt}
-          </p>
-          <Button asChild className="mt-5 w-full" variant="secondary">
-            <Link href="/ritual">Write Journal</Link>
-          </Button>
-        </aside>
+        </div>
       </section>
     </main>
   );
@@ -411,6 +407,73 @@ function normalizeMeditation(value?: AiMeditation) {
     script: value.script?.trim() || fallbackMeditation.script,
     closingPrompt: value.closingPrompt?.trim() || fallbackMeditation.closingPrompt,
   };
+}
+
+function getSessionDurationSeconds(
+  meditation: AiMeditation,
+  audioDurationSeconds: number | null,
+) {
+  return Math.max(
+    audioDurationSeconds ?? Math.min(meditation.durationSeconds, 300),
+    1,
+  );
+}
+
+function getListeningState({
+  audioStatus,
+  audioPlaying,
+  audioPaused,
+  progress,
+  status,
+}: {
+  audioStatus: "idle" | "loading" | "ready" | "unavailable";
+  audioPlaying: boolean;
+  audioPaused: boolean;
+  progress: number;
+  status: MeditationStatus;
+}) {
+  if (status === "loading" || audioStatus === "loading") {
+    return {
+      message: "Preparing",
+    };
+  }
+
+  if (progress >= 100) {
+    return {
+      message: "Stillness",
+    };
+  }
+
+  if (audioPlaying && !audioPaused) {
+    return {
+      message: "Receiving",
+    };
+  }
+
+  if (audioPaused) {
+    return {
+      message: "Paused",
+    };
+  }
+
+  return {
+    message: "Ready",
+  };
+}
+
+function getTuneInControlLabel({
+  audioPlaying,
+  audioPaused,
+  audioStatus,
+}: {
+  audioPlaying: boolean;
+  audioPaused: boolean;
+  audioStatus: "idle" | "loading" | "ready" | "unavailable";
+}) {
+  if (audioStatus === "loading") return "Creating audio";
+  if (audioPlaying && !audioPaused) return "Pause tune in";
+  if (audioPaused) return "Continue tune in";
+  return "Begin tune in";
 }
 
 function updateMediaSession(
@@ -543,9 +606,3 @@ const ambientContextRefGlobal: {
   gain: null,
   oscillators: [],
 };
-
-function formatTime(seconds: number) {
-  const minutes = Math.floor(seconds / 60);
-  const remainder = String(seconds % 60).padStart(2, "0");
-  return `${minutes}:${remainder}`;
-}
