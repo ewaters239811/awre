@@ -33,6 +33,8 @@ export async function POST(request: Request) {
       );
     }
 
+    const audioText = prepareMeditationAudioText(text);
+
     const response = await fetch(
       `${ELEVENLABS_BASE_URL}/${voiceId}?output_format=${outputFormat}`,
       {
@@ -42,7 +44,7 @@ export async function POST(request: Request) {
           "xi-api-key": apiKey,
         },
         body: JSON.stringify({
-          text,
+          text: audioText,
           model_id: modelId,
           voice_settings: {
             stability: 0.84,
@@ -80,6 +82,31 @@ export async function POST(request: Request) {
 
 function parseVoiceSpeed(value: string | undefined) {
   const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return 0.72;
+  if (!Number.isFinite(parsed)) return 0.7;
   return Math.min(Math.max(parsed, 0.7), 1.2);
+}
+
+function prepareMeditationAudioText(text: string) {
+  const normalized = text
+    .replace(/\s+/g, " ")
+    .replace(/\bPause\./gi, "Pause...")
+    .replace(/\bStay here\./gi, "Stay here...")
+    .replace(/\bTake one more breath\./gi, "Take one more breath...")
+    .trim();
+
+  return normalized
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence, index) => {
+      const shouldRest =
+        index > 0 &&
+        (index % 3 === 0 ||
+          /\b(breathe|breath|body|feel|settle|still|quiet|space)\b/i.test(
+            sentence,
+          ));
+
+      return shouldRest && !sentence.endsWith("...")
+        ? `${sentence}...`
+        : sentence;
+    })
+    .join(" ");
 }

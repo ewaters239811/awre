@@ -11,9 +11,9 @@ type MeditationRequest = {
 const fallback: AiMeditation = {
   title: "Return To The Center",
   intention: "Slow down, settle your body, and let clarity rise without force.",
-  durationSeconds: 240,
+  durationSeconds: 270,
   script:
-    "Sit comfortably. Let your shoulders drop. Take a slow breath in. Pause. Let it out even slower. Again, breathe in. Let the body know there is nowhere else to be right now. Let the mind become simple. You do not need to solve everything from here. You only need to return to the state that can see clearly. Notice the thought that has been taking the most space. Do not fight it. Let it pass through the room of your awareness. Beneath it, let a quieter truth appear. Pause here. Feel your feet. Feel your hands. Feel the jaw unclench. Feel the center of the chest. Let the body learn steadiness before the day asks anything from you. If something feels delayed or uncertain, do not judge it. Let it become information. Let it show you what matters, what feels heavy, and what is asking for more honesty. Now notice the feeling underneath the day. Let it be present without letting it lead. Breathe as if your desired state is already allowed in the body. You are not waiting for the outside world to give you permission to become steady. You are practicing the state now. For the final breaths, gather your thought, your feeling, and your desire into one quiet center. When you are ready, return with more space around what is true.",
+    "Let the body settle. Let the shoulders drop. Let the jaw soften. Take a slow breath in. Pause. Let it out even slower. Stay here. Let the mind become simple. You do not need to solve everything from here. You only need enough quiet to see clearly. Notice the thought that has been taking the most space. Do not fight it. Let it pass through awareness like weather. Pause. Beneath it, let a quieter truth appear. Feel your feet. Feel your hands. Feel the center of the chest. Let the body learn steadiness before the day asks anything from you. If something feels delayed or uncertain, do not judge it. Let it become information. Let it show you what matters. Let it show you what feels heavy. Let it show you what is asking for more honesty. Take one more breath. Notice the feeling underneath the day. Let it be present without letting it lead. Breathe as if your desired state is already allowed in the body. Nothing outside of you has to change in this moment for clarity to begin. For the final breaths, gather thought, feeling, and desire into one quiet center. Pause. Return with more space around what is true.",
   closingPrompt: "What feels clearer now?",
 };
 
@@ -38,10 +38,12 @@ export async function POST(request: Request) {
         "You write guided meditations for ClearPth, a self-reflection and personal growth app.",
         "ClearPth is not medical, therapy, diagnostic, or crisis support.",
         "Create one daily guided meditation tailored to the user's check-in.",
-        "The meditation should feel spacious and unrushed, usually two to four minutes when read aloud slowly.",
-        "Keep the script between 260 and 380 words.",
+        "The meditation should feel spacious and unrushed, usually three to five minutes when read aloud slowly.",
+        "Keep the script between 210 and 310 words.",
         "Use short sentences and quiet pauses.",
-        "Add natural pause cues such as Pause, Stay here, or Take one more breath, but do not overuse them.",
+        "Add natural pause cues as standalone sentences, such as Pause. Stay here. Take one more breath.",
+        "Place a pause cue every three to five sentences so the generated audio has real silence and does not rush.",
+        "Prefer fewer words with more space over a dense script.",
         "Prioritize silence, breath, and embodiment over explanation.",
         "Do not pack the session with too many ideas.",
         "Use a grounded, premium, intimate, calm tone.",
@@ -56,7 +58,7 @@ export async function POST(request: Request) {
         "Use gender-neutral language by default.",
         "Do not use markdown formatting, bullets, numbering, headings, or labels inside JSON values.",
         "Return only valid JSON with keys: title, intention, durationSeconds, script, closingPrompt.",
-        "durationSeconds must be between 150 and 270.",
+        "durationSeconds must be between 210 and 300.",
       ].join(" "),
       user: {
         thinkingScore: result.thinkingScore,
