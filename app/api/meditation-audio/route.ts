@@ -96,17 +96,27 @@ function prepareMeditationAudioText(text: string) {
 
   return normalized
     .split(/(?<=[.!?])\s+/)
-    .map((sentence, index) => {
-      const shouldRest =
-        index > 0 &&
-        (index % 3 === 0 ||
-          /\b(breathe|breath|body|feel|settle|still|quiet|space)\b/i.test(
-            sentence,
-          ));
+    .map((sentence) => {
+      const trimmed = sentence.trim();
+      const isPauseCue =
+        /^(pause|stay here|take one more breath|breathe|rest)\b/i.test(
+          trimmed,
+        );
+      const needsLongRest =
+        isPauseCue ||
+        /\b(breathe|breath|body|feel|settle|still|quiet|space|soften|shoulders|jaw|feet|hands|chest)\b/i.test(
+          trimmed,
+        );
 
-      return shouldRest && !sentence.endsWith("...")
-        ? `${sentence}...`
-        : sentence;
+      if (trimmed.endsWith("...")) {
+        return needsLongRest ? `${trimmed} ...` : trimmed;
+      }
+
+      return needsLongRest ? addRest(trimmed) : trimmed;
     })
-    .join(" ");
+    .join("\n\n");
+}
+
+function addRest(sentence: string) {
+  return sentence.replace(/[.!?]+$/, "") + "...";
 }
