@@ -1,8 +1,17 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Loader2,
+  Mic,
+  MicOff,
+  SlidersHorizontal,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -15,6 +24,43 @@ import {
   saveOnboardingProfile,
 } from "@/lib/onboarding-storage";
 import type { OnboardingProfile } from "@/lib/types";
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+
+type SpeechRecognitionLike = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+
+type SpeechRecognitionEventLike = {
+  results: ArrayLike<{
+    0: {
+      transcript: string;
+    };
+    isFinal: boolean;
+  }>;
+};
+
+type SpeechWindow = Window & {
+  SpeechRecognition?: SpeechRecognitionConstructor;
+  webkitSpeechRecognition?: SpeechRecognitionConstructor;
+};
+
+type OnboardingProfileDraft = Pick<
+  OnboardingProfile,
+  | "primaryGoal"
+  | "currentChallenge"
+  | "desiredState"
+  | "practiceStyle"
+  | "spiritualOpenness"
+  | "commitmentLevel"
+  | "guidanceTone"
+>;
 
 const practiceStyles = [
   "Balanced reflection and action",
@@ -45,91 +91,41 @@ const guidanceTones = [
 
 const RETURN_TO_COVER_KEY = "clearpth.returnToCoverFromSetup";
 
-const steps = [
-  {
-    id: "primaryGoal",
-    kicker: "Question 01",
-    title: "What do you want?",
-    description:
-      "Write it plainly. It can be material, emotional, relational, spiritual, practical, or hard to explain.",
-  },
-  {
-    id: "currentChallenge",
-    kicker: "Question 02",
-    title: "What seems to be in the way?",
-    description:
-      "Name the pattern, pressure, fear, habit, delay, or situation that keeps appearing.",
-  },
-  {
-    id: "desiredState",
-    kicker: "Question 03",
-    title: "Who would you need to become to meet it?",
-    description:
-      "Think less about perfection and more about the state that could hold what you want.",
-  },
-  {
-    id: "birthDate",
-    kicker: "Question 04",
-    title: "When were you born?",
-    description:
-      "This helps ClearPth tune the rhythm of your reflections. You can leave it blank if you prefer.",
-  },
-  {
-    id: "practiceStyle",
-    kicker: "Question 05",
-    title: "How should the practice feel?",
-    description: "Choose the rhythm that would make this app easier to return to.",
-  },
-  {
-    id: "spiritualOpenness",
-    kicker: "Question 06",
-    title: "How mystical should the language feel?",
-    description:
-      "ClearPth can stay grounded, go deeper, or sit somewhere in between.",
-  },
-  {
-    id: "commitmentLevel",
-    kicker: "Question 07",
-    title: "What commitment level feels honest?",
-    description: "Choose what you can actually live with right now.",
-  },
-  {
-    id: "guidanceTone",
-    kicker: "Final Question",
-    title: "What tone helps you most?",
-    description:
-      "This shapes how direct, gentle, concise, or challenging the guidance feels.",
-  },
-] as const;
-
-type StepId = (typeof steps)[number]["id"];
-
-const placeholders: Record<
-  Extract<StepId, "primaryGoal" | "currentChallenge" | "desiredState">,
-  string
-> = {
-  primaryGoal:
-    "Example: more money, a better relationship, confidence, direction, peace, discipline, a new life...",
-  currentChallenge:
-    "Example: I keep delaying, I do not trust myself yet, I feel distracted, I am scared to ask...",
-  desiredState:
-    "Example: calm, confident, disciplined, secure, open, honest, courageous, self-respecting...",
-};
+const starterPrompt =
+  "Tell me what you want, what feels in the way, and how you want to feel when your life is aligned.";
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<OnboardingProfile>(
     createEmptyOnboardingProfile(),
   );
-  const [stepIndex, setStepIndex] = useState(0);
-  const [direction, setDirection] = useState<"forward" | "back">("forward");
+  const [intake, setIntake] = useState("");
+  const [phase, setPhase] = useState<"intake" | "review">("intake");
+  const [showDetails, setShowDetails] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [finalChoiceConfirmed, setFinalChoiceConfirmed] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const speechBaseRef = useRef("");
 
   useEffect(() => {
     queueMicrotask(() => {
-      setProfile(getOnboardingProfile() ?? createEmptyOnboardingProfile());
+      const existingProfile = getOnboardingProfile();
+      if (existingProfile) {
+        setProfile(existingProfile);
+        setIntake(buildIntakeFromProfile(existingProfile));
+        setPhase("review");
+      }
+
+      const speechWindow = window as SpeechWindow;
+      setSpeechSupported(
+        Boolean(
+          speechWindow.SpeechRecognition ||
+            speechWindow.webkitSpeechRecognition,
+        ),
+      );
     });
   }, []);
 
@@ -139,17 +135,61 @@ export default function OnboardingPage() {
   ) => {
     setSaved(false);
     setError("");
-    if (field === "guidanceTone") {
-      setFinalChoiceConfirmed(true);
-    }
     setProfile((current) => ({ ...current, [field]: value }));
   };
 
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
+  const analyzeIntake = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const cleanIntake = intake.trim();
+    setError("");
+    setSaved(false);
 
-    if (!finalChoiceConfirmed) {
-      setError("Choose the tone that helps you most before continuing.");
+    if (!cleanIntake) {
+      setError("Tell ClearPth what you want first.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ intake: cleanIntake }),
+      });
+      const payload = (await response.json()) as {
+        data?: OnboardingProfileDraft;
+      };
+      const draft = payload.data ?? buildFallbackProfile(cleanIntake);
+      const now = new Date().toISOString();
+
+      setProfile((current) => ({
+        ...current,
+        ...draft,
+        createdAt: current.createdAt || now,
+        updatedAt: now,
+      }));
+      setPhase("review");
+    } catch {
+      const now = new Date().toISOString();
+      setProfile((current) => ({
+        ...current,
+        ...buildFallbackProfile(cleanIntake),
+        createdAt: current.createdAt || now,
+        updatedAt: now,
+      }));
+      setPhase("review");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveProfile = async () => {
+    setError("");
+    const account = await getCurrentAccount();
+
+    if (!account) {
+      setError("Sign in or create an account to save setup.");
       return;
     }
 
@@ -158,11 +198,6 @@ export default function OnboardingPage() {
       updatedAt: new Date().toISOString(),
     };
 
-    const account = await getCurrentAccount();
-    if (!account) {
-      setError("Sign in or create an account to save setup.");
-      return;
-    }
     await saveOnboardingProfileToAccount(nextProfile);
     saveOnboardingProfile(nextProfile);
     try {
@@ -174,195 +209,322 @@ export default function OnboardingPage() {
     router.push("/");
   };
 
-  const step = steps[stepIndex];
-  const isFinalStep = stepIndex === steps.length - 1;
-  const progress = ((stepIndex + 1) / steps.length) * 100;
-
-  const goNext = () => {
-    if (isFinalStep) return;
-    setError("");
-    setDirection("forward");
-    setStepIndex((current) => Math.min(current + 1, steps.length - 1));
-  };
-
   const goBack = () => {
     setError("");
-    setDirection("back");
-    setFinalChoiceConfirmed(false);
-    if (stepIndex === 0) {
-      try {
-        sessionStorage.setItem(RETURN_TO_COVER_KEY, "true");
-      } catch {
-        // Session storage can be unavailable in some privacy modes.
-      }
-      router.push("/");
+    if (phase === "review") {
+      setPhase("intake");
       return;
     }
-    setStepIndex((current) => Math.max(current - 1, 0));
+
+    try {
+      sessionStorage.setItem(RETURN_TO_COVER_KEY, "true");
+    } catch {
+      // Session storage can be unavailable in some privacy modes.
+    }
+    router.push("/");
+  };
+
+  const toggleSpeech = () => {
+    if (!speechSupported) return;
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const speechWindow = window as SpeechWindow;
+    const Recognition =
+      speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition;
+
+    if (!Recognition) return;
+
+    const recognition = new Recognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+    speechBaseRef.current = intake.trim();
+    recognition.onresult = (event) => {
+      let transcript = "";
+
+      for (let index = 0; index < event.results.length; index += 1) {
+        transcript += event.results[index][0].transcript;
+      }
+
+      setIntake(`${speechBaseRef.current} ${transcript}`.trim());
+      setSaved(false);
+      setError("");
+    };
+    recognition.onend = () => setIsListening(false);
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
   };
 
   return (
     <main className="container flex min-h-dvh items-center py-6 md:py-12">
       <section className="mx-auto w-full max-w-3xl">
-        <form onSubmit={submit}>
-          <section className="aura-glass overflow-hidden rounded-2xl p-5 md:rounded-lg md:p-7">
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-xs uppercase tracking-[0.24em] text-primary">
-                {step.kicker}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {stepIndex + 1} / {steps.length}
-              </p>
-            </div>
+        <div className="aura-glass overflow-hidden rounded-2xl p-5 md:rounded-lg md:p-7">
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-xs uppercase tracking-[0.24em] text-primary">
+              Setup
+            </p>
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/14 bg-primary/8 px-3 py-1 text-xs text-muted-foreground">
+              <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden />
+              Personal path
+            </span>
+          </div>
 
-            <div className="mt-4 h-1 overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-
-            <div
-              key={step.id}
-              className={`mt-8 animate-onboarding-${direction}`}
-            >
-              <h2 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">
-                {step.title}
-              </h2>
+          {phase === "intake" ? (
+            <form onSubmit={analyzeIntake} className="mt-8 animate-onboarding-forward">
+              <h1 className="font-serif text-4xl font-semibold leading-tight md:text-6xl">
+                What do you want?
+              </h1>
               <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
-                {step.description}
+                Talk naturally. ClearPth will shape your goal, gap, and
+                guidance style from what you say.
               </p>
 
               <div className="mt-7">
-                <StepInput
-                  stepId={step.id}
-                  profile={profile}
-                  updateField={updateField}
+                <Textarea
+                  className="min-h-[220px] text-lg leading-8 md:min-h-[260px]"
+                  value={intake}
+                  onChange={(event) => {
+                    setIntake(event.target.value);
+                    setError("");
+                    setSaved(false);
+                  }}
+                  placeholder={starterPrompt}
+                  rows={7}
+                  autoFocus
                 />
               </div>
-            </div>
-          </section>
 
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={goBack}
-            >
-              <ArrowLeft className="h-4 w-4" aria-hidden />
-              Back
-            </Button>
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Button type="button" variant="secondary" onClick={goBack}>
+                  <ArrowLeft className="h-4 w-4" aria-hidden />
+                  Back
+                </Button>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              {error ? <span className="text-sm text-primary">{error}</span> : null}
-              {saved ? (
-                <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4" aria-hidden />
-                  Saved
-                </span>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={!speechSupported}
+                    onClick={toggleSpeech}
+                    title={
+                      speechSupported
+                        ? "Speak your setup"
+                        : "Voice input is unavailable in this browser"
+                    }
+                  >
+                    {isListening ? (
+                      <MicOff className="h-4 w-4" aria-hidden />
+                    ) : (
+                      <Mic className="h-4 w-4" aria-hidden />
+                    )}
+                    {isListening ? "Stop" : "Talk"}
+                  </Button>
+                  <Button type="submit" size="lg" disabled={loading}>
+                    {loading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                    ) : (
+                      <ArrowRight className="h-4 w-4" aria-hidden />
+                    )}
+                    Shape My Path
+                  </Button>
+                </div>
+              </div>
+            </form>
+          ) : (
+            <section className="mt-8 animate-onboarding-forward">
+              <h1 className="font-serif text-4xl font-semibold leading-tight md:text-6xl">
+                Your path is set.
+              </h1>
+              <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
+                ClearPth will use this to personalize check-ins, Tune In, and
+                guidance.
+              </p>
+
+              <div className="mt-7 grid gap-3">
+                <ProfileCard label="Desired reality" value={profile.primaryGoal} />
+                <ProfileCard label="Current gap" value={profile.currentChallenge} />
+                <ProfileCard label="Desired state" value={profile.desiredState} />
+              </div>
+
+              <button
+                type="button"
+                className="mt-5 inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"
+                onClick={() => setShowDetails((current) => !current)}
+              >
+                <SlidersHorizontal className="h-4 w-4" aria-hidden />
+                {showDetails ? "Hide details" : "Tune details"}
+              </button>
+
+              {showDetails ? (
+                <div className="mt-5 grid gap-5">
+                  <DetailTextarea
+                    label="Desired reality"
+                    value={profile.primaryGoal}
+                    onChange={(value) => updateField("primaryGoal", value)}
+                  />
+                  <DetailTextarea
+                    label="Current gap"
+                    value={profile.currentChallenge}
+                    onChange={(value) => updateField("currentChallenge", value)}
+                  />
+                  <DetailTextarea
+                    label="Desired state"
+                    value={profile.desiredState}
+                    onChange={(value) => updateField("desiredState", value)}
+                  />
+                  <OptionGroup
+                    label="Practice style"
+                    value={profile.practiceStyle}
+                    options={practiceStyles}
+                    onChange={(value) => updateField("practiceStyle", value)}
+                  />
+                  <OptionGroup
+                    label="Language"
+                    value={profile.spiritualOpenness}
+                    options={spiritualOpenness}
+                    onChange={(value) => updateField("spiritualOpenness", value)}
+                  />
+                  <OptionGroup
+                    label="Commitment"
+                    value={profile.commitmentLevel}
+                    options={commitmentLevels}
+                    onChange={(value) => updateField("commitmentLevel", value)}
+                  />
+                  <OptionGroup
+                    label="Tone"
+                    value={profile.guidanceTone}
+                    options={guidanceTones}
+                    onChange={(value) => updateField("guidanceTone", value)}
+                  />
+                </div>
               ) : null}
-              {isFinalStep ? (
-                <Button
-                  type="submit"
-                  size="lg"
-                  disabled={!finalChoiceConfirmed}
-                >
+
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Button type="button" variant="secondary" onClick={goBack}>
+                  <ArrowLeft className="h-4 w-4" aria-hidden />
+                  Edit
+                </Button>
+                <Button type="button" size="lg" onClick={saveProfile}>
                   Continue
                   <ArrowRight className="h-4 w-4" aria-hidden />
                 </Button>
-              ) : (
-                <Button type="button" size="lg" onClick={goNext}>
-                  Next
-                  <ArrowRight className="h-4 w-4" aria-hidden />
-                </Button>
-              )}
-            </div>
-          </div>
+              </div>
+            </section>
+          )}
+        </div>
 
-          <p className="mt-4 text-sm text-muted-foreground">
-            Your setup is saved to your account profile.
-          </p>
-        </form>
+        <div className="mt-4 min-h-6">
+          {error ? <p className="text-sm text-primary">{error}</p> : null}
+          {saved ? (
+            <p className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+              <CheckCircle2 className="h-4 w-4" aria-hidden />
+              Saved
+            </p>
+          ) : null}
+        </div>
       </section>
     </main>
   );
 }
 
-function StepInput({
-  stepId,
-  profile,
-  updateField,
-}: {
-  stepId: StepId;
-  profile: OnboardingProfile;
-  updateField: <K extends keyof OnboardingProfile>(
-    field: K,
-    value: OnboardingProfile[K],
-  ) => void;
-}) {
-  if (
-    stepId === "primaryGoal" ||
-    stepId === "currentChallenge" ||
-    stepId === "desiredState"
-  ) {
-    return (
-      <Textarea
-        className="min-h-[180px] text-lg leading-8 md:min-h-[220px]"
-        value={profile[stepId]}
-        onChange={(event) => updateField(stepId, event.target.value)}
-        placeholder={placeholders[stepId]}
-        rows={5}
-        autoFocus
-      />
-    );
-  }
-
-  if (stepId === "birthDate") {
-    return (
-      <label className="block text-sm font-medium text-muted-foreground">
-        Birthday
-        <input
-          className="mt-3 h-14 w-full rounded-md border border-input bg-card px-4 text-base text-foreground outline-none transition focus:ring-2 focus:ring-ring"
-          type="date"
-          value={profile.birthDate ?? ""}
-          onChange={(event) => updateField("birthDate", event.target.value)}
-        />
-      </label>
-    );
-  }
-
-  const optionsByStep = {
-    practiceStyle: practiceStyles,
-    spiritualOpenness,
-    commitmentLevel: commitmentLevels,
-    guidanceTone: guidanceTones,
-  };
-
+function ProfileCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="grid gap-3">
-      {optionsByStep[stepId].map((option) => {
-        const selected = profile[stepId] === option;
+    <article className="rounded-xl border border-border/55 bg-card/35 p-4">
+      <p className="text-[11px] uppercase tracking-[0.18em] text-primary">
+        {label}
+      </p>
+      <p className="mt-2 leading-7 text-foreground/88">{value}</p>
+    </article>
+  );
+}
 
-        return (
-          <button
-            key={option}
-            type="button"
-            onClick={() => updateField(stepId, option)}
-            className={`rounded-md border px-4 py-4 text-left text-base transition ${
-              selected
-                ? "border-primary/55 bg-primary/15 text-foreground"
-                : "border-border/70 bg-card/45 text-muted-foreground hover:border-foreground/35 hover:text-foreground"
-            }`}
-          >
-            <span className="flex items-center justify-between gap-3">
+function DetailTextarea({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="block text-sm font-medium text-muted-foreground">
+      {label}
+      <Textarea
+        className="mt-2 min-h-[110px]"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </label>
+  );
+}
+
+function OptionGroup({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <p className="text-sm font-medium text-muted-foreground">{label}</p>
+      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        {options.map((option) => {
+          const selected = value === option;
+
+          return (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onChange(option)}
+              className={`rounded-lg border px-3 py-3 text-left text-sm transition ${
+                selected
+                  ? "border-primary/55 bg-primary/15 text-foreground"
+                  : "border-border/70 bg-card/35 text-muted-foreground hover:border-foreground/35 hover:text-foreground"
+              }`}
+            >
               {option}
-              {selected ? (
-                <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden />
-              ) : null}
-            </span>
-          </button>
-        );
-      })}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
+}
+
+function buildFallbackProfile(intake: string): OnboardingProfileDraft {
+  const trimmed = intake.trim();
+
+  return {
+    primaryGoal:
+      trimmed || "I want to become more aligned with the life I want.",
+    currentChallenge:
+      "The current gap needs to be named more clearly through check-ins and reflection.",
+    desiredState: "Clear, steady, honest, and aligned.",
+    practiceStyle: "Balanced reflection and action",
+    spiritualOpenness: "Open, but keep it grounded",
+    commitmentLevel: "A few minutes most days",
+    guidanceTone: "Direct and grounded",
+  };
+}
+
+function buildIntakeFromProfile(profile: OnboardingProfile) {
+  return [
+    profile.primaryGoal,
+    profile.currentChallenge,
+    profile.desiredState,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 }
