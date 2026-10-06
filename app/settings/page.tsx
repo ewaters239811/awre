@@ -250,7 +250,7 @@ export default function SettingsPage() {
               }}
             />
             <SettingsField
-              label="How do you want to feel when it is real?"
+              label="What state do you need to practice?"
               value={profile.desiredState}
               onChange={(value) => {
                 setProfile((current) => ({ ...current, desiredState: value }));
@@ -258,7 +258,7 @@ export default function SettingsPage() {
               }}
             />
             <SettingsField
-              label="What currently feels in the way?"
+              label="What is the current gap?"
               value={profile.currentChallenge}
               onChange={(value) => {
                 setProfile((current) => ({

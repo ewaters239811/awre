@@ -17,9 +17,9 @@ export function AlignmentResult({
   const signature = buildBeingSignature(result);
   const prescription: Array<[string, string]> = [
     ["Thought", activePrescription.thoughtCorrection],
-    ["Action", activePrescription.actionStep],
+    ["Aligned Action", activePrescription.actionStep],
     ["Feeling", activePrescription.embodimentPractice],
-    ["Reminder", activePrescription.identityAffirmation],
+    ["Identity", activePrescription.identityAffirmation],
   ];
 
   return (
@@ -52,7 +52,7 @@ export function AlignmentResult({
               <div className="flex items-center gap-3">
                 <Sparkles className="h-5 w-5 text-primary" aria-hidden />
                 <p className="text-[11px] uppercase tracking-[0.16em] text-primary md:text-xs md:tracking-[0.22em]">
-                  What Stands Out
+                  Alignment Signal
                 </p>
               </div>
               <div className="mt-5 grid gap-3 text-sm">
@@ -64,7 +64,7 @@ export function AlignmentResult({
                   label="Focus area"
                   value={displayPillarName(result.weakestPillar)}
                 />
-                <Stat label="Status" value={result.stateLabel} />
+                <Stat label="Signal" value={result.stateLabel} />
               </div>
             </article>
 
@@ -101,7 +101,7 @@ export function AlignmentResult({
             <div className="flex items-center gap-3">
               <Flame className="h-5 w-5 text-primary" aria-hidden />
               <h2 className="font-serif text-2xl font-semibold md:text-3xl">
-                What To Do Next
+                How To Close The Gap
               </h2>
             </div>
             {isWaitingForPersonalizedResult
@@ -145,7 +145,7 @@ export function AlignmentResult({
         </Button>
         <Button asChild variant="secondary">
           <Link href="/dashboard">
-            View Progress
+            View Gap
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </Button>
@@ -159,7 +159,7 @@ function buildBeingSignature(result: CheckInResult) {
     result.strongestPillar,
   )} is helping you most today. ${displayPillarName(
     result.weakestPillar,
-  )} is the focus area.`;
+  )} is creating the most distance.`;
 }
 
 function AiStatus({

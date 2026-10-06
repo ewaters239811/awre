@@ -5,22 +5,22 @@ import { HomeHero } from "@/components/home-hero";
 
 const benefits = [
   {
-    title: "See where you are",
+    title: "See the gap",
     icon: Eye,
     description:
-      "Compare today to what you want.",
+      "Compare today's state to your desired reality.",
   },
   {
-    title: "Shift how you feel",
+    title: "Shift your state",
     icon: Sparkles,
     description:
-      "Move from stuck or scattered into something steadier.",
+      "Practice the feeling that belongs to what you want.",
   },
   {
-    title: "Take the next step",
+    title: "Act from alignment",
     icon: Footprints,
     description:
-      "Choose one clear action for today.",
+      "Choose one clear move the future you would respect.",
   },
 ];
 
@@ -37,11 +37,11 @@ export default function HomePage() {
               How It Works
             </p>
             <p className="mt-2 font-serif text-3xl font-semibold leading-tight text-foreground md:text-4xl">
-              What you want becomes clearer.
+              Desired reality becomes practical.
             </p>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              ClearPth keeps what you want in view, then shows where you are
-              and what to focus on next.
+              ClearPth keeps what you want in view, then shows the gap between
+              your current state and the person who can hold it.
             </p>
             <div className="mt-5 grid grid-cols-[auto_1fr] gap-4">
               <div className="flex flex-col items-center">
@@ -53,8 +53,8 @@ export default function HomePage() {
               </div>
               <div className="grid gap-3">
                 <PathStep label="Name" body="Say what you want." />
-                <PathStep label="Check" body="See where you are today." />
-                <PathStep label="Move" body="Take one clear next step." />
+                <PathStep label="Measure" body="See today's gap." />
+                <PathStep label="Align" body="Move like the version of you who can hold it." />
               </div>
             </div>
           </div>

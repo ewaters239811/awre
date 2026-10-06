@@ -21,19 +21,19 @@ const links = [
   { href: "/", label: "Home" },
   { href: "/check-in", label: "Check In" },
   { href: "/review", label: "Today" },
-  { href: "/tune-in", label: "Meditation" },
+  { href: "/tune-in", label: "Tune In" },
   { href: "/ritual", label: "Journal" },
-  { href: "/dashboard", label: "Pattern" },
-  { href: "/guide", label: "Mirror" },
+  { href: "/dashboard", label: "Gap" },
+  { href: "/guide", label: "Talk" },
 ];
 
 const mobileLinks = [
   { href: "/", label: "Home", icon: Home },
   { href: "/check-in", label: "Check", icon: PenLine },
   { href: "/review", label: "Today", icon: Compass },
-  { href: "/tune-in", label: "Calm", icon: Headphones },
-  { href: "/guide", label: "Mirror", icon: MessageCircle },
-  { href: "/dashboard", label: "Pattern", icon: BarChart3 },
+  { href: "/tune-in", label: "Tune", icon: Headphones },
+  { href: "/guide", label: "Talk", icon: MessageCircle },
+  { href: "/dashboard", label: "Gap", icon: BarChart3 },
 ];
 
 export function Navigation() {

@@ -114,20 +114,20 @@ function buildMetrics({
 }): BeingMetric[] {
   return [
     {
-      label: "Current Score",
+      label: "Current Alignment",
       value: latestScore === null ? "-" : latestScore.toFixed(1),
       detail:
         latestScore === null
           ? "Complete a check-in to create your first score."
-          : "Your most recent check-in score.",
+          : "Your most recent alignment score.",
     },
     {
-      label: "Average Score",
+      label: "Average Alignment",
       value: averageScore === null ? "-" : averageScore.toFixed(1),
       detail: `${totalCheckIns} check-in${totalCheckIns === 1 ? "" : "s"} shaping this reading.`,
     },
     {
-      label: "Score Trend",
+      label: "Alignment Trend",
       value: trend > 0.2 ? `+${trend.toFixed(1)}` : trend < -0.2 ? trend.toFixed(1) : "Stable",
       detail:
         trend > 0.2
@@ -137,20 +137,20 @@ function buildMetrics({
             : "Your score is holding steady.",
     },
     {
-      label: "Biggest Gap",
+      label: "Integration Gap",
       value: integrationDebt.toFixed(1),
       detail:
         integrationDebt > 2
-          ? "One area is much lower than the others."
+          ? "One area is creating more distance than the others."
           : "Your scores are fairly close together.",
     },
     {
-      label: "Score Swings",
+      label: "State Swings",
       value: volatility.toFixed(1),
       detail:
         volatility > 1.4
-          ? "Your score has been swinging. Look for what keeps causing it."
-          : "Your score is fairly consistent.",
+          ? "Your state has been swinging. Look for what keeps causing it."
+          : "Your state is fairly consistent.",
     },
     {
       label: "Journal Days",
@@ -193,7 +193,7 @@ function buildLocalAnalysis({
     return {
       archetype: "Not Measured Yet",
       summary:
-        "Complete one check-in to start seeing what is going on.",
+        "Complete one check-in to start seeing the gap.",
       rootCause:
         "What is underneath is not visible yet because no check-ins have been recorded.",
       hiddenDebt:
@@ -207,7 +207,7 @@ function buildLocalAnalysis({
 
   return {
     archetype: getArchetype(averageScore, trend, integrationDebt),
-    summary: `Your average score is ${averageScore.toFixed(1)}. ${displayPillarName(strongestPillar)} is helping most, and ${displayPillarName(weakestPillar)} is the focus area.`,
+    summary: `Your average alignment is ${averageScore.toFixed(1)}. ${displayPillarName(strongestPillar)} is helping most, and ${displayPillarName(weakestPillar)} is creating the most distance.`,
     rootCause: getRootCause({
       averageScore,
       trend,
@@ -244,7 +244,7 @@ function getRootCause({
   weakestPillar: PillarName | null;
 }) {
   if (averageScore < 5 && journalRhythm < 50) {
-    return "The likely reason is lack of daily rhythm: what you want is not being supported by repeatable actions yet.";
+    return "The likely reason is lack of daily rhythm: your desired reality is not being supported by repeatable actions yet.";
   }
 
   if (integrationDebt > 2) {
@@ -256,7 +256,7 @@ function getRootCause({
   }
 
   if (averageScore < 6.5) {
-    return "The likely reason is mixed signals: your thoughts, actions, and feelings are close, but not fully working together yet.";
+    return "The likely reason is mixed signals: your thoughts, actions, and feelings are close, but not yet pointing at the same desired reality.";
   }
 
   return "The next step is refinement: things are working, but consistency will make them stronger.";

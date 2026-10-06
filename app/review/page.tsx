@@ -161,8 +161,8 @@ export default function ReviewPage() {
             <p className="clearpth-page-kicker">Today</p>
             <h1 className="clearpth-page-title">Today&apos;s Review</h1>
             <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
-              See where you are with what you want, what is close, and what to
-              focus on next.
+              See today&apos;s gap, what is already aligned, and what needs one
+              clean adjustment.
             </p>
           </div>
           <div className="flex w-fit items-center gap-3 rounded-full border border-border/42 bg-card/24 px-4 py-2 text-xs text-muted-foreground md:rounded-md md:py-3 md:text-sm">
@@ -194,7 +194,7 @@ export default function ReviewPage() {
             label="Journal"
             value={todayJournal?.content.trim() ? "Done" : "Open"}
           />
-          <ReviewStat label="Status" value={report.signalLabel} />
+          <ReviewStat label="Signal" value={report.signalLabel} />
         </div>
       </section>
 
@@ -211,7 +211,7 @@ export default function ReviewPage() {
           </p>
           {onboardingProfile?.desiredState.trim() ? (
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Desired state: {onboardingProfile.desiredState.trim()}
+              State to practice: {onboardingProfile.desiredState.trim()}
             </p>
           ) : null}
         </article>
@@ -238,8 +238,8 @@ export default function ReviewPage() {
             You have not checked in today.
           </h2>
           <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
-            Complete one check-in to see where you are with what you want and
-            what to focus on next.
+            Complete one check-in to see the gap between today&apos;s state and
+            your desired reality.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Button asChild>
@@ -257,7 +257,7 @@ export default function ReviewPage() {
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden />
                 <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                  What Stands Out
+                  Alignment Signal
                 </p>
               </div>
               <h2 className="mt-3 font-serif text-3xl font-semibold leading-tight md:mt-4 md:text-4xl">
@@ -272,7 +272,7 @@ export default function ReviewPage() {
               <div className="flex items-center gap-3">
                 <Target className="h-5 w-5 text-primary" aria-hidden />
                 <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                  Next Step
+                  Aligned Action
                 </p>
               </div>
               <p className="mt-3 font-serif text-2xl font-semibold leading-tight md:mt-4 md:text-3xl">
@@ -290,14 +290,14 @@ export default function ReviewPage() {
                 <div className="flex items-center gap-3">
                   <Target className="h-5 w-5 text-primary" aria-hidden />
                   <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                    Today&apos;s Next Step
+                    Today&apos;s Aligned Action
                   </p>
                 </div>
                 <p className="mt-3 max-w-3xl font-serif text-2xl font-semibold leading-tight text-foreground md:text-3xl">
                   {alignedAction}
                 </p>
                 <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  This is the one step to focus on today.
+                  This is the action that makes the desired reality more real today.
                 </p>
               </div>
               <Button
@@ -335,8 +335,7 @@ export default function ReviewPage() {
         </div>
         <div className="px-5 py-4">
           <p className="text-sm leading-7 text-muted-foreground">
-            What did today show you, and what is one clear step you can take
-            before the day ends?
+            What did today show you about the gap, and what feels clearer now?
           </p>
           <Button asChild className="mt-4" variant="secondary">
             <Link href="/ritual">Open Journal</Link>
@@ -410,8 +409,8 @@ function buildTodayReport(
   if (checkIn.beingScore < 6) {
     return {
       signalLabel: "Needs focus",
-      primaryTitle: `${weakest} could use more focus today.`,
-      primaryDetail: `${strongest} is helping you, and ${weakest} is the area with the most room to grow. ${journalSignal}`,
+      primaryTitle: `${weakest} is creating the most distance today.`,
+      primaryDetail: `${strongest} is supporting you, and ${weakest} is where your current state is furthest from your desired reality. ${journalSignal}`,
       gapTitle: `${weakest} is the main gap.`,
       gapDetail: buildGapDetail(weakest, desiredReality, desiredState),
       correctionTitle: getCorrectionTitle(weakest),
@@ -422,8 +421,8 @@ function buildTodayReport(
   if (checkIn.beingScore >= 8) {
     return {
       signalLabel: "Clear",
-      primaryTitle: `${strongest} is working well today.`,
-      primaryDetail: `Protect what made this score possible. Keep the day simple and repeat what is working. ${journalSignal}`,
+      primaryTitle: `${strongest} is carrying your alignment today.`,
+      primaryDetail: `Protect what made this score possible. Keep the day simple and repeat the state that is working. ${journalSignal}`,
       gapTitle: "The gap is narrow today.",
       gapDetail: `You are close to ${desiredReality}. Protect the state that made this possible instead of scattering it.`,
       correctionTitle: `Protect what is working`,
@@ -434,8 +433,8 @@ function buildTodayReport(
 
   return {
       signalLabel: "Workable",
-      primaryTitle: `${weakest} is the place to adjust.`,
-      primaryDetail: `${strongest} is giving you enough stability to make one clear change in ${weakest}. ${journalSignal}`,
+      primaryTitle: `${weakest} is asking for one adjustment.`,
+      primaryDetail: `${strongest} is giving you enough stability to bring ${weakest} closer to your desired reality. ${journalSignal}`,
       gapTitle: `${weakest} is the next adjustment.`,
       gapDetail: buildGapDetail(weakest, desiredReality, desiredState),
     correctionTitle: getCorrectionTitle(weakest),

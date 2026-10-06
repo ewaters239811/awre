@@ -118,11 +118,10 @@ export default function CheckInPage() {
       <div className="mx-auto max-w-4xl">
         <p className="clearpth-page-kicker">Check In</p>
         <h1 className="clearpth-page-title">
-          Where Are You Today?
+          Where Are You With What You Want?
         </h1>
         <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base md:leading-7">
-          Score how close your thoughts, actions, and emotions feel to what you
-          want.
+          Measure the gap between your current state and your desired reality.
         </p>
         <div className="mt-6 md:mt-7">
           <DailyFlow
@@ -150,7 +149,7 @@ export default function CheckInPage() {
             </p>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
               Start with one plain answer: what do you want? ClearPth will use
-              that to make the check-in more specific.
+              that to make every check-in more specific.
             </p>
             <Button asChild className="mt-4">
               <Link href="/onboarding">Answer What You Want</Link>
@@ -174,8 +173,8 @@ export default function CheckInPage() {
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
               Today&apos;s score is {todaysCheckIn.beingScore.toFixed(1)}
-              /10. You can review the result, add a journal entry, or return
-              tomorrow for a new check-in.
+              /10. Review the gap, write what you notice, or return tomorrow
+              for a fresh measure.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Button asChild>
@@ -195,28 +194,28 @@ export default function CheckInPage() {
         <form className="mt-8 space-y-6 md:mt-9 md:space-y-7" onSubmit={submit}>
           <CheckInGate
             eyebrow="Gate 01"
-            title="Your Scores"
-            description="Rate how close today feels to what you want."
+            title="Current Alignment"
+            description="Rate how much today matches the life you are moving toward."
             icon={<Brain className="h-5 w-5" aria-hidden />}
           >
             <ScoreSlider
-              label="How well does your thinking align with what you want?"
+              label="How well does your thinking match your desired reality?"
               value={draft.thinkingScore}
               onChange={(value) => updateField("thinkingScore", value)}
             />
             <ScoreSlider
-              label="How well do your actions align with what you want?"
+              label="How well do your actions match your desired reality?"
               value={draft.willingScore}
               onChange={(value) => updateField("willingScore", value)}
             />
             <ScoreSlider
-              label="How well do your emotions align with what you want?"
+              label="How well do your emotions match your desired reality?"
               value={draft.feelingScore}
               onChange={(value) => updateField("feelingScore", value)}
             />
               <TextAreaField
-              label="Where are you today with what you want?"
-              helper="Write one honest sentence. You can name what feels close, what feels far, or what feels important."
+              label="What feels true about where you are today?"
+              helper="Write one honest sentence about your current state, your desired reality, or the space between them."
               placeholder="Example: I know what I want, but today I feel distracted and unsure what step actually matters."
               value={draft.dominantThought}
               onChange={(value) => updateField("dominantThought", value)}
@@ -235,12 +234,12 @@ export default function CheckInPage() {
             <>
               <CheckInGate
                 eyebrow="Optional"
-                title="What Is In The Way?"
-                description="Name the action, delay, or pressure connected to today."
+                title="What Is The Gap?"
+                description="Name the action, delay, or pressure creating distance today."
                 icon={<Flame className="h-5 w-5" aria-hidden />}
               >
                 <TextAreaField
-                  label="What action are you avoiding or being called to take?"
+                  label="What action would make your desired reality more real today?"
                   value={draft.avoidedAction}
                   onChange={(value) => updateField("avoidedAction", value)}
                 />
@@ -249,11 +248,11 @@ export default function CheckInPage() {
               <CheckInGate
                 eyebrow="Optional"
                 title="Feeling"
-                description="Name the feeling under the surface."
+                description="Name the emotion shaping your current state."
                 icon={<Heart className="h-5 w-5" aria-hidden />}
               >
                 <TextAreaField
-                  label="What feeling is currently running your state?"
+                  label="What feeling is shaping your state right now?"
                   value={draft.currentFeeling}
                   onChange={(value) => updateField("currentFeeling", value)}
                 />
@@ -261,12 +260,12 @@ export default function CheckInPage() {
 
               <CheckInGate
                 eyebrow="Optional"
-                title="Next Step"
-                description="Name one choice that would move you forward."
+                title="Aligned Action"
+                description="Name one choice that belongs to the version of you who can hold what you want."
                 icon={<Sparkles className="h-5 w-5" aria-hidden />}
               >
                 <TextAreaField
-                  label="What would the clearer version of you do today?"
+                  label="What would the aligned version of you do today?"
                   value={draft.highestBeingChoice}
                   onChange={(value) => updateField("highestBeingChoice", value)}
                   rows={5}
@@ -296,7 +295,7 @@ export default function CheckInPage() {
               Sign in to save your check-in to your profile.
             </p>
               <Button type="submit" size="lg" className="w-full sm:w-auto">
-                See Where I Am
+                Reveal The Gap
               </Button>
           </div>
         </form>

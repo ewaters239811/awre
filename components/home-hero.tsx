@@ -200,7 +200,7 @@ function PublicHomeHero({
       </div>
       <div className="aura-luxury-line mx-auto mt-7 w-40 max-w-lg sm:mt-9 sm:w-64" />
       <p className="mt-7 max-w-xl text-[1.35rem] leading-8 text-foreground/88 sm:mt-9 sm:text-3xl sm:leading-10">
-        Become aligned with the life you want.
+        Become the person who can hold the life you want.
       </p>
       <div className="mt-10 grid w-full max-w-sm gap-4 sm:mt-12 sm:max-w-xs">
         <Button asChild size="lg" className="w-full sm:w-auto">
@@ -390,7 +390,7 @@ function buildAlignmentNote(state: HomeState) {
   }
 
   if (historicalPattern.averageBeing >= 8.5) {
-    return "Your history shows the gap is narrowing; the work now is protecting the consistency that keeps you aligned with your desired reality.";
+    return "Your history shows the gap is narrowing; the work now is protecting the consistency that lets you hold your desired reality.";
   }
 
   return getHistoricalGapReason(historicalPattern.weakestPillar);
@@ -398,14 +398,14 @@ function buildAlignmentNote(state: HomeState) {
 
 function getHistoricalGapReason(weakest: PillarName) {
   if (weakest === "Thinking") {
-    return "The deeper gap is perception: your history shows your mind still rehearses the old reality more than it sees your desired reality.";
+    return "The deeper gap is perception: your mind still rehearses the old reality more than it believes your desired reality is available.";
   }
 
   if (weakest === "Doing") {
     return "The deeper gap is consistency: your history shows your actions have not repeated the identity your desired reality requires.";
   }
 
-  return "The deeper gap is emotional loyalty: your history shows your state still returns to what is familiar instead of resting in your desired reality.";
+  return "The deeper gap is emotional loyalty: your state still returns to what is familiar instead of feeling at home in your desired reality.";
 }
 
 function getHistoricalGapPattern(checkIns: CheckInResult[]) {
@@ -502,26 +502,26 @@ function buildHomeMessage(state: HomeState) {
   const desiredReality = getDesiredRealityLine(state.profile).toLowerCase();
 
   if (!state.latestCheckIn) {
-    return `Check in to see where you are today with ${desiredReality}.`;
+    return `Check in to see how close your current state is to ${desiredReality}.`;
   }
 
   if (!state.todaysCheckIn) {
     return `Your last recorded state was ${state.latestCheckIn.beingScore.toFixed(
       1,
-    )}/10. Check in now to see where you stand today and what to focus on next.`;
+    )}/10. Check in now to see today's gap and what wants your attention.`;
   }
 
   if (!state.todaysJournal?.content.trim()) {
     return `Today is measured at ${state.todaysCheckIn.beingScore.toFixed(
       1,
-    )}/10. Write a few honest lines to complete the day.`;
+    )}/10. Write a few honest lines about what this state is showing you.`;
   }
 
   if (!state.hasMeditatedToday) {
-    return "Your check-in and journal are done. Meditate to settle the state into your body.";
+    return "Your check-in and journal are done. Tune in to let the desired state become easier to feel.";
   }
 
-  return `Today is complete. Let the pattern support your next decision.`;
+  return "Today is complete. Let the pattern make your next choice cleaner.";
 }
 
 function getDesiredRealityLine(profile: OnboardingProfile | null) {

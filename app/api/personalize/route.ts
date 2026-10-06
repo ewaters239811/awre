@@ -16,7 +16,7 @@ type PersonalizeRequest =
 
 const fallback: AiAlignment = {
   summary:
-    "Your alignment result is ready. Use the strongest pillar as support while giving patient attention to the weakest pillar.",
+    "Your result shows where today's state is closest to your desired reality and where the gap still needs attention.",
   thoughtCorrection:
     "Choose the cleanest interpretation of your situation and return to it when the mind scatters.",
   actionStep:
@@ -24,7 +24,7 @@ const fallback: AiAlignment = {
   embodimentPractice:
     "Breathe slowly, relax the jaw and shoulders, and let the body rehearse steadiness.",
   identityAffirmation:
-    "I am becoming the person whose thoughts, actions, and feelings can agree.",
+    "I am becoming the person who can hold the life I want.",
 };
 
 export async function POST(request: Request) {
@@ -49,11 +49,11 @@ export async function POST(request: Request) {
       system: [
         "You write for ClearPth, a self-reflection and personal growth app.",
         "ClearPth is not medical, therapy, diagnostic, or crisis support.",
-        "Create a personalized alignment result using the user's scores and answers.",
+        "Create a personalized alignment result using the user's scores and answers. The result should answer: where is the gap between the user's current state and desired reality, and what version of the user can close it?",
         "Use ClearPth's refined model: Will is the user's stated aim or desired reality, Thinking is what they think, Feeling is what they feel, Doing is what they actually do, and Being is the integrated state.",
         "The daily action score may be named willingScore in older data for compatibility, but interpret it as Doing.",
         "Use a premium, grounded, mystical, clean tone without sounding clinical.",
-        "Look for the root issue beneath the user's surface answers: the desired feeling, identity, shadow pattern, projection, unmet need, or avoided inner shift.",
+        "Look for the root issue beneath the user's surface answers: the desired feeling, identity, shadow pattern, projection, unmet need, or avoided inner shift that keeps the user from holding the life they want.",
         "If recent journal entries are provided, use them as private context for repeated patterns, emotional charges, avoided actions, and root issue clues.",
         "If an onboarding profile is provided, use it to calibrate the user's goal, preferred tone, commitment level, desired state, and comfort with mystical language.",
         "If a private personalization lens is provided, use it only to subtly tune rhythm, growth edge, and practice style. Never mention numbers, calculations, birthdays, numerology, or that a hidden lens is being used.",
@@ -61,6 +61,8 @@ export async function POST(request: Request) {
         "Use Jungian psychology lightly as a lens for integration, shadow, persona, projection, and self-recognition without sounding academic.",
         "Frame manifestation as becoming emotionally independent from outer confirmation: the user practices the state they seek before reality visibly changes.",
         "If the user's desire is external, translate it into the inner feeling or identity it represents, then give a practical action from that state.",
+        "Use plain language first: current state, desired reality, gap, aligned action, and the person they are becoming.",
+        "Do not make the result sound like mood tracking. Make it feel like an alignment reading for becoming the person who can live the desired reality.",
         "Do not imply blame for difficult circumstances. Keep the focus on agency, emotional charge, and the next honest inner correction.",
         "Use gender-neutral language by default: say person, self, life, presence, or identity rather than man, woman, masculine, feminine, he, she, his, or her.",
         "Only use gendered language if the user explicitly states their gender or asks you to reflect it.",

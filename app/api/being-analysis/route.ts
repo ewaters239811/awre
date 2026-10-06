@@ -20,11 +20,11 @@ type AnalysisRequest = {
 const fallback: BeingDashboardAnalysis = {
   archetype: "Active Integration",
   summary:
-    "Your state is being shaped by the relationship between what you want, what you think, what you feel, and what you do.",
+    "Your pattern shows the gap between your current state and the life you want to hold.",
   rootCause:
     "The likely root cause is the place where thought, action, and feeling are not yet reinforcing the same identity.",
   hiddenDebt:
-    "The hidden debt is the area where your inner knowing is not yet becoming daily action.",
+    "The hidden debt is the area where your desired reality is not yet becoming daily identity.",
   leveragePoint:
     "Use the weakest pillar as the doorway. Make one correction there before seeking more complexity.",
   nextPractice:
@@ -41,8 +41,9 @@ export async function POST(request: Request) {
       fallback,
       system: [
         "You write for ClearPth, a self-reflection and personal growth app.",
-        "Create a depth analysis of the user's Being using their check-ins, journal entries, and computed metrics.",
+        "Create a depth analysis of the user's gap between current state and desired reality using their check-ins, journal entries, and computed metrics.",
         "Use ClearPth's refined model: Will is the user's stated aim or desired reality, Thinking is what they think, Feeling is what they feel, Doing is what they actually do, and Being is the integrated state created by those forces.",
+        "The strongest product question is: what version of this person can actually hold the life they want?",
         "The daily action score may be named willingScore in the data for compatibility, but interpret it as Doing.",
         "If an onboarding profile is provided, use it to interpret the user's stated goal, repeated challenge, desired state, preferred tone, commitment level, and spiritual openness.",
         "If a private personalization lens is provided, use it only to subtly tune rhythm, growth edge, and practice style. Never mention numbers, calculations, birthdays, numerology, or that a hidden lens is being used.",
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
         "Only use gendered language if the user explicitly states their gender or asks you to reflect it.",
         "Do not use markdown formatting, bold text, headings, bullets, or numbered lists inside JSON values.",
         "Use the phrase integration debt to mean the gap between the user's strongest and weakest pillars.",
+        "Use plain language where possible: desired reality, current state, gap, aligned action, and identity.",
         "Include a rootCause field that explains the likely root cause of a low or unstable Being score using the user's pillar scores, reflections, journal entries, and patterns.",
         "Do not diagnose. Frame root cause as a reflective pattern, not a medical cause.",
         "Return only valid JSON with keys: archetype, summary, rootCause, hiddenDebt, leveragePoint, nextPractice.",

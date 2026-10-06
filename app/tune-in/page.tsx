@@ -20,8 +20,8 @@ import type { AiMeditation, CheckInResult } from "@/lib/types";
 type MeditationStatus = "idle" | "loading" | "ready" | "unavailable";
 
 const fallbackMeditation: AiMeditation = {
-  title: "Return To The Center",
-  intention: "Let the noise settle until the clear thing can be felt.",
+  title: "Return To The Desired State",
+  intention: "Let the noise settle until the state that matches what you want can be felt.",
   durationSeconds: 300,
   script:
     "Let the body become still. Let the shoulders drop. Let the jaw soften. Take one slow breath in, and one slower breath out. Notice the state you brought with you. You do not have to fix it by force. You only have to meet it honestly. Let the thought that has been loudest become simple. Beneath the noise, there is a clearer knowing available. Let that knowing arrive without pressure. Now bring attention to the part of you that wants life to feel more aligned. Do not push it. Let it become quiet enough to be understood. Feel your feet. Feel your hands. Feel the center of the chest. Let the body learn steadiness before the day asks anything from you. If something has felt unclear, do not make it a verdict on who you are. See it as a signal asking to be listened to. Let the feeling underneath the day be present without letting it take command. Breathe as if your desired state is already allowed in the body. You are not waiting for the outside world to give you permission to become steady. You are practicing the state now. For the final breaths, gather thought, feeling, and desire into one quiet center. Let the body remember what is true. When you are ready, return with more space around the day.",
@@ -252,10 +252,10 @@ export default function TuneInPage() {
     return (
       <main className="clearpth-page-shell">
         <section className="aura-glass mx-auto max-w-4xl rounded-[1.35rem] p-5 md:rounded-lg md:p-8">
-          <p className="clearpth-page-kicker">Meditation</p>
+          <p className="clearpth-page-kicker">Tune In</p>
           <h1 className="clearpth-page-title">Check in first.</h1>
           <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground">
-            Your meditation is based on today&apos;s check-in. Complete the
+            Your Tune In is based on today&apos;s check-in. Complete the
             check-in first, then return here.
           </p>
           <Button asChild className="mt-6">
@@ -288,7 +288,7 @@ export default function TuneInPage() {
           Your Tune In
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          Made from today&apos;s check-in.
+          A personal session for returning to the state that matches what you want.
         </p>
 
         <div className="aura-glass clearpth-meditation-stage mx-auto mt-9 rounded-[2rem] px-5 py-10 sm:px-8 sm:py-12">

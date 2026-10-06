@@ -92,7 +92,7 @@ const guidanceTones = [
 const RETURN_TO_COVER_KEY = "clearpth.returnToCoverFromSetup";
 
 const starterPrompt =
-  "Tell me what you want, what feels in the way, and how you want to feel when your life is aligned.";
+  "Tell me what you want, what feels in the way, and who you would need to become to hold it.";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -281,8 +281,8 @@ export default function OnboardingPage() {
                 What do you want?
               </h1>
               <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
-                Talk naturally. ClearPth will shape your goal, gap, and
-                guidance style from what you say.
+                Talk naturally. ClearPth will shape your desired reality,
+                current gap, and guidance style from what you say.
               </p>
 
               <div className="mt-7">
@@ -343,13 +343,13 @@ export default function OnboardingPage() {
               </h1>
               <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
                 ClearPth will use this to personalize check-ins, Tune In, and
-                guidance.
+                guidance around the life you want.
               </p>
 
               <div className="mt-7 grid gap-3">
                 <ProfileCard label="Desired reality" value={profile.primaryGoal} />
                 <ProfileCard label="Current gap" value={profile.currentChallenge} />
-                <ProfileCard label="Desired state" value={profile.desiredState} />
+                <ProfileCard label="State to practice" value={profile.desiredState} />
               </div>
 
               <button
@@ -374,7 +374,7 @@ export default function OnboardingPage() {
                     onChange={(value) => updateField("currentChallenge", value)}
                   />
                   <DetailTextarea
-                    label="Desired state"
+                    label="State to practice"
                     value={profile.desiredState}
                     onChange={(value) => updateField("desiredState", value)}
                   />

@@ -44,10 +44,10 @@ export function BeingDashboard() {
     <main className="clearpth-page-shell">
       <section className="mx-auto max-w-5xl">
         <p className="clearpth-page-kicker">Pattern</p>
-        <h1 className="clearpth-page-title">What Keeps Repeating?</h1>
+        <h1 className="clearpth-page-title">What Keeps Creating The Gap?</h1>
         <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
-          Track the pattern that keeps pulling you toward or away from your
-          desired reality.
+          See the repeated gap between your current state and your desired
+          reality.
         </p>
       </section>
 
@@ -76,7 +76,7 @@ export function BeingDashboard() {
                 <div className="flex items-center gap-3">
                   <Compass className="h-5 w-5 text-primary" aria-hidden />
                   <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                    Your Pattern
+                    Your Gap Pattern
                   </p>
                 </div>
                 <h2 className="mt-4 font-serif text-3xl font-semibold leading-tight md:text-5xl">
@@ -89,7 +89,7 @@ export function BeingDashboard() {
 
               <div className="rounded-[1.3rem] border border-border/65 bg-card/40 p-4 text-center md:rounded-md">
                 <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                  Current State
+                  Alignment Score
                 </p>
                 <p className="mt-3 font-serif text-6xl font-semibold leading-none text-primary">
                   {dashboard.latestScore?.toFixed(1) ?? "-"}
@@ -106,7 +106,7 @@ export function BeingDashboard() {
                     ? displayPillarName(pattern.focusPillar)
                     : "Unmeasured"
                 }
-                detail="The area most often behind the gap."
+                detail="The area most often creating distance."
               />
               <PatternStat
                 label="Average"
@@ -115,7 +115,7 @@ export function BeingDashboard() {
                     ? "Unmeasured"
                     : `${dashboard.averageScore.toFixed(1)} / 10`
                 }
-                detail="Your overall state across check-ins."
+                detail="Your average alignment across check-ins."
               />
               <PatternStat
                 label="Next Move"
@@ -156,7 +156,7 @@ export function BeingDashboard() {
               <div className="flex items-center gap-3">
                 <BarChart3 className="h-5 w-5 text-primary" aria-hidden />
                 <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                  State Over Time
+                  Alignment Over Time
                 </p>
               </div>
               <ScoreTrendChart timeline={dashboard.timeline} />
@@ -300,7 +300,8 @@ function buildPatternSummary(
   if (checkIns.length === 0 || !dashboard.weakestPillar) {
     return {
       title: "Your pattern is still forming.",
-      reason: "Complete a few check-ins so ClearPth can show what repeats.",
+      reason:
+        "Complete a few check-ins so ClearPth can show what keeps creating distance.",
       focusPillar: null,
       nextMove: "Check in",
     };
@@ -309,21 +310,21 @@ function buildPatternSummary(
   const focusPillar = dashboard.weakestPillar;
   const byPillar: Record<PillarName, Omit<PatternSummary, "focusPillar">> = {
     Thinking: {
-      title: "Your thoughts are the main gap.",
+      title: "Your thoughts are creating the gap.",
       reason:
-        "Your check-ins show that perception is the area most often lagging behind the life you want.",
+        "Your check-ins show that perception most often pulls you away from your desired reality.",
       nextMove: "Name one truer thought",
     },
     Doing: {
-      title: "Your follow-through is the main gap.",
+      title: "Your follow-through is creating the gap.",
       reason:
-        "Your check-ins show that action is the area most often lagging behind what you say matters.",
+        "Your check-ins show that action most often lags behind the identity your desired reality requires.",
       nextMove: "Finish one visible action",
     },
     Feeling: {
-      title: "Your inner state is the main gap.",
+      title: "Your emotions are creating the gap.",
       reason:
-        "Your check-ins show that emotion is the area most often pulling you back toward what feels familiar.",
+        "Your check-ins show that emotion most often pulls you back toward what feels familiar.",
       nextMove: "Practice the state now",
     },
   };

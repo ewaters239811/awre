@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 const fallbackSuggestedPrompts = [
   "Go deeper.",
   "Name the root.",
-  "Give me the next move.",
+  "Show me the gap.",
 ];
 
 const entryPaths = [
@@ -38,9 +38,9 @@ const entryPaths = [
       "Help me understand what inner state or feeling is underneath something I want.",
   },
   {
-    label: "Find one next step",
+    label: "Close the gap",
     prompt:
-      "Help me find the cleanest next action I can take from a steadier state.",
+      "Help me see the gap between who I am being today and the life I want.",
   },
 ];
 
@@ -216,7 +216,7 @@ export function GuideChat() {
                 Mirror
               </p>
               <h1 className="mt-2 font-serif text-[2.45rem] font-semibold leading-[0.98] text-foreground md:text-5xl">
-                {firstName}, what are you carrying?
+                {firstName}, what do you want to understand?
               </h1>
             </div>
             <Button
@@ -233,8 +233,8 @@ export function GuideChat() {
             </Button>
           </div>
           <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
-            A private mirror for what stands between you and your desired
-            reality.
+            A private mirror for the gap between your current state and your
+            desired reality.
           </p>
           {messages.length > 1 ? (
             <button
@@ -345,7 +345,7 @@ export function GuideChat() {
             className="min-h-16 rounded-[1.5rem] border-white/[0.1] !bg-transparent text-[16px] leading-6 text-foreground shadow-[inset_0_1px_0_rgba(244,239,228,0.05),0_16px_44px_rgba(0,0,0,0.22)] backdrop-blur-xl placeholder:text-foreground/38 focus-visible:bg-card/10 md:min-h-20 md:rounded-2xl"
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            placeholder="What is on your mind?"
+            placeholder="What do you want to understand?"
             rows={2}
           />
           <div className="mt-3 flex justify-end">

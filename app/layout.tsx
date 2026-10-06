@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ClearPth | Alignment Check-In",
+  title: "ClearPth | Close The Gap",
   description:
-    "A self-reflection app for inner order, clear action, and embodied presence.",
+    "A self-reflection app for aligning your current state with the life you want.",
 };
 
 export default function RootLayout({
