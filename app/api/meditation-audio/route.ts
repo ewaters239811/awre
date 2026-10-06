@@ -88,18 +88,21 @@ function parseVoiceSpeed(value: string | undefined) {
 
 function prepareMeditationAudioText(text: string) {
   const normalized = text
-    .replace(/\s+/g, " ")
+    .replace(/\r\n/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
     .replace(/\bPause\./gi, "Pause...")
+    .replace(/\bPause here\./gi, "Pause here...")
     .replace(/\bStay here\./gi, "Stay here...")
     .replace(/\bTake one more breath\./gi, "Take one more breath...")
     .trim();
 
   return normalized
-    .split(/(?<=[.!?])\s+/)
+    .split(/(?<=[.!?])(?:\s+|\n+)/)
     .map((sentence) => {
       const trimmed = sentence.trim();
       const isPauseCue =
-        /^(pause|stay here|take one more breath|breathe|rest)\b/i.test(
+        /^(pause|pause here|stay here|take one more breath|breathe|rest)\b/i.test(
           trimmed,
         );
       const needsLongRest =
@@ -114,7 +117,7 @@ function prepareMeditationAudioText(text: string) {
 
       return needsLongRest ? addRest(trimmed) : trimmed;
     })
-    .join("\n\n");
+    .join("\n\n\n");
 }
 
 function addRest(sentence: string) {

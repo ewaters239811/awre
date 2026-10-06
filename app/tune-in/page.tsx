@@ -19,12 +19,14 @@ import type { AiMeditation, CheckInResult } from "@/lib/types";
 
 type MeditationStatus = "idle" | "loading" | "ready" | "unavailable";
 
+const MEDITATION_SCRIPT_VERSION = "spacious-v2";
+
 const fallbackMeditation: AiMeditation = {
   title: "Return To The Desired State",
   intention: "Let the noise settle until the state that matches what you want can be felt.",
-  durationSeconds: 300,
+  durationSeconds: 540,
   script:
-    "Let the body become still. Let the shoulders drop. Let the jaw soften. Take one slow breath in, and one slower breath out. Notice the state you brought with you. You do not have to fix it by force. You only have to meet it honestly. Let the thought that has been loudest become simple. Beneath the noise, there is a clearer knowing available. Let that knowing arrive without pressure. Now bring attention to the part of you that wants life to feel more aligned. Do not push it. Let it become quiet enough to be understood. Feel your feet. Feel your hands. Feel the center of the chest. Let the body learn steadiness before the day asks anything from you. If something has felt unclear, do not make it a verdict on who you are. See it as a signal asking to be listened to. Let the feeling underneath the day be present without letting it take command. Breathe as if your desired state is already allowed in the body. You are not waiting for the outside world to give you permission to become steady. You are practicing the state now. For the final breaths, gather thought, feeling, and desire into one quiet center. Let the body remember what is true. When you are ready, return with more space around the day.",
+    "Let your body settle into this moment.\n\nLet your shoulders soften, and let your jaw release.\n\nTake a slow breath in, and let it leave without forcing anything.\n\nPause here.\n\nNotice the state you brought with you today. You do not need to fix it quickly. You only need enough quiet to see it clearly.\n\nLet the loudest thought move through your awareness without becoming the whole truth.\n\nStay here.\n\nUnder the noise, there is a steadier part of you that already knows what matters.\n\nFeel your feet. Feel your hands. Feel the center of your chest.\n\nLet the desired state become simple in the body. Not dramatic. Not urgent. Just available.\n\nPause here.\n\nNothing outside of you has to change in this moment for clarity to begin. You are practicing the state that can hold the life you want.\n\nTake one more breath.\n\nLet thought, feeling, and action return to one quiet center.\n\nWhen you are ready, come back with more space around what is true.",
   closingPrompt: "What feels clearer now?",
 };
 
@@ -61,6 +63,7 @@ export default function TuneInPage() {
     if (!checkIn) return "";
 
     return [
+      MEDITATION_SCRIPT_VERSION,
       checkIn.id,
       checkIn.createdAt,
       checkIn.thinkingScore,
@@ -403,7 +406,7 @@ function normalizeMeditation(value?: AiMeditation) {
   return {
     title: value.title?.trim() || fallbackMeditation.title,
     intention: value.intention?.trim() || fallbackMeditation.intention,
-    durationSeconds: Math.min(Math.max(value.durationSeconds || 300, 60), 300),
+    durationSeconds: Math.min(Math.max(value.durationSeconds || 540, 180), 900),
     script: value.script?.trim() || fallbackMeditation.script,
     closingPrompt: value.closingPrompt?.trim() || fallbackMeditation.closingPrompt,
   };
@@ -414,7 +417,7 @@ function getSessionDurationSeconds(
   audioDurationSeconds: number | null,
 ) {
   return Math.max(
-    audioDurationSeconds ?? Math.min(meditation.durationSeconds, 300),
+    audioDurationSeconds ?? Math.min(meditation.durationSeconds, 900),
     1,
   );
 }

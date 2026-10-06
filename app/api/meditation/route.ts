@@ -11,9 +11,9 @@ type MeditationRequest = {
 const fallback: AiMeditation = {
   title: "Return To The Desired State",
   intention: "Slow down, settle your body, and feel the state that matches what you want.",
-  durationSeconds: 300,
+  durationSeconds: 540,
   script:
-    "Let the body settle. Let the shoulders drop. Let the jaw soften. Take a slow breath in. Pause. Let it out even slower. Stay here. Let the mind become simple. You do not need to solve everything from here. You only need enough quiet to see clearly. Notice the thought taking the most space. Do not fight it. Let it pass through awareness like weather. Pause. Beneath it, let a quieter truth appear. Feel your feet. Feel your hands. Feel the center of the chest. Stay here. If something feels delayed or uncertain, do not judge it. Let it become information. Let it show you what matters. Let it show you what feels heavy. Take one more breath. Notice the feeling underneath the day. Let it be present without letting it lead. Breathe as if your desired state is already allowed in the body. Nothing outside of you has to change in this moment for clarity to begin. Pause. Gather thought, feeling, and desire into one quiet center. Return with more space around what is true.",
+    "Let your body settle into this moment.\n\nLet your shoulders soften, and let your jaw release.\n\nTake a slow breath in, and let it leave without forcing anything.\n\nPause here.\n\nNotice the state you brought with you today. You do not need to fix it quickly. You only need enough quiet to see it clearly.\n\nLet the loudest thought move through your awareness without becoming the whole truth.\n\nStay here.\n\nUnder the noise, there is a steadier part of you that already knows what matters.\n\nFeel your feet. Feel your hands. Feel the center of your chest.\n\nLet the desired state become simple in the body. Not dramatic. Not urgent. Just available.\n\nPause here.\n\nNothing outside of you has to change in this moment for clarity to begin. You are practicing the state that can hold the life you want.\n\nTake one more breath.\n\nLet thought, feeling, and action return to one quiet center.\n\nWhen you are ready, come back with more space around what is true.",
   closingPrompt: "What feels clearer now?",
 };
 
@@ -38,12 +38,14 @@ export async function POST(request: Request) {
         "You write guided meditations for ClearPth, a self-reflection and personal growth app.",
         "ClearPth is not medical, therapy, diagnostic, or crisis support.",
         "Create one daily guided meditation tailored to the user's check-in and desired reality.",
-        "The meditation should feel spacious and unrushed, usually four to five minutes when read aloud slowly with pauses.",
-        "Keep the script between 160 and 240 words.",
-        "Use short sentences and quiet pauses.",
-        "Add natural pause cues as standalone sentences, such as Pause. Stay here. Take one more breath.",
-        "Place a pause cue every two to four sentences so the generated audio has real silence and does not rush.",
-        "Prefer fewer words with more space over a dense script.",
+        "The meditation should feel spacious, smooth, and unrushed. It does not need to fit inside five minutes.",
+        "Let the session take as long as needed to move calmly through the meditation, usually six to nine minutes when read aloud slowly with pauses.",
+        "Keep the script between 180 and 320 words.",
+        "Write in gentle spoken lines separated by blank lines.",
+        "Use flowing breath-length phrases instead of choppy one-word commands.",
+        "Add natural pause cues as standalone lines, such as Pause here. Stay here. Take one more breath.",
+        "Place a pause cue after every two to four spoken lines so the audio feels spacious and does not rush.",
+        "Prefer fewer ideas with more space over a dense script.",
         "Prioritize silence, breath, and embodiment over explanation.",
         "Do not pack the session with too many ideas.",
         "Use a grounded, premium, intimate, calm tone.",
@@ -59,7 +61,7 @@ export async function POST(request: Request) {
         "Use gender-neutral language by default.",
         "Do not use markdown formatting, bullets, numbering, headings, or labels inside JSON values.",
         "Return only valid JSON with keys: title, intention, durationSeconds, script, closingPrompt.",
-        "durationSeconds must be between 240 and 300.",
+        "durationSeconds must be between 360 and 720.",
       ].join(" "),
       user: {
         thinkingScore: result.thinkingScore,
