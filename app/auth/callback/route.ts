@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { getSafeRedirectPath } from "@/lib/auth-redirect";
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
@@ -52,12 +53,4 @@ function normalizeSupabaseUrl(url: string) {
     .replace(/\/rest\/v1\/?$/i, "")
     .replace(/\/auth\/v1\/?$/i, "")
     .replace(/\/+$/i, "");
-}
-
-function getSafeRedirectPath(value: string | null) {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) {
-    return "/";
-  }
-
-  return value;
 }

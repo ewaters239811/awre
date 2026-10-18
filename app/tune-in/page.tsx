@@ -15,6 +15,7 @@ import { getCheckInForDate, updateCheckIn } from "@/lib/alignment";
 import { markMeditationCompleted } from "@/lib/meditation-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
+import { useCurrentDateKey } from "@/lib/use-current-date-key";
 import type { AiMeditation, CheckInResult } from "@/lib/types";
 
 type MeditationStatus = "idle" | "loading" | "ready" | "unavailable";
@@ -32,6 +33,7 @@ const fallbackMeditation: AiMeditation = {
 
 export default function TuneInPage() {
   const todayKey = useCurrentCheckInDateKey();
+  const calendarToday = useCurrentDateKey();
   const [checkIn, setCheckIn] = useState<CheckInResult | null>(null);
   const [status, setStatus] = useState<MeditationStatus>("idle");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -155,7 +157,7 @@ export default function TuneInPage() {
             stopAmbientBed();
             setAudioPlaying(false);
             setAudioPaused(false);
-            markMeditationCompleted(todayKey);
+            markMeditationCompleted(calendarToday);
           });
         }
         return next;
@@ -170,6 +172,7 @@ export default function TuneInPage() {
     meditation,
     audioDurationSeconds,
     todayKey,
+    calendarToday,
   ]);
 
   const resetSession = () => {
@@ -377,7 +380,7 @@ export default function TuneInPage() {
           onEnded={() => {
             stopAmbientBed();
             updateMediaSession("none", meditation);
-            markMeditationCompleted(todayKey);
+            markMeditationCompleted(calendarToday);
             if (audioRef.current?.duration && Number.isFinite(audioRef.current.duration)) {
               setElapsedSeconds(Math.ceil(audioRef.current.duration));
             }

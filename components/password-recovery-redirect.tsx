@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { isPasswordRecoveryHash } from "@/lib/auth-redirect";
 import {
   createSupabaseBrowserClient,
   isSupabaseConfigured,
@@ -23,13 +24,7 @@ export function PasswordRecoveryRedirect() {
       router.replace(`/reset-password${hash}`);
     };
 
-    const hashParams = new URLSearchParams(
-      window.location.hash.replace(/^#/, ""),
-    );
-    const isRecoveryHash =
-      hashParams.get("type") === "recovery" ||
-      hashParams.get("access_token") ||
-      hashParams.get("refresh_token");
+    const isRecoveryHash = isPasswordRecoveryHash(window.location.hash);
 
     if (isRecoveryHash && pathname !== "/reset-password") {
       sendToResetPage();
