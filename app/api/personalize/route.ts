@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { buildPersonalizationLens } from "@/lib/personalization-lens";
 import { createJsonWithOpenAI } from "@/lib/server/openai";
 import type { AiAlignment, CheckInResult, OnboardingProfile } from "@/lib/types";
+import { profileForCheckIn } from "@/lib/manifestations";
 
 type PersonalizeRequest =
   | CheckInResult
@@ -33,8 +34,10 @@ export async function POST(request: Request) {
     const result = getPersonalizeResult(body);
     const recentJournalEntries =
       "recentJournalEntries" in body ? body.recentJournalEntries ?? [] : [];
-    const onboardingProfile =
-      "onboardingProfile" in body ? body.onboardingProfile ?? null : null;
+    const onboardingProfile = profileForCheckIn(
+      "onboardingProfile" in body ? body.onboardingProfile ?? null : null,
+      result ?? {},
+    );
     const personalizationLens = buildPersonalizationLens(onboardingProfile);
 
     if (!result) {
@@ -50,6 +53,8 @@ export async function POST(request: Request) {
         "You write for ClearPth, a self-reflection and personal growth app.",
         "ClearPth is not medical, therapy, diagnostic, or crisis support.",
         "Create a personalized alignment result using the user's scores and answers. The result should answer: where is the gap between the user's current state and desired reality, and what version of the user can close it?",
+        "The selected desiredReality is the specific goal this check-in belongs to. Focus the brief summary on the lowest-scoring dimension, acknowledge strengths, and offer one practical choice toward that goal. If scores are tied, describe the shared focus without inventing a deficit.",
+        "Thinking, Feeling, and Willing are self-reported reflection dimensions; Willing includes choices and actions. Inner alignment does not scientifically measure or guarantee outer results. Support realistic action and recognize circumstances outside the user's control.",
         "Use ClearPth's refined model: Will is the user's stated aim or desired reality, Thinking is what they think, Feeling is what they feel, Doing is what they actually do, and Being is the integrated state.",
         "The daily action score may be named willingScore in older data for compatibility, but interpret it as Doing.",
         "Use a premium, grounded, mystical, clean tone without sounding clinical.",
@@ -83,6 +88,8 @@ export async function POST(request: Request) {
         avoidedAction: result.avoidedAction,
         currentFeeling: result.currentFeeling,
         highestBeingChoice: result.highestBeingChoice,
+        desiredReality: result.desiredReality ?? onboardingProfile?.primaryGoal,
+        innerFoundation: result.innerFoundation ?? onboardingProfile?.manifestations?.innerFoundation,
         onboardingProfile,
         personalizationLens,
         recentJournalEntries: recentJournalEntries

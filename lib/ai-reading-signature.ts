@@ -11,6 +11,9 @@ export function buildAiReadingSignature({
 }) {
   const checkInSignal = [
     result.id,
+    result.manifestationId ?? "",
+    result.desiredReality ?? "",
+    result.innerFoundation ?? "",
     result.createdAt,
     result.checkInDate ?? "",
     result.thinkingScore,

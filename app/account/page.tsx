@@ -8,8 +8,8 @@ import {
   getCurrentAccount,
   syncLocalDataToAccount,
 } from "@/lib/account-data";
-import { getCheckIns } from "@/lib/alignment";
-import { getJournalEntries } from "@/lib/journal-storage";
+import { getAllCheckIns } from "@/lib/alignment";
+import { getAllJournalEntries } from "@/lib/journal-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
 
 type AccountUser = {
@@ -27,8 +27,8 @@ export default function AccountPage() {
   const [message, setMessage] = useState("");
 
   const stats = {
-    checkIns: getCheckIns().length,
-    journalEntries: getJournalEntries().length,
+    checkIns: getAllCheckIns().length,
+    journalEntries: getAllJournalEntries().length,
     hasProfile: Boolean(getOnboardingProfile()),
   };
 

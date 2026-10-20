@@ -29,6 +29,7 @@ export function AlignmentResult({
           <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-sm md:tracking-[0.28em]">
             Today&apos;s Result
           </p>
+          {result.desiredReality ? <p className="mx-auto mt-3 max-w-2xl break-words text-sm leading-7 text-foreground/80">{result.desiredReality}</p> : null}
           <div className="mt-5 flex items-end justify-center gap-3 md:mt-6">
             <span className="font-serif text-6xl font-semibold leading-none text-primary sm:text-9xl">
               {result.beingScore}
@@ -41,6 +42,7 @@ export function AlignmentResult({
           <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:mt-4 md:text-base">
             {signature}
           </p>
+          <p className="mx-auto mt-3 max-w-xl text-xs leading-6 text-muted-foreground">A self-reflection on inner alignment. External progress is tracked separately.</p>
           <AiStatus status={aiStatus} hasAi={Boolean(result.aiAlignment)} />
         </div>
 

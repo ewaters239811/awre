@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+.goal-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  border-radius: 6px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  padding: 10px 12px;
+  font-size: 16px;
+  color-scheme: dark;
+}
+.goal-input:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+
 :root {
   --background: 95 7% 4%;
   --foreground: 40 43% 93%;

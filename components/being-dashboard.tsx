@@ -8,6 +8,9 @@ import { HistoryCalendar } from "@/components/history-calendar";
 import { getCheckInDateKey, getCheckIns } from "@/lib/alignment";
 import { buildBeingDashboardData } from "@/lib/being-analysis";
 import { displayPillarName } from "@/lib/pillars";
+import { ManifestationFocus } from "@/components/manifestation-focus";
+import { ManifestationProgress } from "@/components/manifestation-progress";
+import { useManifestations } from "@/lib/use-manifestations";
 import type { CheckInResult, PillarName } from "@/lib/types";
 
 type PatternSummary = {
@@ -18,6 +21,7 @@ type PatternSummary = {
 };
 
 export function BeingDashboard() {
+  const { primary } = useManifestations();
   const [checkIns, setCheckIns] = useState<CheckInResult[]>([]);
   const [selectedCheckIn, setSelectedCheckIn] = useState<CheckInResult | null>(
     null,
@@ -29,7 +33,7 @@ export function BeingDashboard() {
       setCheckIns(savedCheckIns);
       setSelectedCheckIn(savedCheckIns[0] ?? null);
     });
-  }, []);
+  }, [primary?.id]);
 
   const dashboard = useMemo(
     () => buildBeingDashboardData(checkIns, []),
@@ -51,6 +55,8 @@ export function BeingDashboard() {
         </p>
       </section>
 
+      <div className="mx-auto max-w-5xl"><ManifestationFocus compact /></div>
+      <ManifestationProgress />
       {checkIns.length === 0 ? (
         <section className="aura-glass mx-auto mt-9 max-w-5xl rounded-[1.35rem] p-5 md:rounded-lg md:p-6">
           <h2 className="font-serif text-3xl font-semibold">
@@ -240,7 +246,7 @@ function SelectedPatternDay({ item }: { item: CheckInResult | null }) {
       <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-6 lg:grid-cols-5">
         <MiniStat label="Score" value={item.beingScore.toFixed(1)} />
         <MiniStat label="Thinking" value={String(item.thinkingScore)} />
-        <MiniStat label="Doing" value={String(item.willingScore)} />
+        <MiniStat label="Willing" value={String(item.willingScore)} />
         <MiniStat label="Feeling" value={String(item.feelingScore)} />
         <MiniStat
           label="Focus"
@@ -280,7 +286,7 @@ function PillarBar({
       }
     >
       <div className="flex justify-between gap-3 text-sm">
-        <span className="text-muted-foreground">{label}</span>
+        <span className="text-muted-foreground">{displayPillarName(label)}</span>
         <span className="text-primary">{value.toFixed(1)}</span>
       </div>
       <div className="mt-2 h-2 overflow-hidden rounded-md bg-black/30">

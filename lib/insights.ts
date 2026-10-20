@@ -1,4 +1,5 @@
 import type { CheckInResult, PillarName } from "@/lib/types";
+import { displayPillarName } from "@/lib/pillars";
 
 export type PatternInsight = {
   label: string;
@@ -39,13 +40,13 @@ export function buildPatternInsights(items: CheckInResult[]): PatternInsight[] {
     },
     {
       label: "Helping Most",
-      value: strongest[0],
-      detail: `${strongest[0]} is helping most across your entries.`,
+      value: displayPillarName(strongest[0]),
+      detail: `${displayPillarName(strongest[0])} is helping most across your entries.`,
     },
     {
       label: "Focus Area",
-      value: weakest[0],
-      detail: `${weakest[0]} has the most room to grow right now.`,
+      value: displayPillarName(weakest[0]),
+      detail: `${displayPillarName(weakest[0])} has the most room to grow right now.`,
     },
     {
       label: "Trend",

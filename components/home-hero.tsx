@@ -4,14 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
-import {
-  ArrowRight,
-  BarChart3,
-  CheckCircle2,
-  Circle,
-  Headphones,
-} from "lucide-react";
+import { ArrowRight, BarChart3, Headphones } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DailyFlow } from "@/components/daily-flow";
+import { ManifestationFocus } from "@/components/manifestation-focus";
 import { getCurrentAccount } from "@/lib/account-data";
 import {
   CHECK_INS_CHANGED_EVENT,
@@ -22,15 +18,20 @@ import {
 import {
   getJournalEntries,
   getJournalEntryForDate,
+  JOURNAL_CHANGED_EVENT,
 } from "@/lib/journal-storage";
 import {
   MEDITATION_COMPLETED_EVENT,
   hasMeditationCompletionForDate,
 } from "@/lib/meditation-storage";
-import { getOnboardingProfile } from "@/lib/onboarding-storage";
+import {
+  getOnboardingProfile,
+  ONBOARDING_CHANGED_EVENT,
+} from "@/lib/onboarding-storage";
 import { toCheckInDateKey } from "@/lib/date-key";
 import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
+import { primaryManifestation } from "@/lib/manifestations";
 import type {
   CheckInResult,
   JournalEntry,
@@ -127,11 +128,20 @@ export function HomeHero() {
     queueMicrotask(refreshHomeState);
     window.addEventListener(CHECK_INS_CHANGED_EVENT, refreshHomeState);
     window.addEventListener(MEDITATION_COMPLETED_EVENT, refreshHomeState);
+    window.addEventListener(ONBOARDING_CHANGED_EVENT, refreshHomeState);
+    window.addEventListener(JOURNAL_CHANGED_EVENT, refreshHomeState);
+    window.addEventListener("clearpth:account-data-synced", refreshHomeState);
 
     return () => {
       cancelled = true;
       window.removeEventListener(CHECK_INS_CHANGED_EVENT, refreshHomeState);
       window.removeEventListener(MEDITATION_COMPLETED_EVENT, refreshHomeState);
+      window.removeEventListener(ONBOARDING_CHANGED_EVENT, refreshHomeState);
+      window.removeEventListener(JOURNAL_CHANGED_EVENT, refreshHomeState);
+      window.removeEventListener(
+        "clearpth:account-data-synced",
+        refreshHomeState,
+      );
     };
   }, [checkInToday, calendarToday]);
 
@@ -156,11 +166,7 @@ export function HomeHero() {
   return <PersonalHomeHero state={state} />;
 }
 
-function PublicHomeHero({
-  startHref = "/login",
-}: {
-  startHref?: string;
-}) {
+function PublicHomeHero({ startHref = "/login" }: { startHref?: string }) {
   return (
     <div className="flex min-h-[calc(100dvh-7rem)] max-w-4xl flex-col items-center justify-center text-center md:min-h-[calc(100vh-5rem)]">
       <span className="mb-8 flex h-16 w-16 animate-cover-float items-center justify-center rounded-[1.35rem] border border-primary/18 bg-card/22 text-foreground shadow-[0_18px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:h-20 sm:w-20 sm:rounded-3xl">
@@ -219,20 +225,29 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
   const hasCheckedInToday = Boolean(state.todaysCheckIn);
   const hasJournalToday = Boolean(state.todaysJournal?.content.trim());
   const hasMeditatedToday = state.hasMeditatedToday;
-  const nextHref = !hasCheckedInToday
-    ? "/check-in"
-    : !hasJournalToday
-      ? "/ritual"
-      : !hasMeditatedToday
-        ? "/tune-in"
-        : "/review";
-  const nextLabel = !hasCheckedInToday
-    ? "Check In"
-    : !hasJournalToday
-      ? "Write Current State"
-      : !hasMeditatedToday
-        ? "Meditate"
-        : "Review Today";
+  const hasFocus = Boolean(primaryManifestation(state.profile));
+  const nextHref = !hasFocus
+    ? "/manifestations"
+    : !hasCheckedInToday
+      ? "/check-in"
+      : !state.todaysCheckIn?.readAt
+        ? "/review"
+        : !hasJournalToday
+          ? "/ritual"
+          : !hasMeditatedToday
+            ? "/tune-in"
+            : "/review";
+  const nextLabel = !hasFocus
+    ? "Create Your Desired Reality"
+    : !hasCheckedInToday
+      ? "Check In"
+      : !state.todaysCheckIn?.readAt
+        ? "Read Today's Reflection"
+        : !hasJournalToday
+          ? "Write Current State"
+          : !hasMeditatedToday
+            ? "Meditate"
+            : "Review Today";
   const currentScore =
     state.todaysCheckIn?.beingScore ?? state.latestCheckIn?.beingScore;
   const alignmentNote = buildAlignmentNote(state);
@@ -241,15 +256,15 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
   return (
     <div className="relative max-w-3xl pt-2 md:pt-0">
       <div className="pointer-events-none absolute -left-12 top-2 hidden h-20 w-20 rounded-full bg-primary/10 blur-2xl sm:block" />
-      <div className="grid items-start gap-7 sm:grid-cols-[1fr_auto] sm:gap-8">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:gap-8">
         <div>
-          <p className="text-[1.35rem] font-light leading-none text-foreground/64 sm:text-3xl">
+          <p className="text-base font-light leading-none text-foreground/64 sm:text-xl">
             Welcome back,
           </p>
-          <h1 className="mt-2 max-w-2xl font-serif text-[4rem] font-semibold leading-[0.9] text-foreground sm:text-7xl lg:text-8xl">
+          <h1 className="mt-2 max-w-2xl break-words font-serif text-[2.5rem] font-semibold leading-tight text-foreground sm:text-5xl">
             {firstName}.
           </h1>
-          <p className="mt-6 max-w-xl text-[15px] leading-7 text-foreground/78 sm:mt-8 sm:text-xl sm:leading-8">
+          <p className="mt-4 max-w-xl text-sm leading-7 text-foreground/78 sm:text-base">
             {buildHomeMessage(state)}
           </p>
           <StreakRhythm
@@ -260,35 +275,20 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
         <CurrentStateRing score={currentScore} />
       </div>
 
-      <section className="mt-8 sm:mt-10 sm:max-w-xl">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-foreground/72">
-          Today
-        </p>
-        <div className="mt-4 grid gap-3">
-          <HomeTask
-            done={hasCheckedInToday}
-            label="Check in"
-            href="/check-in"
-          />
-          <HomeTask
-            done={hasJournalToday}
-            label="Write about your current state"
-            href="/ritual"
-          />
-          <HomeTask
-            done={hasMeditatedToday}
-            label="Meditate"
-            href="/tune-in"
-          />
-        </div>
-        <Button asChild size="lg" className="mt-5 w-full">
-          <Link href={nextHref}>
-            {nextLabel}
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
-        </Button>
-      </section>
-
+      <ManifestationFocus />
+      <div className="mt-6">
+        <DailyFlow
+          checkedIn={hasCheckedInToday}
+          readToday={Boolean(state.todaysCheckIn?.readAt)}
+          journaled={hasJournalToday}
+        />
+      </div>
+      <Button asChild size="lg" className="mt-5 w-full sm:max-w-xl">
+        <Link href={nextHref}>
+          {nextLabel}
+          <ArrowRight className="h-4 w-4" aria-hidden />
+        </Link>
+      </Button>
       <section className="mt-10 sm:mt-12 sm:max-w-2xl">
         <p className="font-serif text-[2.55rem] font-semibold uppercase leading-none tracking-[0.14em] text-foreground sm:text-5xl">
           Alignment Note
@@ -317,16 +317,16 @@ function PersonalHomeHero({ state }: { state: HomeState }) {
 }
 
 function CurrentStateRing({ score }: { score?: number }) {
-  const label = typeof score === "number" ? score.toFixed(1) : "0";
+  const label = typeof score === "number" ? score.toFixed(1) : "-";
 
   return (
-    <div className="clearpth-orb mx-auto flex h-36 w-36 shrink-0 items-center justify-center rounded-full sm:h-44 sm:w-44">
+    <div className="clearpth-orb mx-auto flex h-24 w-24 shrink-0 items-center justify-center rounded-full sm:h-36 sm:w-36">
       <div className="relative z-10 text-center">
-        <p className="font-serif text-5xl font-semibold leading-none text-primary drop-shadow-[0_0_20px_rgba(166,187,154,0.36)] sm:text-6xl">
+        <p className="font-serif text-3xl font-semibold leading-none text-primary drop-shadow-[0_0_20px_rgba(166,187,154,0.36)] sm:text-5xl">
           {label}
         </p>
-        <p className="mt-2 text-[10px] uppercase tracking-[0.18em] text-foreground/66">
-          Current State
+        <p className="mt-2 text-[9px] uppercase tracking-normal text-foreground/66">
+          Inner Alignment
         </p>
       </div>
     </div>
@@ -343,42 +343,14 @@ function StreakRhythm({
   return (
     <div className="mt-5 inline-flex max-w-full items-center gap-3 rounded-full border border-primary/14 bg-card/28 px-4 py-2.5 text-sm text-foreground/84 shadow-[inset_0_1px_0_rgba(244,239,228,0.05)] backdrop-blur-xl">
       <span className="flex h-2.5 w-2.5 shrink-0 rounded-full bg-primary shadow-[0_0_18px_rgba(166,187,154,0.34)]" />
-      <span className="font-medium text-foreground">
-        {streak}-day streak
-      </span>
+      <span className="font-medium text-foreground">{streak}-day streak</span>
       <span className="h-1 w-1 rounded-full bg-muted-foreground/45" />
       <span className="truncate text-muted-foreground">
-        {checkedInToday ? "Rhythm kept today." : "Check in to keep your rhythm."}
+        {checkedInToday
+          ? "Rhythm kept today."
+          : "Check in to keep your rhythm."}
       </span>
     </div>
-  );
-}
-
-function HomeTask({
-  done,
-  label,
-  href,
-}: {
-  done: boolean;
-  label: string;
-  href: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group flex min-h-16 items-center gap-4 rounded-full border border-primary/14 bg-card/30 px-5 py-3 text-foreground/82 shadow-[inset_0_1px_0_rgba(244,239,228,0.05)] backdrop-blur-xl transition hover:border-primary/30 hover:bg-card/44"
-    >
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-primary/16 bg-background/20 text-primary">
-        {done ? (
-          <CheckCircle2 className="h-4 w-4" aria-hidden />
-        ) : (
-          <Circle className="h-4 w-4 opacity-45" aria-hidden />
-        )}
-      </span>
-      <span className="text-[1rem] leading-6 text-foreground/82 transition group-hover:text-foreground">
-        {label}
-      </span>
-    </Link>
   );
 }
 
@@ -499,33 +471,26 @@ function getFirstName(user: AccountUser | null) {
 }
 
 function buildHomeMessage(state: HomeState) {
-  const desiredReality = getDesiredRealityLine(state.profile).toLowerCase();
+  if (!primaryManifestation(state.profile))
+    return "Choose what you want to create next.";
 
   if (!state.latestCheckIn) {
-    return `Check in to see how close your current state is to ${desiredReality}.`;
+    return "A few honest minutes for the life you want.";
   }
 
   if (!state.todaysCheckIn) {
-    return `Your last recorded state was ${state.latestCheckIn.beingScore.toFixed(
-      1,
-    )}/10. Check in now to see today's gap and what wants your attention.`;
+    return "A fresh day. Start with where you are now.";
   }
 
   if (!state.todaysJournal?.content.trim()) {
-    return `Today is measured at ${state.todaysCheckIn.beingScore.toFixed(
-      1,
-    )}/10. Write a few honest lines about what this state is showing you.`;
+    return state.todaysCheckIn.readAt
+      ? "Give today's reflection a voice."
+      : "Your reflection is ready.";
   }
 
   if (!state.hasMeditatedToday) {
-    return "Your check-in and journal are done. Tune in to let the desired state become easier to feel.";
+    return "Your daily path is complete. Tune in whenever you need.";
   }
 
-  return "Today is complete. Let the pattern make your next choice cleaner.";
-}
-
-function getDesiredRealityLine(profile: OnboardingProfile | null) {
-  const primaryGoal = profile?.primaryGoal.trim();
-
-  return primaryGoal || "the life you want";
+  return "Your daily path is complete.";
 }

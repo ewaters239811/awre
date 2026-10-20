@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { buildPersonalizationLens } from "@/lib/personalization-lens";
 import { createJsonWithOpenAI } from "@/lib/server/openai";
 import type { AiMeditation, CheckInResult, OnboardingProfile } from "@/lib/types";
+import { profileForCheckIn } from "@/lib/manifestations";
 
 type MeditationRequest = {
   result?: CheckInResult;
@@ -29,7 +30,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const onboardingProfile = body.onboardingProfile ?? null;
+    const onboardingProfile = profileForCheckIn(body.onboardingProfile ?? null, result);
     const personalizationLens = buildPersonalizationLens(onboardingProfile);
     const response = await createJsonWithOpenAI<AiMeditation>({
       fallback,
@@ -75,6 +76,8 @@ export async function POST(request: Request) {
         avoidedAction: result.avoidedAction,
         currentFeeling: result.currentFeeling,
         highestBeingChoice: result.highestBeingChoice,
+        desiredReality: result.desiredReality ?? onboardingProfile?.primaryGoal,
+        innerFoundation: result.innerFoundation ?? onboardingProfile?.manifestations?.innerFoundation,
         onboardingProfile,
         personalizationLens,
       },

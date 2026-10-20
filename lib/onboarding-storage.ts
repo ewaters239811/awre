@@ -1,4 +1,5 @@
 import type { OnboardingProfile } from "@/lib/types";
+import { migrateManifestations, reconcileManifestations } from "@/lib/manifestations";
 
 const STORAGE_KEY = "clearpth.onboardingProfile.v1";
 export const ONBOARDING_CHANGED_EVENT = "clearpth:onboarding-changed";
@@ -27,7 +28,7 @@ export function getOnboardingProfile() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    return isOnboardingProfile(parsed) ? parsed : null;
+    return isOnboardingProfile(parsed) ? migrateManifestations(parsed) : null;
   } catch {
     return null;
   }
@@ -40,7 +41,7 @@ export function saveOnboardingProfile(profile: OnboardingProfile) {
     const existing = getOnboardingProfile();
     const now = new Date().toISOString();
     const next = {
-      ...profile,
+      ...reconcileManifestations(profile),
       createdAt: existing?.createdAt ?? profile.createdAt ?? now,
       updatedAt: now,
     };

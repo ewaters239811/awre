@@ -15,6 +15,7 @@ import {
 import { getJournalEntries } from "@/lib/journal-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import type { CheckInResult } from "@/lib/types";
+import { profileForCheckIn } from "@/lib/manifestations";
 
 type AiStatus = "idle" | "loading" | "ready" | "unavailable";
 
@@ -40,8 +41,8 @@ export function ResultsContent() {
       return;
     }
 
-    const onboardingProfile = getOnboardingProfile();
-    const recentJournalEntries = getJournalEntries().slice(0, 8);
+    const onboardingProfile = profileForCheckIn(getOnboardingProfile(), result);
+    const recentJournalEntries = getJournalEntries(result.manifestationId).slice(0, 8);
     const contextSignature = buildAiReadingSignature({
       result,
       onboardingProfile,

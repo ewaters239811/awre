@@ -23,8 +23,8 @@ import {
   syncLocalDataToAccount,
   updateAccountName,
 } from "@/lib/account-data";
-import { getCheckIns } from "@/lib/alignment";
-import { getJournalEntries } from "@/lib/journal-storage";
+import { getAllCheckIns } from "@/lib/alignment";
+import { getAllJournalEntries } from "@/lib/journal-storage";
 import {
   createEmptyOnboardingProfile,
   getOnboardingProfile,
@@ -59,8 +59,8 @@ export default function SettingsPage() {
   const [savingDesire, setSavingDesire] = useState(false);
 
   const stats = {
-    checkIns: getCheckIns().length,
-    journalEntries: getJournalEntries().length,
+    checkIns: getAllCheckIns().length,
+    journalEntries: getAllJournalEntries().length,
     hasProfile: Boolean(profile.primaryGoal || profile.desiredState),
   };
 
@@ -237,9 +237,10 @@ export default function SettingsPage() {
           <div className="flex items-center gap-3">
             <Target className="h-5 w-5 text-primary" aria-hidden />
             <p className="text-xs uppercase tracking-[0.24em] text-primary">
-              Desired Reality
+              Your Desired Reality
             </p>
           </div>
+          <Button asChild variant="secondary" className="mt-5"><Link href="/manifestations">Manage goals &amp; Inner Foundation</Link></Button>
           <form className="mt-5 space-y-4" onSubmit={saveDesiredReality}>
             <SettingsField
               label="What do you want?"

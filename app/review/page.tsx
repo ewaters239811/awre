@@ -5,11 +5,22 @@ import { useEffect, useRef, useState } from "react";
 import { CalendarDays, CheckCircle2, NotebookPen, Target } from "lucide-react";
 import { AlignmentResult } from "@/components/alignment-result";
 import { DailyFlow } from "@/components/daily-flow";
+import { ManifestationFocus } from "@/components/manifestation-focus";
+import { useManifestations } from "@/lib/use-manifestations";
+import { profileForCheckIn } from "@/lib/manifestations";
 import { TeachingQuote } from "@/components/teaching-quote";
 import { Button } from "@/components/ui/button";
-import { saveCheckInToAccount, saveJournalEntryToAccount } from "@/lib/account-data";
+import {
+  saveCheckInToAccount,
+  saveJournalEntryToAccount,
+} from "@/lib/account-data";
 import { buildAiReadingSignature } from "@/lib/ai-reading-signature";
-import { getCheckInDateKey, getCheckIns, updateCheckIn } from "@/lib/alignment";
+import {
+  CHECK_INS_CHANGED_EVENT,
+  getCheckInDateKey,
+  getCheckIns,
+  updateCheckIn,
+} from "@/lib/alignment";
 import {
   createEmptyJournalEntry,
   getJournalEntries,
@@ -28,6 +39,8 @@ import type {
 type AiStatus = "idle" | "loading" | "ready" | "unavailable";
 
 export default function ReviewPage() {
+  const { primary } = useManifestations();
+  const [actionError, setActionError] = useState("");
   const [checkIns, setCheckIns] = useState<CheckInResult[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [onboardingProfile, setOnboardingProfile] =
@@ -38,12 +51,15 @@ export default function ReviewPage() {
   const calendarTodayKey = useCurrentDateKey();
 
   useEffect(() => {
-    queueMicrotask(() => {
+    const refresh = () => {
       setCheckIns(getCheckIns());
       setJournalEntries(getJournalEntries());
       setOnboardingProfile(getOnboardingProfile());
-    });
-  }, []);
+    };
+    queueMicrotask(refresh);
+    window.addEventListener(CHECK_INS_CHANGED_EVENT, refresh);
+    return () => window.removeEventListener(CHECK_INS_CHANGED_EVENT, refresh);
+  }, [primary?.id]);
 
   const todayCheckIns = checkIns.filter(
     (item) => getCheckInDateKey(item) === checkInTodayKey,
@@ -70,17 +86,20 @@ export default function ReviewPage() {
     const existing = todayJournal ?? createEmptyJournalEntry(calendarTodayKey);
     const nextEntry: JournalEntry = {
       ...existing,
+      manifestationId: latestTodayCheckIn.manifestationId ?? primary?.id,
       alignedAction,
-      alignedActionCompletedAt: actionCompleted ? undefined : new Date().toISOString(),
+      alignedActionCompletedAt: actionCompleted
+        ? undefined
+        : new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    saveJournalEntry(nextEntry);
-    setJournalEntries(getJournalEntries());
     try {
       await saveJournalEntryToAccount(nextEntry);
+      saveJournalEntry(nextEntry);
+      setJournalEntries(getJournalEntries());
     } catch {
-      // The local mirror stays responsive even if the account save is delayed.
+      setActionError("Could not save your action. Please try again.");
     }
   };
 
@@ -89,7 +108,10 @@ export default function ReviewPage() {
       return;
     }
 
-    const onboardingProfile = getOnboardingProfile();
+    const onboardingProfile = profileForCheckIn(
+      getOnboardingProfile(),
+      latestTodayCheckIn,
+    );
     const recentJournalEntries = getJournalEntries().slice(0, 8);
     const contextSignature = buildAiReadingSignature({
       result: latestTodayCheckIn,
@@ -112,7 +134,9 @@ export default function ReviewPage() {
     requestedAiFor.current = requestKey;
     setAiStatus("loading");
 
+    const controller = new AbortController();
     fetch("/api/personalize", {
+      signal: controller.signal,
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -150,7 +174,13 @@ export default function ReviewPage() {
           setAiStatus("ready");
         },
       )
-      .catch(() => setAiStatus("unavailable"));
+      .catch(() => {
+        if (!controller.signal.aborted) setAiStatus("unavailable");
+      });
+    return () => {
+      controller.abort();
+      requestedAiFor.current = null;
+    };
   }, [latestTodayCheckIn]);
 
   return (
@@ -175,7 +205,7 @@ export default function ReviewPage() {
       <section className="mx-auto mt-7 max-w-6xl">
         <DailyFlow
           checkedIn={Boolean(latestTodayCheckIn)}
-          readToday={Boolean(latestTodayCheckIn)}
+          readToday={Boolean(latestTodayCheckIn?.readAt)}
           journaled={Boolean(todayJournal?.content.trim())}
         />
       </section>
@@ -186,10 +216,7 @@ export default function ReviewPage() {
             label="Score"
             value={latestTodayCheckIn?.beingScore.toFixed(1) ?? "-"}
           />
-          <ReviewStat
-            label="Check-ins"
-            value={String(todayCheckIns.length)}
-          />
+          <ReviewStat label="Check-ins" value={String(todayCheckIns.length)} />
           <ReviewStat
             label="Journal"
             value={todayJournal?.content.trim() ? "Done" : "Open"}
@@ -198,20 +225,25 @@ export default function ReviewPage() {
         </div>
       </section>
 
+      <div className="mx-auto max-w-6xl">
+        <ManifestationFocus compact />
+      </div>
       <section className="mx-auto mt-6 grid max-w-6xl gap-5 lg:grid-cols-[0.9fr_1.1fr]">
         <article className="rounded-[1.35rem] border border-primary/20 bg-primary/8 p-5 md:rounded-md md:p-6">
           <div className="flex items-center gap-3">
             <Target className="h-5 w-5 text-primary" aria-hidden />
             <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-              What You Want
+              Who You Are Becoming
             </p>
           </div>
           <p className="mt-3 font-serif text-2xl font-semibold leading-tight md:text-3xl">
-            {getDesiredRealityLine(onboardingProfile)}
+            {primary?.identity ||
+              "The person who lives this reality, one choice at a time."}
           </p>
           {onboardingProfile?.desiredState.trim() ? (
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              State to practice: {onboardingProfile.desiredState.trim()}
+              State to practice:{" "}
+              {primary?.identity || onboardingProfile.desiredState.trim()}
             </p>
           ) : null}
         </article>
@@ -234,7 +266,7 @@ export default function ReviewPage() {
           <p className="text-xs uppercase tracking-[0.24em] text-primary">
             No check-in today
           </p>
-            <h2 className="mt-3 font-serif text-3xl font-semibold md:text-4xl">
+          <h2 className="mt-3 font-serif text-3xl font-semibold md:text-4xl">
             You have not checked in today.
           </h2>
           <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
@@ -297,7 +329,8 @@ export default function ReviewPage() {
                   {alignedAction}
                 </p>
                 <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  This is the action that makes the desired reality more real today.
+                  This is the action that makes the desired reality more real
+                  today.
                 </p>
               </div>
               <Button
@@ -310,7 +343,16 @@ export default function ReviewPage() {
                 {actionCompleted ? "Completed" : "Mark Complete"}
               </Button>
             </div>
-            <Button asChild className="mt-4 w-full md:w-auto" variant="secondary">
+            {actionError ? (
+              <p role="alert" className="mt-3 text-sm text-primary">
+                {actionError}
+              </p>
+            ) : null}
+            <Button
+              asChild
+              className="mt-4 w-full md:w-auto"
+              variant="secondary"
+            >
               <Link href="/tune-in">Open Meditation</Link>
             </Button>
           </section>
@@ -432,11 +474,11 @@ function buildTodayReport(
   }
 
   return {
-      signalLabel: "Workable",
-      primaryTitle: `${weakest} is asking for one adjustment.`,
-      primaryDetail: `${strongest} is giving you enough stability to bring ${weakest} closer to your desired reality. ${journalSignal}`,
-      gapTitle: `${weakest} is the next adjustment.`,
-      gapDetail: buildGapDetail(weakest, desiredReality, desiredState),
+    signalLabel: "Workable",
+    primaryTitle: `${weakest} is asking for one adjustment.`,
+    primaryDetail: `${strongest} is giving you enough stability to bring ${weakest} closer to your desired reality. ${journalSignal}`,
+    gapTitle: `${weakest} is the next adjustment.`,
+    gapDetail: buildGapDetail(weakest, desiredReality, desiredState),
     correctionTitle: getCorrectionTitle(weakest),
     correctionDetail: getCorrectionDetail(weakest),
   };

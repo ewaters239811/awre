@@ -3,9 +3,14 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Mic, MicOff, Save } from "lucide-react";
 import { DailyFlow } from "@/components/daily-flow";
+import { ManifestationFocus } from "@/components/manifestation-focus";
+import { useManifestations } from "@/lib/use-manifestations";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { getCurrentAccount, saveJournalEntryToAccount } from "@/lib/account-data";
+import {
+  getCurrentAccount,
+  saveJournalEntryToAccount,
+} from "@/lib/account-data";
 import { getCheckInForDate } from "@/lib/alignment";
 import {
   createEmptyJournalEntry,
@@ -16,6 +21,8 @@ import {
 import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
 import type { JournalEntry } from "@/lib/types";
+import { getOnboardingProfile } from "@/lib/onboarding-storage";
+import { primaryManifestation } from "@/lib/manifestations";
 
 type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
 
@@ -44,6 +51,7 @@ type SpeechWindow = Window & {
 };
 
 export default function RitualPage() {
+  const { primary } = useManifestations();
   const today = useCurrentDateKey();
   const checkInToday = useCurrentCheckInDateKey();
   const [entry, setEntry] = useState<JournalEntry | null>(null);
@@ -53,6 +61,7 @@ export default function RitualPage() {
   const [isListening, setIsListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const speechBaseRef = useRef("");
 
@@ -69,7 +78,13 @@ export default function RitualPage() {
         ),
       );
     });
-  }, [today]);
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.stop();
+      }
+    };
+  }, [today, primary?.id]);
 
   const updateContent = (content: string) => {
     setSaved(false);
@@ -80,11 +95,12 @@ export default function RitualPage() {
   const saveEntry = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const content = draftContent.trim();
-    if (!entry || !content) return;
+    if (!entry || !content || !primary || saving) return;
 
     const existingEntry = getJournalEntryForDate(today);
     const nextEntry: JournalEntry = {
       ...(existingEntry ?? entry),
+      manifestationId: primary?.id,
       date: today,
       content: existingEntry?.content.trim()
         ? `${existingEntry.content.trim()}\n\n${content}`
@@ -92,17 +108,33 @@ export default function RitualPage() {
       updatedAt: new Date().toISOString(),
     };
 
-    const account = await getCurrentAccount();
-    if (!account) {
-      setError("Sign in or create an account to save your journal.");
-      return;
+    setSaving(true);
+    if (recognitionRef.current) {
+      recognitionRef.current.onresult = null;
+      recognitionRef.current.stop();
     }
-    await saveJournalEntryToAccount(nextEntry);
-    saveJournalEntry(nextEntry);
-    setEntry(nextEntry);
-    setDraftContent("");
-    setEntries(getJournalEntries());
-    setSaved(true);
+    setIsListening(false);
+    try {
+      const account = await getCurrentAccount();
+      if (!account) {
+        setError("Sign in or create an account to save your journal.");
+        return;
+      }
+      await saveJournalEntryToAccount(nextEntry);
+      saveJournalEntry(nextEntry);
+      if (primaryManifestation(getOnboardingProfile())?.id !== primary.id)
+        return;
+      setEntry(nextEntry);
+      setDraftContent("");
+      setEntries(getJournalEntries());
+      setSaved(true);
+    } catch {
+      setError(
+        "Could not save your journal. Your words are still here. Please try again.",
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   const toggleSpeech = () => {
@@ -167,10 +199,27 @@ export default function RitualPage() {
         <div className="mt-5 md:mt-6">
           <DailyFlow
             checkedIn={checkedInToday}
-            readToday={checkedInToday}
-            journaled={Boolean(savedTodayEntry || draftContent.trim())}
+            readToday={Boolean(getCheckInForDate(checkInToday)?.readAt)}
+            journaled={Boolean(savedTodayEntry)}
           />
         </div>
+      </section>
+
+      <div className="mx-auto max-w-6xl">
+        <ManifestationFocus compact />
+      </div>
+      <section className="mx-auto mt-6 max-w-6xl border-b border-border/40 pb-5">
+        <p className="text-xs uppercase tracking-[0.18em] text-primary">
+          A moment for your desired reality
+        </p>
+        <ol className="mt-3 space-y-3 text-sm leading-7 text-foreground/85">
+          <li>
+            What would the version of me who has achieved this desire believe
+            today?
+          </li>
+          <li>What thoughts or feelings am I ready to release?</li>
+          <li>What is one meaningful action I can take toward this reality?</li>
+        </ol>
       </section>
 
       <section className="mx-auto mt-6 grid max-w-6xl gap-5 lg:mt-8 lg:grid-cols-[1fr_320px]">
@@ -219,11 +268,16 @@ export default function RitualPage() {
               {wordCount} words recorded for today.
             </p>
             <div className="flex items-center gap-3">
-              {saved ? <p className="text-sm text-muted-foreground">Saved.</p> : null}
+              {saved ? (
+                <p className="text-sm text-muted-foreground">Saved.</p>
+              ) : null}
               {error ? <p className="text-sm text-primary">{error}</p> : null}
-              <Button type="submit" disabled={!draftContent.trim()}>
+              <Button
+                type="submit"
+                disabled={!draftContent.trim() || !primary || saving}
+              >
                 <Save className="h-4 w-4" aria-hidden />
-                Save Journal
+                {saving ? "Saving..." : "Save Journal"}
               </Button>
             </div>
           </div>
@@ -237,9 +291,18 @@ export default function RitualPage() {
             <JournalStat label="Saved entries" value={String(entries.length)} />
             <JournalStat
               label="Today"
-              value={savedTodayEntry ? "Saved" : draftContent.trim() ? "Open" : "Blank"}
+              value={
+                savedTodayEntry
+                  ? "Saved"
+                  : draftContent.trim()
+                    ? "Open"
+                    : "Blank"
+              }
             />
-            <JournalStat label="Voice input" value={speechSupported ? "Ready" : "Unavailable"} />
+            <JournalStat
+              label="Voice input"
+              value={speechSupported ? "Ready" : "Unavailable"}
+            />
           </div>
 
           {savedTodayEntry ? (

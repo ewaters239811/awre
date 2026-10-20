@@ -2,8 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { saveCheckInToAccount } from "@/lib/account-data";
-import { getLatestCheckIn, updateCheckIn } from "@/lib/alignment";
+import { getTodaysCheckIn, updateCheckIn } from "@/lib/alignment";
 import type { CheckInResult } from "@/lib/types";
+import { useManifestations } from "@/lib/use-manifestations";
+import { markTodayRead } from "@/lib/daily-path";
+import { Button } from "@/components/ui/button";
+import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 
 const localQuotes = [
   "A magnetic life begins where the mind stops scattering the will.",
@@ -13,15 +17,26 @@ const localQuotes = [
 ];
 
 export function TeachingQuote() {
+  const { primary } = useManifestations();
+  const today = useCurrentCheckInDateKey();
+  const [canRead, setCanRead] = useState(false);
+  const [read, setRead] = useState(false);
+  const [error, setError] = useState("");
   const [quote, setQuote] = useState(localQuotes[0]);
   const [status, setStatus] = useState<"loading" | "ready" | "local">(
     "loading",
   );
 
   useEffect(() => {
-    const latest = getLatestCheckIn();
+    const latest = getTodaysCheckIn();
+    queueMicrotask(() => setCanRead(Boolean(latest)));
     const fallback = getRandomLocalQuote(latest);
     queueMicrotask(() => setQuote(latest?.aiQuote ?? fallback));
+    queueMicrotask(() => setRead(Boolean(latest?.readAt)));
+    if (latest?.aiQuote) {
+      queueMicrotask(() => setStatus("ready"));
+      return;
+    }
 
     const controller = new AbortController();
 
@@ -63,7 +78,7 @@ export function TeachingQuote() {
       .catch(() => setStatus("local"));
 
     return () => controller.abort();
-  }, []);
+  }, [primary?.id, today]);
 
   return (
     <section className="aura-glass mx-auto mt-8 max-w-4xl rounded-lg p-7 text-center md:p-12">
@@ -79,6 +94,8 @@ export function TeachingQuote() {
           ? "Drawing from your latest alignment..."
           : "Based on your latest check-in."}
       </p>
+      <Button className="mt-5" variant="secondary" disabled={read || !canRead || status === "loading"} onClick={async () => { try { await markTodayRead(); setRead(true); } catch { setError("Could not save. Please try again."); } }}>{read ? "Read today" : "I've read this"}</Button>
+      {error ? <p role="alert" className="mt-3 text-sm text-primary">{error}</p> : null}
     </section>
   );
 }

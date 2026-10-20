@@ -10,10 +10,14 @@ import { clearRemoteCheckIns } from "@/lib/account-data";
 import { clearCheckIns, getCheckInDateKey, getCheckIns } from "@/lib/alignment";
 import { displayPillarName } from "@/lib/pillars";
 import type { CheckInResult } from "@/lib/types";
+import { useManifestations } from "@/lib/use-manifestations";
+import { ManifestationFocus } from "@/components/manifestation-focus";
 
 export default function HistoryPage() {
+  const { primary } = useManifestations();
   const [items, setItems] = useState<CheckInResult[]>([]);
   const [selectedItem, setSelectedItem] = useState<CheckInResult | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -21,20 +25,19 @@ export default function HistoryPage() {
       setItems(saved);
       setSelectedItem(saved[0] ?? null);
     });
-  }, []);
+  }, [primary?.id]);
 
   const stats = useMemo(() => buildHistoryStats(items), [items]);
 
   const clear = async () => {
+    if (!primary) return;
     try {
-      await clearRemoteCheckIns();
-      clearCheckIns();
+      await clearRemoteCheckIns(primary.id);
+      clearCheckIns(primary.id);
       setItems([]);
       setSelectedItem(null);
     } catch {
-      clearCheckIns();
-      setItems([]);
-      setSelectedItem(null);
+      setError("Could not clear these check-ins. Please try again.");
     }
   };
 
@@ -57,6 +60,8 @@ export default function HistoryPage() {
         </Button>
       </div>
 
+      <ManifestationFocus compact />
+      {error ? <p className="mt-4 text-sm text-primary" role="alert">{error}</p> : null}
       {items.length === 0 ? (
         <div className="aura-glass mt-8 rounded-lg p-6">
           <h2 className="font-serif text-3xl font-semibold">
@@ -97,8 +102,8 @@ export default function HistoryPage() {
             </p>
             <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-                Check-ins are stored on your account profile. Clearing history
-                removes the record used by History and Progress.
+                Clear check-ins for this desired reality. Other goals and their
+                records will stay here.
               </p>
               <Button variant="secondary" onClick={clear}>
                 Clear history

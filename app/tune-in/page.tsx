@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
-  Headphones,
-  Pause,
-  RefreshCw,
-  Square,
-  Volume2,
-} from "lucide-react";
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
+import { Headphones, Pause, RefreshCw, Square, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { saveCheckInToAccount } from "@/lib/account-data";
 import { getCheckInForDate, updateCheckIn } from "@/lib/alignment";
@@ -16,6 +16,7 @@ import { markMeditationCompleted } from "@/lib/meditation-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
+import { useManifestations } from "@/lib/use-manifestations";
 import type { AiMeditation, CheckInResult } from "@/lib/types";
 
 type MeditationStatus = "idle" | "loading" | "ready" | "unavailable";
@@ -24,7 +25,8 @@ const MEDITATION_SCRIPT_VERSION = "spacious-v2";
 
 const fallbackMeditation: AiMeditation = {
   title: "Return To The Desired State",
-  intention: "Let the noise settle until the state that matches what you want can be felt.",
+  intention:
+    "Let the noise settle until the state that matches what you want can be felt.",
   durationSeconds: 540,
   script:
     "Let your body settle into this moment.\n\nLet your shoulders soften, and let your jaw release.\n\nTake a slow breath in, and let it leave without forcing anything.\n\nPause here.\n\nNotice the state you brought with you today. You do not need to fix it quickly. You only need enough quiet to see it clearly.\n\nLet the loudest thought move through your awareness without becoming the whole truth.\n\nStay here.\n\nUnder the noise, there is a steadier part of you that already knows what matters.\n\nFeel your feet. Feel your hands. Feel the center of your chest.\n\nLet the desired state become simple in the body. Not dramatic. Not urgent. Just available.\n\nPause here.\n\nNothing outside of you has to change in this moment for clarity to begin. You are practicing the state that can hold the life you want.\n\nTake one more breath.\n\nLet thought, feeling, and action return to one quiet center.\n\nWhen you are ready, come back with more space around what is true.",
@@ -32,14 +34,15 @@ const fallbackMeditation: AiMeditation = {
 };
 
 export default function TuneInPage() {
+  const { primary } = useManifestations();
   const todayKey = useCurrentCheckInDateKey();
   const calendarToday = useCurrentDateKey();
   const [checkIn, setCheckIn] = useState<CheckInResult | null>(null);
   const [status, setStatus] = useState<MeditationStatus>("idle");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [audioDurationSeconds, setAudioDurationSeconds] = useState<number | null>(
-    null,
-  );
+  const [audioDurationSeconds, setAudioDurationSeconds] = useState<
+    number | null
+  >(null);
   const [timerRunning, setTimerRunning] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioPaused, setAudioPaused] = useState(false);
@@ -48,18 +51,36 @@ export default function TuneInPage() {
     "idle" | "loading" | "ready" | "unavailable"
   >("idle");
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioRequest = useRef<AbortController | null>(null);
   const requestedFor = useRef<string | null>(null);
 
   useEffect(() => {
     queueMicrotask(() => {
       setCheckIn(getCheckInForDate(todayKey));
+      setAudioUrl(null);
+      setAudioPlaying(false);
+      setAudioPaused(false);
+      setTimerRunning(false);
+      setElapsedSeconds(0);
+      setAudioStatus("idle");
     });
 
     return () => {
-      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      audioRequest.current?.abort();
       stopAmbientBed();
     };
-  }, [todayKey, audioUrl]);
+  }, [todayKey, primary?.id]);
+
+  useEffect(
+    () => () => {
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+    },
+    [audioUrl],
+  );
+  useEffect(() => {
+    const audio = audioRef.current;
+    return () => audio?.pause();
+  }, [checkIn?.id]);
 
   const contextSignature = useMemo(() => {
     if (!checkIn) return "";
@@ -100,7 +121,9 @@ export default function TuneInPage() {
     requestedFor.current = `${checkIn.id}:${contextSignature}`;
     setStatus("loading");
 
+    const controller = new AbortController();
     fetch("/api/meditation", {
+      signal: controller.signal,
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -126,10 +149,15 @@ export default function TuneInPage() {
         setStatus(payload.enabled === false ? "unavailable" : "ready");
       })
       .catch(() => {
+        if (controller.signal.aborted) return;
         setStatus("unavailable");
         setElapsedSeconds(0);
         setAudioDurationSeconds(null);
       });
+    return () => {
+      controller.abort();
+      requestedFor.current = null;
+    };
   }, [checkIn, contextSignature]);
 
   useEffect(() => {
@@ -138,11 +166,7 @@ export default function TuneInPage() {
       audioDurationSeconds,
     );
 
-    if (
-      !timerRunning ||
-      audioPlaying ||
-      elapsedSeconds >= sessionDuration
-    ) {
+    if (!timerRunning || audioPlaying || elapsedSeconds >= sessionDuration) {
       return;
     }
 
@@ -189,7 +213,10 @@ export default function TuneInPage() {
     if (audioUrl) return audioUrl;
 
     setAudioStatus("loading");
+    const controller = new AbortController();
+    audioRequest.current = controller;
     const response = await fetch("/api/meditation-audio", {
+      signal: controller.signal,
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: meditation.script }),
@@ -294,7 +321,8 @@ export default function TuneInPage() {
           Your Tune In
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          A personal session for returning to the state that matches what you want.
+          A personal session for returning to the state that matches what you
+          want.
         </p>
 
         <div className="aura-glass clearpth-meditation-stage mx-auto mt-9 rounded-[2rem] px-5 py-10 sm:px-8 sm:py-12">
@@ -321,11 +349,20 @@ export default function TuneInPage() {
           >
             <div className="relative z-10 text-center">
               {audioPlaying && !audioPaused ? (
-                <Pause className="mx-auto h-9 w-9 text-primary/90" aria-hidden />
+                <Pause
+                  className="mx-auto h-9 w-9 text-primary/90"
+                  aria-hidden
+                />
               ) : audioPaused ? (
-                <Volume2 className="mx-auto h-9 w-9 text-primary/90" aria-hidden />
+                <Volume2
+                  className="mx-auto h-9 w-9 text-primary/90"
+                  aria-hidden
+                />
               ) : (
-                <Headphones className="mx-auto h-9 w-9 text-primary/90" aria-hidden />
+                <Headphones
+                  className="mx-auto h-9 w-9 text-primary/90"
+                  aria-hidden
+                />
               )}
               <p className="mt-5 px-8 font-serif text-2xl font-semibold leading-tight text-foreground sm:text-3xl">
                 {listeningState.message}
@@ -353,50 +390,54 @@ export default function TuneInPage() {
             </button>
           </div>
 
-        {status === "unavailable" ? (
-          <p className="mt-4 rounded-md border border-border/70 bg-card/45 px-4 py-3 text-sm text-muted-foreground">
-            The tailored session is using the fallback meditation for now.
-          </p>
-        ) : null}
-        {audioStatus === "unavailable" ? (
-          <p className="mt-4 rounded-md border border-border/70 bg-card/45 px-4 py-3 text-sm text-muted-foreground">
-            ElevenLabs audio is not configured yet. Add your ElevenLabs API key
-            to enable realistic generated audio.
-          </p>
-        ) : null}
-        <audio
-          ref={audioRef}
-          preload="none"
-          playsInline
-          onPause={() => updateMediaSession("paused", meditation)}
-          onPlay={() => updateMediaSession("playing", meditation)}
-          onTimeUpdate={(event) => {
-            const audio = event.currentTarget;
-            if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
+          {status === "unavailable" ? (
+            <p className="mt-4 rounded-md border border-border/70 bg-card/45 px-4 py-3 text-sm text-muted-foreground">
+              The tailored session is using the fallback meditation for now.
+            </p>
+          ) : null}
+          {audioStatus === "unavailable" ? (
+            <p className="mt-4 rounded-md border border-border/70 bg-card/45 px-4 py-3 text-sm text-muted-foreground">
+              ElevenLabs audio is not configured yet. Add your ElevenLabs API
+              key to enable realistic generated audio.
+            </p>
+          ) : null}
+          <audio
+            ref={audioRef}
+            preload="none"
+            playsInline
+            onPause={() => updateMediaSession("paused", meditation)}
+            onPlay={() => updateMediaSession("playing", meditation)}
+            onTimeUpdate={(event) => {
+              const audio = event.currentTarget;
+              if (!Number.isFinite(audio.duration) || audio.duration <= 0)
+                return;
 
-            setAudioDurationSeconds(Math.ceil(audio.duration));
-            setElapsedSeconds(Math.floor(audio.currentTime));
-          }}
-          onEnded={() => {
-            stopAmbientBed();
-            updateMediaSession("none", meditation);
-            markMeditationCompleted(calendarToday);
-            if (audioRef.current?.duration && Number.isFinite(audioRef.current.duration)) {
-              setElapsedSeconds(Math.ceil(audioRef.current.duration));
-            }
-            setAudioPlaying(false);
-            setAudioPaused(false);
-            setTimerRunning(false);
-          }}
-          onError={() => {
-            stopAmbientBed();
-            updateMediaSession("none", meditation);
-            setAudioStatus("unavailable");
-            setAudioPlaying(false);
-            setAudioPaused(false);
-            setTimerRunning(false);
-          }}
-        />
+              setAudioDurationSeconds(Math.ceil(audio.duration));
+              setElapsedSeconds(Math.floor(audio.currentTime));
+            }}
+            onEnded={() => {
+              stopAmbientBed();
+              updateMediaSession("none", meditation);
+              markMeditationCompleted(calendarToday);
+              if (
+                audioRef.current?.duration &&
+                Number.isFinite(audioRef.current.duration)
+              ) {
+                setElapsedSeconds(Math.ceil(audioRef.current.duration));
+              }
+              setAudioPlaying(false);
+              setAudioPaused(false);
+              setTimerRunning(false);
+            }}
+            onError={() => {
+              stopAmbientBed();
+              updateMediaSession("none", meditation);
+              setAudioStatus("unavailable");
+              setAudioPlaying(false);
+              setAudioPaused(false);
+              setTimerRunning(false);
+            }}
+          />
         </div>
       </section>
     </main>
@@ -411,7 +452,8 @@ function normalizeMeditation(value?: AiMeditation) {
     intention: value.intention?.trim() || fallbackMeditation.intention,
     durationSeconds: Math.min(Math.max(value.durationSeconds || 540, 180), 900),
     script: value.script?.trim() || fallbackMeditation.script,
-    closingPrompt: value.closingPrompt?.trim() || fallbackMeditation.closingPrompt,
+    closingPrompt:
+      value.closingPrompt?.trim() || fallbackMeditation.closingPrompt,
   };
 }
 
@@ -498,7 +540,10 @@ function updateMediaSession(
   navigator.mediaSession.playbackState = playbackState;
 
   navigator.mediaSession.setActionHandler("play", () => {
-    document.querySelector("audio")?.play().catch(() => undefined);
+    document
+      .querySelector("audio")
+      ?.play()
+      .catch(() => undefined);
     navigator.mediaSession.playbackState = "playing";
   });
   navigator.mediaSession.setActionHandler("pause", () => {
@@ -578,7 +623,10 @@ function stopAmbientBed() {
   try {
     if (gain) {
       gain.gain.cancelScheduledValues(context.currentTime);
-      gain.gain.setValueAtTime(Math.max(gain.gain.value, 0.0001), context.currentTime);
+      gain.gain.setValueAtTime(
+        Math.max(gain.gain.value, 0.0001),
+        context.currentTime,
+      );
       gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.8);
     }
 

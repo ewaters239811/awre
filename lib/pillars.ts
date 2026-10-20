@@ -8,5 +8,5 @@ export function normalizePillarName(pillar: LegacyPillarName): PillarName {
 
 export function displayPillarName(pillar: LegacyPillarName | null | undefined) {
   if (!pillar) return "-";
-  return normalizePillarName(pillar);
+  return normalizePillarName(pillar) === "Doing" ? "Willing" : pillar;
 }

@@ -20,6 +20,7 @@ export async function POST(request: Request) {
       system: [
         "Write one original ClearPth teaching quote.",
         "The quote should be inspired by the user's latest alignment result when provided.",
+        "Relate the teaching to this specific desired reality through identity, attention, visualization, emotional steadiness, faith, detachment, persistence, or aligned action. Never promise that thoughts cause external events.",
         "Use an elegant, mystical, grounded tone. Avoid clinical or diagnostic language.",
         "Let the quote imply that outer desires point back to an inner state, and that real change begins when the user embodies the feeling before needing evidence.",
         "Use light Jungian depth when useful: integration, shadow, projection, and self-recognition, but avoid academic language.",
@@ -31,6 +32,8 @@ export async function POST(request: Request) {
       user: result
         ? {
             beingScore: result.beingScore,
+            desiredReality: result.desiredReality,
+            innerFoundation: result.innerFoundation,
             stateLabel: result.stateLabel,
             strongestPillar: result.strongestPillar,
             weakestPillar: result.weakestPillar,

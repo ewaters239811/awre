@@ -8,16 +8,18 @@ import { getCheckInDateKey, getCheckIns } from "@/lib/alignment";
 import { toDateKey } from "@/lib/date-key";
 import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import type { CheckInResult } from "@/lib/types";
+import { useManifestations } from "@/lib/use-manifestations";
 
 const milestones = [3, 7, 14, 30];
 
 export function CheckInStreak() {
+  const { primary } = useManifestations();
   const todayKey = useCurrentCheckInDateKey();
   const [checkIns, setCheckIns] = useState<CheckInResult[]>([]);
 
   useEffect(() => {
     queueMicrotask(() => setCheckIns(getCheckIns()));
-  }, []);
+  }, [primary?.id]);
 
   const stats = useMemo(
     () => buildStreakStats(checkIns, todayKey),

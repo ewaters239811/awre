@@ -2,6 +2,8 @@ import type { CheckInDraft, CheckInResult, PillarName } from "@/lib/types";
 import { createId } from "@/lib/id";
 import { toCheckInDateKey } from "@/lib/date-key";
 import { normalizePillarName } from "@/lib/pillars";
+import { getOnboardingProfile } from "@/lib/onboarding-storage";
+import { goalIdForRecord, primaryManifestation } from "@/lib/manifestations";
 
 const STORAGE_KEY = "aura.checkIns.v1";
 export const CHECK_INS_CHANGED_EVENT = "clearpth:check-ins-changed";
@@ -12,6 +14,14 @@ type PillarScore = {
 };
 
 export function buildResult(draft: CheckInDraft): CheckInResult {
+  for (const score of [
+    draft.thinkingScore,
+    draft.willingScore,
+    draft.feelingScore,
+  ]) {
+    if (!Number.isInteger(score) || score < 1 || score > 10)
+      throw new Error("Alignment scores must be whole numbers from 1 to 10.");
+  }
   const pillars: PillarScore[] = [
     { name: "Thinking", score: draft.thinkingScore },
     { name: "Doing", score: draft.willingScore },
@@ -20,7 +30,8 @@ export function buildResult(draft: CheckInDraft): CheckInResult {
   const beingScore = roundToTenth(
     (draft.thinkingScore + draft.willingScore + draft.feelingScore) / 3,
   );
-  const strongestPillar = [...pillars].sort((a, b) => b.score - a.score)[0].name;
+  const strongestPillar = [...pillars].sort((a, b) => b.score - a.score)[0]
+    .name;
   const weakestPillar = [...pillars].sort((a, b) => a.score - b.score)[0].name;
 
   return {
@@ -44,7 +55,7 @@ export function getStateLabel(score: number) {
   return "Magnetic State";
 }
 
-export function getCheckIns(): CheckInResult[] {
+export function getAllCheckIns(): CheckInResult[] {
   if (!isBrowser()) return [];
 
   try {
@@ -57,11 +68,24 @@ export function getCheckIns(): CheckInResult[] {
   }
 }
 
+export function getCheckIns(
+  goalId = primaryManifestation(getOnboardingProfile())?.id,
+): CheckInResult[] {
+  const profile = getOnboardingProfile();
+  if (profile?.manifestations && !goalId) return [];
+  return getAllCheckIns().filter(
+    (item) => !goalId || goalIdForRecord(item, profile) === goalId,
+  );
+}
+
 export function saveCheckIn(result: CheckInResult) {
   if (!isBrowser()) return;
   const resultDate = getCheckInDateKey(result);
-  const existing = getCheckIns().filter(
-    (item) => getCheckInDateKey(item) !== resultDate,
+  const profile = getOnboardingProfile();
+  const existing = getAllCheckIns().filter(
+    (item) =>
+      getCheckInDateKey(item) !== resultDate ||
+      goalIdForRecord(item, profile) !== goalIdForRecord(result, profile),
   );
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify([result, ...existing]));
@@ -69,13 +93,12 @@ export function saveCheckIn(result: CheckInResult) {
 }
 
 export function getCheckInById(id: string) {
-  return getCheckIns().find((item) => item.id === id) ?? null;
+  return getAllCheckIns().find((item) => item.id === id) ?? null;
 }
 
-export function getCheckInForDate(date: string) {
+export function getCheckInForDate(date: string, goalId?: string) {
   return (
-    getCheckIns().find((item) => getCheckInDateKey(item) === date) ??
-    null
+    getCheckIns(goalId).find((item) => getCheckInDateKey(item) === date) ?? null
   );
 }
 
@@ -89,16 +112,34 @@ export function getLatestCheckIn() {
 
 export function updateCheckIn(updated: CheckInResult) {
   if (!isBrowser()) return;
-  const next = getCheckIns().map((item) =>
-    item.id === updated.id ? updated : item,
+  const next = getAllCheckIns().map((item) =>
+    item.id === updated.id
+      ? {
+          ...item,
+          ...updated,
+          readAt: updated.readAt ?? item.readAt,
+          aiQuote: updated.aiQuote ?? item.aiQuote,
+          aiAlignment: updated.aiAlignment ?? item.aiAlignment,
+        }
+      : item,
   );
   localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   emitStorageEvent(CHECK_INS_CHANGED_EVENT);
 }
 
-export function clearCheckIns() {
+export function clearCheckIns(goalId?: string) {
   if (isBrowser()) {
-    localStorage.removeItem(STORAGE_KEY);
+    if (goalId) {
+      const profile = getOnboardingProfile();
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(
+          getAllCheckIns().filter(
+            (item) => goalIdForRecord(item, profile) !== goalId,
+          ),
+        ),
+      );
+    } else localStorage.removeItem(STORAGE_KEY);
     emitStorageEvent(CHECK_INS_CHANGED_EVENT);
   }
 }
@@ -106,10 +147,12 @@ export function clearCheckIns() {
 export function replaceCheckIns(results: CheckInResult[]) {
   if (!isBrowser()) return;
   const sorted = [...results].sort(
-    (a, b) =>
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(sorted.map(normalizeCheckIn)));
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(sorted.map(normalizeCheckIn)),
+  );
   emitStorageEvent(CHECK_INS_CHANGED_EVENT);
 }
 
@@ -165,6 +208,11 @@ function buildPrescription(
 }
 
 function normalizeCheckIn(checkIn: CheckInResult): CheckInResult {
+  const profile = getOnboardingProfile();
+  const manifestationId = goalIdForRecord(checkIn, profile);
+  const goal = profile?.manifestations?.goals.find(
+    (item) => item.id === manifestationId,
+  );
   const strongestPillar = normalizePillarName(
     checkIn.strongestPillar as PillarName | "Willing",
   );
@@ -174,6 +222,8 @@ function normalizeCheckIn(checkIn: CheckInResult): CheckInResult {
 
   return {
     ...checkIn,
+    manifestationId,
+    desiredReality: checkIn.desiredReality ?? goal?.outcome,
     strongestPillar,
     weakestPillar,
   };

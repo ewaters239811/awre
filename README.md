@@ -19,6 +19,53 @@ npm run dev
 
 Open `http://localhost:3000`.
 
+## Desired Realities
+
+Home shows one primary manifestation and a shared, optional Inner Foundation.
+Use **Manage** to create, edit, archive, complete, reactivate, or switch goals.
+Each goal can have a category, optional target date, identity statement,
+milestones, completed actions, and progress notes. Archived and completed goals
+retain their history under **Include completed & archived -> Progress & history**.
+
+The Daily Path is **Check In -> Read -> Journal**. Check-ins use Thinking,
+Feeling, and Willing (choices/actions), averaged into a reflection score. The
+legacy `willingScore` field and internal `Doing` enum are retained for backwards
+compatibility. Progress separates self-reported alignment from real-world
+developments; neither the score nor a reading guarantees an external result.
+
+Goal state is stored in `onboarding_profiles.data.manifestations`, protected by
+the existing account RLS policies. Check-ins and journals keep their existing
+tables and gain a `manifestationId` inside `data`. No new dependency is needed.
+
+For an existing Supabase database, run this additive migration in the SQL Editor:
+
+```txt
+supabase/migrations/20261019_manifestations.sql
+```
+
+The application also performs an idempotent data migration on authenticated
+sync: the original `primaryGoal` becomes the first goal with a deterministic ID.
+It is never automatically treated as an Inner Foundation. Untagged older
+check-ins and journals stay associated with the immutable `legacyGoalId`, even
+after switching focus. Migration saves the profile before replacing the browser
+mirror. Existing content is not deleted or bulk rewritten. An explicit option
+lets users move their original statement into their foundation and archive its
+goal while preserving its history.
+
+Validation and checks:
+
+```bash
+npm test
+npm run lint
+npx tsc --noEmit
+npm run build
+```
+
+Tests cover migration, switching, same-day goal isolation, reloads, account
+save/restore through a fake Supabase boundary, validation, and goal completion.
+Live Supabase migration and real-device authenticated testing remain deployment
+checks; the test suite does not use production accounts or paid AI requests.
+
 ## Optional AI Personalization
 
 ClearPth works without AI. To enable personalized results and AI-generated teaching quotes, create a `.env.local` file:

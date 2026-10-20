@@ -2,6 +2,7 @@
 
 import {
   clearCheckIns,
+  getCheckInById,
   getCheckInDateKey,
   replaceCheckIns,
 } from "@/lib/alignment";
@@ -15,8 +16,17 @@ import {
   replaceGuideConversations,
 } from "@/lib/guide-storage";
 import { clearMeditationCompletions } from "@/lib/meditation-storage";
-import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import {
+  createSupabaseBrowserClient,
+  isSupabaseConfigured,
+} from "@/lib/supabase/client";
 import { normalizePillarName } from "@/lib/pillars";
+import {
+  goalIdForRecord,
+  migrateManifestations,
+  reconcileManifestations,
+} from "@/lib/manifestations";
+import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import type {
   CheckInResult,
   GuideConversation,
@@ -92,21 +102,25 @@ export async function syncLocalDataToAccount(): Promise<AccountSyncResult | null
     remoteJournalEntries,
     remoteProfile,
     remoteGuideConversations,
-  ] =
-    await Promise.all([
-      fetchRemoteCheckIns(),
-      fetchRemoteJournalEntries(),
-      fetchRemoteOnboardingProfile(),
-      fetchRemoteGuideConversations().catch(() => []),
-    ]);
+  ] = await Promise.all([
+    fetchRemoteCheckIns(),
+    fetchRemoteJournalEntries(),
+    fetchRemoteOnboardingProfile(),
+    fetchRemoteGuideConversations().catch(() => []),
+  ]);
 
+  // Persist the deterministic migration before showing goal-scoped history.
+  const migratedProfile = remoteProfile
+    ? migrateManifestations(remoteProfile)
+    : null;
+  if (remoteProfile && !remoteProfile.manifestations && migratedProfile) {
+    await saveOnboardingProfileToAccount(migratedProfile);
+  }
+  if (migratedProfile) saveOnboardingProfile(migratedProfile);
+  else clearOnboardingProfile();
   replaceCheckIns(remoteCheckIns);
   replaceJournalEntries(remoteJournalEntries);
   replaceGuideConversations(remoteGuideConversations);
-
-  if (remoteProfile) {
-    saveOnboardingProfile(remoteProfile);
-  }
 
   return {
     checkIns: remoteCheckIns.length,
@@ -119,6 +133,14 @@ export async function syncLocalDataToAccount(): Promise<AccountSyncResult | null
 export async function saveCheckInToAccount(checkIn: CheckInResult) {
   const userId = await getCurrentUserId();
   if (!userId) throw new Error("Sign in before saving a check-in.");
+  const local = getCheckInById(checkIn.id);
+  checkIn = {
+    ...local,
+    ...checkIn,
+    readAt: checkIn.readAt ?? local?.readAt,
+    aiQuote: checkIn.aiQuote ?? local?.aiQuote,
+    aiAlignment: checkIn.aiAlignment ?? local?.aiAlignment,
+  };
 
   const supabase = createSupabaseBrowserClient();
   const { error } = await supabase.from("check_ins").upsert(
@@ -176,7 +198,10 @@ export async function saveGuideConversationToAccount(
   if (error) throw error;
 }
 
-export async function saveOnboardingProfileToAccount(profile: OnboardingProfile) {
+export async function saveOnboardingProfileToAccount(
+  profile: OnboardingProfile,
+) {
+  profile = reconcileManifestations(profile);
   const userId = await getCurrentUserId();
   if (!userId) throw new Error("Sign in before saving a setup profile.");
 
@@ -240,7 +265,7 @@ export async function fetchRemoteGuideConversations() {
   return ((data ?? []) as JsonRow<GuideConversation>[]).map((row) => row.data);
 }
 
-export async function clearRemoteCheckIns() {
+export async function clearRemoteCheckIns(goalId?: string) {
   if (!isSupabaseConfigured()) return;
 
   const supabase = createSupabaseBrowserClient();
@@ -248,10 +273,19 @@ export async function clearRemoteCheckIns() {
   const user = data.user;
   if (!user) return;
 
-  const { error } = await supabase
-    .from("check_ins")
-    .delete()
-    .eq("user_id", user.id);
+  const query = supabase.from("check_ins").delete().eq("user_id", user.id);
+
+  if (goalId) {
+    const profile = getOnboardingProfile();
+    const ids = (await fetchRemoteCheckIns())
+      .filter((item) => goalIdForRecord(item, profile) === goalId)
+      .map((item) => item.id);
+    if (!ids.length) return;
+    const { error } = await query.in("id", ids);
+    if (error) throw error;
+    return;
+  }
+  const { error } = await query;
 
   if (error) throw error;
 }

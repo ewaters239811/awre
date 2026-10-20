@@ -1,28 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { createRequire } from "node:module";
-import ts from "typescript";
-
-const testDirectory = path.dirname(fileURLToPath(import.meta.url));
-const requireNative = createRequire(import.meta.url);
-
-// Run the real TypeScript modules with Node's test runner, without a test framework.
-const modules = new Map();
-function load(relativePath) {
-  const filename = path.resolve(testDirectory, "..", relativePath);
-  if (modules.has(filename)) return modules.get(filename).exports;
-  const source = ts.transpileModule(fs.readFileSync(filename, "utf8"), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
-  }).outputText;
-  const loaded = { exports: {} };
-  modules.set(filename, loaded);
-  const resolve = (id) => id.startsWith("@/") ? load(`${id.slice(2)}.ts`) : requireNative(id);
-  new Function("require", "module", "exports", source)(resolve, loaded, loaded.exports);
-  return loaded.exports;
-}
+import { createLoader } from "./load-module.mjs";
+const load = createLoader();
 
 const { getSafeRedirectPath, isPasswordRecoveryHash } = load("lib/auth-redirect.ts");
 const { toDateKey, toCheckInDateKey } = load("lib/date-key.ts");

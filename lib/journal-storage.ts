@@ -1,6 +1,8 @@
 import { createId } from "@/lib/id";
 import { toDateKey } from "@/lib/date-key";
 import type { JournalEntry } from "@/lib/types";
+import { getOnboardingProfile } from "@/lib/onboarding-storage";
+import { goalIdForRecord, primaryManifestation } from "@/lib/manifestations";
 
 const STORAGE_KEY = "clearpth.journalEntries.v1";
 export const JOURNAL_CHANGED_EVENT = "clearpth:journal-changed";
@@ -10,6 +12,7 @@ export function createEmptyJournalEntry(date = toDateKey(new Date())) {
 
   return {
     id: createId("journal"),
+    manifestationId: primaryManifestation(getOnboardingProfile())?.id,
     date,
     content: "",
     createdAt: now,
@@ -17,7 +20,7 @@ export function createEmptyJournalEntry(date = toDateKey(new Date())) {
   } satisfies JournalEntry;
 }
 
-export function getJournalEntries(): JournalEntry[] {
+export function getAllJournalEntries(): JournalEntry[] {
   if (!isBrowser()) return [];
 
   try {
@@ -30,8 +33,18 @@ export function getJournalEntries(): JournalEntry[] {
   }
 }
 
-export function getJournalEntryForDate(date: string) {
-  return getJournalEntries().find((entry) => entry.date === date) ?? null;
+export function getJournalEntries(
+  goalId = primaryManifestation(getOnboardingProfile())?.id,
+): JournalEntry[] {
+  const profile = getOnboardingProfile();
+  if (profile?.manifestations && !goalId) return [];
+  return getAllJournalEntries().filter(
+    (entry) => !goalId || goalIdForRecord(entry, profile) === goalId,
+  );
+}
+
+export function getJournalEntryForDate(date: string, goalId?: string) {
+  return getJournalEntries(goalId).find((entry) => entry.date === date) ?? null;
 }
 
 export function saveJournalEntry(entry: JournalEntry) {
@@ -43,8 +56,12 @@ export function saveJournalEntry(entry: JournalEntry) {
   };
   const next = [
     updated,
-    ...getJournalEntries().filter(
-      (item) => item.id !== entry.id && item.date !== updated.date,
+    ...getAllJournalEntries().filter(
+      (item) =>
+        item.id !== entry.id &&
+        (item.date !== updated.date ||
+          goalIdForRecord(item, getOnboardingProfile()) !==
+            goalIdForRecord(updated, getOnboardingProfile())),
     ),
   ].sort((a, b) => b.date.localeCompare(a.date));
 

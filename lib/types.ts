@@ -1,6 +1,9 @@
 export type PillarName = "Thinking" | "Doing" | "Feeling";
 
 export type CheckInDraft = {
+  manifestationId?: string;
+  desiredReality?: string;
+  innerFoundation?: string;
   thinkingScore: number;
   willingScore: number;
   feelingScore: number;
@@ -30,6 +33,7 @@ export type AiMeditation = {
 };
 
 export type CheckInResult = CheckInDraft & {
+  readAt?: string;
   id: string;
   createdAt: string;
   checkInDate?: string;
@@ -75,6 +79,7 @@ export type DailyRitual = {
 };
 
 export type JournalEntry = {
+  manifestationId?: string;
   id: string;
   date: string;
   content: string;
@@ -85,6 +90,7 @@ export type JournalEntry = {
 };
 
 export type OnboardingProfile = {
+  manifestations?: ManifestationState;
   primaryGoal: string;
   currentChallenge: string;
   desiredState: string;
@@ -95,6 +101,43 @@ export type OnboardingProfile = {
   guidanceTone: string;
   createdAt: string;
   updatedAt: string;
+};
+
+export const MANIFESTATION_CATEGORIES = [
+  "Wealth",
+  "Career",
+  "Relationships",
+  "Health",
+  "Lifestyle",
+  "Personal Growth",
+  "Other",
+] as const;
+export type ManifestationCategory = (typeof MANIFESTATION_CATEGORIES)[number];
+export type GoalDevelopment = {
+  id: string;
+  kind: "milestone" | "action" | "note";
+  text: string;
+  createdAt: string;
+  completedAt?: string;
+};
+export type ManifestationGoal = {
+  id: string;
+  outcome: string;
+  category: ManifestationCategory;
+  targetDate?: string;
+  identity: string;
+  status: "active" | "archived" | "completed";
+  createdAt: string;
+  updatedAt: string;
+  completedAt?: string;
+  developments: GoalDevelopment[];
+};
+export type ManifestationState = {
+  version: 1;
+  goals: ManifestationGoal[];
+  primaryGoalId: string | null;
+  legacyGoalId?: string;
+  innerFoundation: string;
 };
 
 export type BeingMetric = {
