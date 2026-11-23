@@ -56,6 +56,14 @@ use `buildCheckInReading` to send the journal and ratings to personalization,
 with goal-isolated journal context and a stable content-based cache signature.
 
 The Daily Path is **Check In -> Read -> Tune In**.
+Home offers one main button for the next unfinished step and a quiet completion
+state when all three are done; its Daily Path is a non-clickable overview.
+Tap the score for its rating breakdown, or the gap note for supporting writing.
+A weekly comparison appears only with at least three distinct check-in days
+in each seven-day period, using only the selected goal. Gap evidence is optional
+and must quote the supplied writing exactly. Existing saved notes remain valid
+without regenerating just to add evidence; expanding details does not save data
+or request another reading.
 Today keeps the existing header and Daily Path, then leads with the daily gap,
 alignment score, and a single internal-pattern summary. New personalized readings
 include an optional `dailyGap` alongside the existing analysis; older cached

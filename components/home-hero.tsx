@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { ArrowRight, Flame } from "lucide-react";
+import { useEffect, useId, useMemo, useState, type CSSProperties } from "react";
+import { ArrowRight, CheckCircle2, ChevronDown, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DailyFlow } from "@/components/daily-flow";
 import { ManifestationFocus } from "@/components/manifestation-focus";
@@ -32,7 +32,11 @@ import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
 import { primaryManifestation } from "@/lib/manifestations";
 import { HomeGapNote } from "@/components/home-gap-note";
-import { buildHomeAlignmentContext } from "@/lib/home-alignment";
+import {
+  buildHomeAlignmentContext,
+  buildHomeScoreInsight,
+  getHomeNextAction,
+} from "@/lib/home-alignment";
 import type {
   CheckInResult,
   JournalEntry,
@@ -166,7 +170,7 @@ export function HomeHero() {
     );
   }
 
-  return <PersonalHomeHero state={state} />;
+  return <PersonalHomeHero state={state} todayKey={checkInToday} />;
 }
 
 function PublicHomeHero({ startHref = "/login" }: { startHref?: string }) {
@@ -223,7 +227,13 @@ function PublicHomeHero({ startHref = "/login" }: { startHref?: string }) {
   );
 }
 
-export function PersonalHomeHero({ state }: { state: HomeState }) {
+export function PersonalHomeHero({
+  state,
+  todayKey = toCheckInDateKey(new Date()),
+}: {
+  state: HomeState;
+  todayKey?: string;
+}) {
   const firstName = useMemo(() => getFirstName(state.user), [state.user]);
   const hasCheckedInToday = Boolean(state.todaysCheckIn);
   const hasFocus = Boolean(primaryManifestation(state.profile));
@@ -234,6 +244,13 @@ export function PersonalHomeHero({ state }: { state: HomeState }) {
     state.profile,
   );
   const streak = buildStreakStats(state.checkIns, state.todaysCheckIn);
+  const insight = buildHomeScoreInsight(state.checkIns, state.profile, todayKey);
+  const nextAction = getHomeNextAction({
+    hasFocus,
+    checkedIn: hasCheckedInToday,
+    readToday: Boolean(state.todaysCheckIn?.readAt),
+    meditated: state.hasMeditatedToday,
+  });
 
   return (
     <div className="clearpth-home mx-auto w-full max-w-2xl">
@@ -254,7 +271,11 @@ export function PersonalHomeHero({ state }: { state: HomeState }) {
         <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
           Inner Alignment
         </p>
-        <CurrentStateRing score={latest?.beingScore} />
+        <CurrentStateRing
+          key={latest?.id ?? "empty"}
+          result={latest}
+          insight={insight}
+        />
         <p className="mt-2 text-xs text-muted-foreground">
           {latest
             ? hasCheckedInToday
@@ -262,29 +283,30 @@ export function PersonalHomeHero({ state }: { state: HomeState }) {
               : `Last check-in · ${new Date(latest.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}`
             : "Your first check-in starts here"}
         </p>
-        <HomeGapNote context={context} />
-        <Button
-          asChild
-          size="lg"
-          className="mt-7 w-full sm:mx-auto sm:max-w-sm"
-        >
-          <Link
-            href={
-              !hasFocus
-                ? "/manifestations"
-                : hasCheckedInToday
-                  ? "/review"
-                  : "/check-in"
-            }
+        {insight && (
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">{insight.text}</p>
+        )}
+        <HomeGapNote key={context.goalId ?? "no-goal"} context={context} />
+        {nextAction.kind === "complete" ? (
+          <div
+            className="mx-auto mt-7 flex min-h-14 w-full animate-in items-center justify-center gap-2 text-sm text-primary fade-in duration-500 sm:max-w-sm"
+            role="status"
           >
-            {!hasFocus
-              ? "Choose Your Desired Reality"
-              : hasCheckedInToday
-                ? "View Today's Check-In"
-                : "Check In"}
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
-        </Button>
+            <CheckCircle2 className="h-5 w-5" aria-hidden />
+            {nextAction.label}
+          </div>
+        ) : (
+          <Button
+            asChild
+            size="lg"
+            className="mt-7 min-h-14 w-full sm:mx-auto sm:max-w-sm"
+          >
+            <Link href={nextAction.href}>
+              {nextAction.label}
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+          </Button>
+        )}
       </section>
 
       <div className="mt-9 sm:mt-10">
@@ -292,6 +314,7 @@ export function PersonalHomeHero({ state }: { state: HomeState }) {
           checkedIn={hasCheckedInToday}
           readToday={Boolean(state.todaysCheckIn?.readAt)}
           meditated={state.hasMeditatedToday}
+          interactive={false}
         />
       </div>
       <details className="mt-6 border-t border-border/40 pt-3">
@@ -304,56 +327,115 @@ export function PersonalHomeHero({ state }: { state: HomeState }) {
   );
 }
 
-function CurrentStateRing({ score }: { score?: number }) {
+function CurrentStateRing({
+  result,
+  insight,
+}: {
+  result: CheckInResult | null;
+  insight: ReturnType<typeof buildHomeScoreInsight>;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const detailsId = useId();
+  const score = result?.beingScore;
   const hasScore = typeof score === "number" && Number.isFinite(score);
   const circumference = 2 * Math.PI * 112;
   const progress = hasScore ? Math.max(0, Math.min(score / 10, 1)) : 0;
 
   return (
-    <div
-      className="relative mx-auto mt-5 flex h-60 w-60 items-center justify-center sm:h-72 sm:w-72"
-      role="img"
-      aria-label={
-        hasScore
-          ? `Inner alignment: ${score.toFixed(1)} out of 10`
-          : "Inner alignment not yet measured"
-      }
-    >
-      <svg
-        viewBox="0 0 256 256"
-        className="absolute inset-0 h-full w-full -rotate-90"
-        aria-hidden
+    <>
+      <button
+        type="button"
+        className="relative mx-auto mt-5 flex h-60 w-60 items-center justify-center rounded-full outline-none transition-colors hover:bg-primary/[0.025] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background sm:h-72 sm:w-72"
+        onClick={() => setExpanded((value) => !value)}
+        aria-expanded={expanded}
+        aria-controls={detailsId}
+        title="About your score"
+        aria-label={
+          hasScore
+            ? `Inner alignment: ${score.toFixed(1)} out of 10`
+            : "Inner alignment not yet measured"
+        }
       >
-        <circle
-          cx="128"
-          cy="128"
-          r="112"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          className="text-primary/15"
-        />
-        <circle
-          cx="128"
-          cy="128"
-          r="112"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference * (1 - progress)}
-          style={{ "--alignment-full": circumference } as CSSProperties}
-          className="clearpth-score-progress text-primary transition-[stroke-dashoffset] duration-700 motion-reduce:transition-none"
-        />
-      </svg>
-      <div>
-        <p className="clearpth-score-value font-serif text-7xl font-semibold leading-none text-foreground sm:text-8xl">
-          {hasScore ? score.toFixed(1) : "-"}
+        <svg
+          viewBox="0 0 256 256"
+          className="absolute inset-0 h-full w-full -rotate-90"
+          aria-hidden
+        >
+          <circle
+            cx="128"
+            cy="128"
+            r="112"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="text-primary/15"
+          />
+          <circle
+            cx="128"
+            cy="128"
+            r="112"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference * (1 - progress)}
+            style={{ "--alignment-full": circumference } as CSSProperties}
+            className="clearpth-score-progress text-primary transition-[stroke-dashoffset] duration-700 motion-reduce:transition-none"
+          />
+        </svg>
+        <span>
+          <span className="clearpth-score-value block font-serif text-7xl font-semibold leading-none text-foreground sm:text-8xl">
+            {hasScore ? score.toFixed(1) : "-"}
+          </span>
+          <span className="mt-3 flex items-center justify-center gap-1 text-sm text-muted-foreground">
+            out of 10
+            <ChevronDown
+              className={`h-3.5 w-3.5 transition-transform ${expanded ? "rotate-180" : ""}`}
+              aria-hidden
+            />
+          </span>
+        </span>
+      </button>
+      <div
+        id={detailsId}
+        hidden={!expanded}
+        className="mx-auto mt-3 max-w-sm text-left text-sm leading-6 text-muted-foreground"
+      >
+        {result && (
+          <dl className="mb-3 grid grid-cols-3 gap-3 border-y border-border/50 py-3 text-center">
+            {[
+              ["Thinking", result.thinkingScore],
+              ["Feeling", result.feelingScore],
+              ["Acting", result.willingScore],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <dt className="text-xs">{label}</dt>
+                <dd className="mt-1 text-base text-foreground">
+                  {value}<span className="text-xs text-muted-foreground"> / 10</span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        <p>
+          Your score is the average of your Thinking, Feeling, and Acting ratings.
+          A reflection, not a grade or a prediction.
         </p>
-        <p className="mt-3 text-sm text-muted-foreground">out of 10</p>
+        {result && (
+          <p className="mt-2 text-xs">
+            From your {new Date(result.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })} check-in.
+          </p>
+        )}
+        {insight && (
+          <p className="mt-2 text-xs">
+            This week: {insight.currentAverage.toFixed(1)} across {insight.currentCount} check-ins.
+            The week before: {insight.previousAverage.toFixed(1)} across {insight.previousCount}.
+            Each period covers seven days.
+          </p>
+        )}
       </div>
-    </div>
+    </>
   );
 }
 

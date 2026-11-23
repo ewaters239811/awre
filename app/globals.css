@@ -524,7 +524,7 @@ textarea {
   .clearpth-active-tab:hover {
     background-position: 80% 50%;
   }
-  .clearpth-daily-step:hover {
+  a.clearpth-daily-step:hover {
     transform: translateY(-2px);
   }
 }

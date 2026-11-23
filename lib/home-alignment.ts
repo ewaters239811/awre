@@ -1,9 +1,97 @@
 import { goalIdForRecord, primaryManifestation } from "@/lib/manifestations";
+import { getCheckInDateKey } from "@/lib/alignment";
+import { toDateKey } from "@/lib/date-key";
 import type {
   CheckInResult,
+  HomeGapEvidence,
   JournalEntry,
   OnboardingProfile,
 } from "@/lib/types";
+
+export function getHomeNextAction({
+  hasFocus,
+  checkedIn,
+  readToday,
+  meditated,
+}: {
+  hasFocus: boolean;
+  checkedIn: boolean;
+  readToday: boolean;
+  meditated: boolean;
+}) {
+  if (!hasFocus)
+    return {
+      kind: "focus",
+      label: "Choose Your Desired Reality",
+      href: "/manifestations",
+    } as const;
+  if (!checkedIn)
+    return { kind: "check-in", label: "Check in", href: "/check-in" } as const;
+  if (!readToday)
+    return {
+      kind: "read",
+      label: "Read your reflection",
+      href: "/review",
+    } as const;
+  if (!meditated)
+    return {
+      kind: "tune-in",
+      label: "Start your Tune In",
+      href: "/tune-in",
+    } as const;
+  return { kind: "complete", label: "Your day is complete" } as const;
+}
+
+export function buildHomeScoreInsight(
+  checkIns: CheckInResult[],
+  profile: OnboardingProfile | null,
+  todayKey: string,
+) {
+  const goal = primaryManifestation(profile);
+  const day = new Date(`${todayKey}T12:00:00`);
+  if (!goal || Number.isNaN(day.getTime())) return null;
+  const start = new Date(day);
+  start.setDate(start.getDate() - 6);
+  const previousStart = new Date(start);
+  previousStart.setDate(previousStart.getDate() - 7);
+  const recentStart = toDateKey(start);
+  const olderStart = toDateKey(previousStart);
+  const days = new Map<string, number>();
+  // One reflection per goal/day; duplicate imports must not inflate the comparison.
+  const sorted = [...checkIns].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  for (const item of sorted) {
+    if (
+      goalIdForRecord(item, profile) !== goal.id ||
+      Number.isNaN(new Date(item.createdAt).getTime())
+    ) continue;
+    const scores = [item.thinkingScore, item.willingScore, item.feelingScore];
+    if (!scores.every((score) => Number.isFinite(score) && score >= 1 && score <= 10))
+      continue;
+    const key = getCheckInDateKey(item);
+    if (key < olderStart || key > todayKey || days.has(key)) continue;
+    days.set(key, scores.reduce((sum, score) => sum + score, 0) / 3);
+  }
+  const recent: number[] = [];
+  const previous: number[] = [];
+  for (const [key, score] of days)
+    (key >= recentStart ? recent : previous).push(score);
+  if (recent.length < 3 || previous.length < 3) return null;
+  const average = (scores: number[]) =>
+    scores.reduce((sum, score) => sum + score, 0) / scores.length;
+  const currentAverage = average(recent);
+  const previousAverage = average(previous);
+  const difference = Math.round((currentAverage - previousAverage) * 10) / 10;
+  return {
+    text:
+      Math.abs(difference) < 0.2
+        ? "Your average is similar to last week."
+        : `Your average is ${Math.abs(difference).toFixed(1)} ${difference > 0 ? "higher" : "lower"} than last week.`,
+    currentAverage,
+    previousAverage,
+    currentCount: recent.length,
+    previousCount: previous.length,
+  };
+}
 
 export function buildHomeAlignmentContext(
   checkIns: CheckInResult[],
@@ -104,6 +192,52 @@ export function buildHomeAlignmentContext(
 
 export type HomeAlignmentContext = ReturnType<typeof buildHomeAlignmentContext>;
 
+export function cleanHomeGapEvidence(
+  value: unknown,
+  context: HomeAlignmentContext,
+): HomeGapEvidence[] {
+  if (!Array.isArray(value)) return [];
+  const evidence: HomeGapEvidence[] = [];
+  const normalize = (text: string) => text.replace(/\s+/g, " ").trim();
+  for (const candidate of value.slice(0, 8)) {
+    if (
+      !candidate ||
+      typeof candidate.sourceId !== "string" ||
+      typeof candidate.excerpt !== "string"
+    ) continue;
+    const excerpt = normalize(candidate.excerpt);
+    if (
+      excerpt.length < 12 ||
+      excerpt.length > 200 ||
+      evidence.some((item) =>
+        item.excerpt === excerpt ||
+        (item.source === candidate.source && item.sourceId === candidate.sourceId),
+      )
+    ) continue;
+    const reflection =
+      candidate.source === "check-in"
+        ? context.reflections.find((item) => item.id === candidate.sourceId)
+        : null;
+    const journal =
+      candidate.source === "journal"
+        ? context.journals.find((item) => item.id === candidate.sourceId)
+        : null;
+    const sources = reflection
+      ? [
+          reflection.thought,
+          reflection.action,
+          reflection.feelingText,
+          reflection.choice,
+          reflection.checkInJournal ?? "",
+        ]
+      : journal ? [journal.content] : [];
+    if (!sources.some((text) => normalize(text).includes(excerpt))) continue;
+    evidence.push({ source: candidate.source, sourceId: candidate.sourceId, excerpt });
+    if (evidence.length === 2) break;
+  }
+  return evidence;
+}
+
 export function fallbackHomeGap(context: HomeAlignmentContext) {
   if (!context.resultId)
     return "Your first check-in is the starting point for seeing the distance between your current state and desired reality.";
@@ -113,10 +247,10 @@ export function fallbackHomeGap(context: HomeAlignmentContext) {
   if (sorted[2][1] - sorted[0][1] < 0.5)
     return "No single gap stands apart yet; your reflections are still bringing the pattern into focus.";
   if (sorted[0][0] === "acting")
-    return "Your reflections point to a gap between what you intend and what you consistently do.";
+    return "You rated action lower than thoughts and feelings; that may be a useful place to reflect.";
   if (sorted[0][0] === "thinking")
-    return "Your reflections suggest your thoughts are less aligned with your desired reality than your actions and feelings.";
-  return "Your reflections suggest your feelings need more support as your thoughts and actions move toward your desired reality.";
+    return "You rated thoughts lower than feelings and actions; notice which beliefs support your desired reality.";
+  return "You rated feelings lower than thoughts and actions; notice what would help you feel more supported.";
 }
 
 export function cleanHomeGap(value: unknown): string | null {

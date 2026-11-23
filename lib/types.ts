@@ -35,8 +35,19 @@ export type AiMeditation = {
   closingPrompt: string;
 };
 
+export type HomeGapEvidence = {
+  source: "check-in" | "journal";
+  sourceId: string;
+  excerpt: string;
+};
+
 export type CheckInResult = CheckInDraft & {
-  aiHomeGap?: { signature: string; statement: string; generatedAt: string };
+  aiHomeGap?: {
+    signature: string;
+    statement: string;
+    evidence?: HomeGapEvidence[];
+    generatedAt: string;
+  };
   readAt?: string;
   id: string;
   createdAt: string;

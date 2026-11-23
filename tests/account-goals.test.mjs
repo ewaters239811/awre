@@ -144,6 +144,14 @@ test("account migration, goal saving, sign-out and reload preserve remote goals 
     });
     const checkIn = session.result;
     await sessions.saveCheckInSession(session);
+    const aiHomeGap = {
+      signature: "saved-home-gap",
+      statement: "You are learning to share your work without waiting for certainty.",
+      evidence: [{ source: "check-in", sourceId: checkIn.id, excerpt: "Career entry" }],
+      generatedAt: checkIn.createdAt,
+    };
+    await account.saveCheckInToAccount({ ...checkIn, aiHomeGap });
+    alignment.updateCheckIn({ ...checkIn, aiHomeGap });
     await account.signOutOfAccount();
     assert.equal(onboarding.getOnboardingProfile(), null);
     assert.deepEqual(alignment.getAllCheckIns(), []);
@@ -159,6 +167,7 @@ test("account migration, goal saving, sign-out and reload preserve remote goals 
     assert.equal(alignment.getCheckIns()[0].checkInJournal, "Career entry");
     assert.equal(alignment.getCheckIns()[0].journalEntryId, journal.getJournalEntries()[0].id);
     assert.equal(alignment.getCheckIns()[0].desiredReality, goal.outcome);
+    assert.deepEqual(alignment.getCheckIns()[0].aiHomeGap, aiHomeGap);
     assert.equal(journal.getJournalEntries()[0].content, "Career entry");
     assert.equal(
       alignment.getCheckIns(first.manifestations.legacyGoalId)[0].id,
