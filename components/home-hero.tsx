@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, BarChart3, Headphones } from "lucide-react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { ArrowRight, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DailyFlow } from "@/components/daily-flow";
 import { ManifestationFocus } from "@/components/manifestation-focus";
@@ -32,11 +31,12 @@ import { toCheckInDateKey } from "@/lib/date-key";
 import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
 import { primaryManifestation } from "@/lib/manifestations";
+import { HomeGapNote } from "@/components/home-gap-note";
+import { buildHomeAlignmentContext } from "@/lib/home-alignment";
 import type {
   CheckInResult,
   JournalEntry,
   OnboardingProfile,
-  PillarName,
 } from "@/lib/types";
 
 type AccountUser = {
@@ -50,6 +50,7 @@ type AccountUser = {
 type HomeState = {
   user: AccountUser | null;
   checkIns: CheckInResult[];
+  journalEntries: JournalEntry[];
   latestCheckIn: CheckInResult | null;
   todaysCheckIn: CheckInResult | null;
   todaysJournal: JournalEntry | null;
@@ -69,6 +70,7 @@ export function HomeHero() {
   const [state, setState] = useState<HomeState>({
     user: null,
     checkIns: [],
+    journalEntries: [],
     latestCheckIn: null,
     todaysCheckIn: null,
     todaysJournal: null,
@@ -110,6 +112,7 @@ export function HomeHero() {
           setState({
             user,
             checkIns,
+            journalEntries: getJournalEntries(),
             latestCheckIn: checkIns[0] ?? null,
             todaysCheckIn: getCheckInForDate(checkInToday),
             todaysJournal: getJournalEntryForDate(calendarToday),
@@ -168,7 +171,7 @@ export function HomeHero() {
 
 function PublicHomeHero({ startHref = "/login" }: { startHref?: string }) {
   return (
-    <div className="flex min-h-[calc(100dvh-7rem)] max-w-4xl flex-col items-center justify-center text-center md:min-h-[calc(100vh-5rem)]">
+    <div className="mx-auto flex min-h-[calc(100dvh-7rem)] max-w-4xl flex-col items-center justify-center text-center md:min-h-[calc(100vh-5rem)]">
       <span className="mb-8 flex h-16 w-16 animate-cover-float items-center justify-center rounded-[1.35rem] border border-primary/18 bg-card/22 text-foreground shadow-[0_18px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:h-20 sm:w-20 sm:rounded-3xl">
         <svg
           viewBox="0 0 36 36"
@@ -200,7 +203,7 @@ function PublicHomeHero({ startHref = "/login" }: { startHref?: string }) {
       </span>
       <div className="relative">
         <div className="pointer-events-none absolute inset-x-[-18%] top-1/2 h-20 -translate-y-1/2 rounded-full bg-primary/16 blur-3xl sm:h-28" />
-        <h1 className="aura-gradient-text relative animate-cover-float font-serif text-[4.4rem] font-semibold leading-[0.9] drop-shadow-[0_0_34px_rgba(166,187,154,0.24)] sm:text-8xl lg:text-[8.5rem]">
+        <h1 className="aura-gradient-text relative animate-cover-float font-serif text-[4.4rem] font-semibold leading-[0.9] drop-shadow-[0_0_34px_hsl(var(--primary)/0.24)] sm:text-8xl lg:text-[8.5rem]">
           ClearPth
         </h1>
       </div>
@@ -220,190 +223,138 @@ function PublicHomeHero({ startHref = "/login" }: { startHref?: string }) {
   );
 }
 
-function PersonalHomeHero({ state }: { state: HomeState }) {
+export function PersonalHomeHero({ state }: { state: HomeState }) {
   const firstName = useMemo(() => getFirstName(state.user), [state.user]);
   const hasCheckedInToday = Boolean(state.todaysCheckIn);
-  const hasJournalToday = Boolean(state.todaysJournal?.content.trim());
-  const hasMeditatedToday = state.hasMeditatedToday;
   const hasFocus = Boolean(primaryManifestation(state.profile));
-  const nextHref = !hasFocus
-    ? "/manifestations"
-    : !hasCheckedInToday
-      ? "/check-in"
-      : !state.todaysCheckIn?.readAt
-        ? "/review"
-        : !hasJournalToday
-          ? "/ritual"
-          : !hasMeditatedToday
-            ? "/tune-in"
-            : "/review";
-  const nextLabel = !hasFocus
-    ? "Create Your Desired Reality"
-    : !hasCheckedInToday
-      ? "Check In"
-      : !state.todaysCheckIn?.readAt
-        ? "Read Today's Reflection"
-        : !hasJournalToday
-          ? "Write Current State"
-          : !hasMeditatedToday
-            ? "Meditate"
-            : "Review Today";
-  const currentScore =
-    state.todaysCheckIn?.beingScore ?? state.latestCheckIn?.beingScore;
-  const alignmentNote = buildAlignmentNote(state);
+  const latest = state.todaysCheckIn ?? state.latestCheckIn;
+  const context = buildHomeAlignmentContext(
+    state.checkIns,
+    state.journalEntries,
+    state.profile,
+  );
   const streak = buildStreakStats(state.checkIns, state.todaysCheckIn);
 
   return (
-    <div className="relative max-w-3xl pt-2 md:pt-0">
-      <div className="pointer-events-none absolute -left-12 top-2 hidden h-20 w-20 rounded-full bg-primary/10 blur-2xl sm:block" />
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:gap-8">
-        <div>
-          <p className="text-base font-light leading-none text-foreground/64 sm:text-xl">
-            Welcome back,
-          </p>
-          <h1 className="mt-2 max-w-2xl break-words font-serif text-[2.5rem] font-semibold leading-tight text-foreground sm:text-5xl">
-            {firstName}.
-          </h1>
-          <p className="mt-4 max-w-xl text-sm leading-7 text-foreground/78 sm:text-base">
-            {buildHomeMessage(state)}
-          </p>
-          <StreakRhythm
-            streak={streak.currentStreak}
-            checkedInToday={streak.checkedInToday}
-          />
-        </div>
-        <CurrentStateRing score={currentScore} />
-      </div>
+    <div className="clearpth-home mx-auto w-full max-w-2xl">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="min-w-0 break-words text-lg font-medium text-foreground/85 sm:text-xl">
+          Welcome back, {firstName}.
+        </h1>
+        <span className="inline-flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+          <Flame className="h-3.5 w-3.5 text-achievement" aria-hidden />
+          {streak.currentStreak}-day streak
+        </span>
+      </header>
 
-      <ManifestationFocus />
-      <div className="mt-6">
+      <section
+        className="pt-8 text-center sm:pt-10"
+        aria-label="Your inner alignment"
+      >
+        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+          Inner Alignment
+        </p>
+        <CurrentStateRing score={latest?.beingScore} />
+        <p className="mt-2 text-xs text-muted-foreground">
+          {latest
+            ? hasCheckedInToday
+              ? "Today's check-in"
+              : `Last check-in · ${new Date(latest.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}`
+            : "Your first check-in starts here"}
+        </p>
+        <HomeGapNote context={context} />
+        <Button
+          asChild
+          size="lg"
+          className="mt-7 w-full sm:mx-auto sm:max-w-sm"
+        >
+          <Link
+            href={
+              !hasFocus
+                ? "/manifestations"
+                : hasCheckedInToday
+                  ? "/review"
+                  : "/check-in"
+            }
+          >
+            {!hasFocus
+              ? "Choose Your Desired Reality"
+              : hasCheckedInToday
+                ? "View Today's Check-In"
+                : "Check In"}
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+        </Button>
+      </section>
+
+      <div className="mt-9 sm:mt-10">
         <DailyFlow
           checkedIn={hasCheckedInToday}
           readToday={Boolean(state.todaysCheckIn?.readAt)}
-          journaled={hasJournalToday}
+          meditated={state.hasMeditatedToday}
         />
       </div>
-      <Button asChild size="lg" className="mt-5 w-full sm:max-w-xl">
-        <Link href={nextHref}>
-          {nextLabel}
-          <ArrowRight className="h-4 w-4" aria-hidden />
-        </Link>
-      </Button>
-      <section className="mt-10 sm:mt-12 sm:max-w-2xl">
-        <p className="font-serif text-[2.55rem] font-semibold uppercase leading-none tracking-[0.14em] text-foreground sm:text-5xl">
-          Alignment Note
-        </p>
-        <p className="mt-5 max-w-xl text-[15px] leading-7 text-muted-foreground sm:text-lg sm:leading-8">
-          {alignmentNote}
-        </p>
-      </section>
-
-      <div className="mt-8 grid gap-3 sm:max-w-xl sm:grid-cols-2">
-        <HomeMiniLink
-          href="/tune-in"
-          icon={<Headphones className="h-4 w-4" aria-hidden />}
-          label="Meditation"
-          body="Listen to today's session"
-        />
-        <HomeMiniLink
-          href="/dashboard"
-          icon={<BarChart3 className="h-4 w-4" aria-hidden />}
-          label="Progress"
-          body="See what keeps showing up"
-        />
-      </div>
+      <details className="mt-6 border-t border-border/40 pt-3">
+        <summary className="cursor-pointer py-3 text-sm text-muted-foreground">
+          Your desired reality
+        </summary>
+        <ManifestationFocus />
+      </details>
     </div>
   );
 }
 
 function CurrentStateRing({ score }: { score?: number }) {
-  const label = typeof score === "number" ? score.toFixed(1) : "-";
+  const hasScore = typeof score === "number" && Number.isFinite(score);
+  const circumference = 2 * Math.PI * 112;
+  const progress = hasScore ? Math.max(0, Math.min(score / 10, 1)) : 0;
 
   return (
-    <div className="clearpth-orb mx-auto flex h-24 w-24 shrink-0 items-center justify-center rounded-full sm:h-36 sm:w-36">
-      <div className="relative z-10 text-center">
-        <p className="font-serif text-3xl font-semibold leading-none text-primary drop-shadow-[0_0_20px_rgba(166,187,154,0.36)] sm:text-5xl">
-          {label}
+    <div
+      className="relative mx-auto mt-5 flex h-60 w-60 items-center justify-center sm:h-72 sm:w-72"
+      role="img"
+      aria-label={
+        hasScore
+          ? `Inner alignment: ${score.toFixed(1)} out of 10`
+          : "Inner alignment not yet measured"
+      }
+    >
+      <svg
+        viewBox="0 0 256 256"
+        className="absolute inset-0 h-full w-full -rotate-90"
+        aria-hidden
+      >
+        <circle
+          cx="128"
+          cy="128"
+          r="112"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          className="text-primary/15"
+        />
+        <circle
+          cx="128"
+          cy="128"
+          r="112"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference * (1 - progress)}
+          style={{ "--alignment-full": circumference } as CSSProperties}
+          className="clearpth-score-progress text-primary transition-[stroke-dashoffset] duration-700 motion-reduce:transition-none"
+        />
+      </svg>
+      <div>
+        <p className="clearpth-score-value font-serif text-7xl font-semibold leading-none text-foreground sm:text-8xl">
+          {hasScore ? score.toFixed(1) : "-"}
         </p>
-        <p className="mt-2 text-[9px] uppercase tracking-normal text-foreground/66">
-          Inner Alignment
-        </p>
+        <p className="mt-3 text-sm text-muted-foreground">out of 10</p>
       </div>
     </div>
   );
-}
-
-function StreakRhythm({
-  streak,
-  checkedInToday,
-}: {
-  streak: number;
-  checkedInToday: boolean;
-}) {
-  return (
-    <div className="mt-5 inline-flex max-w-full items-center gap-3 rounded-full border border-primary/14 bg-card/28 px-4 py-2.5 text-sm text-foreground/84 shadow-[inset_0_1px_0_rgba(244,239,228,0.05)] backdrop-blur-xl">
-      <span className="flex h-2.5 w-2.5 shrink-0 rounded-full bg-primary shadow-[0_0_18px_rgba(166,187,154,0.34)]" />
-      <span className="font-medium text-foreground">{streak}-day streak</span>
-      <span className="h-1 w-1 rounded-full bg-muted-foreground/45" />
-      <span className="truncate text-muted-foreground">
-        {checkedInToday
-          ? "Rhythm kept today."
-          : "Check in to keep your rhythm."}
-      </span>
-    </div>
-  );
-}
-
-function buildAlignmentNote(state: HomeState) {
-  const historicalPattern = getHistoricalGapPattern(state.checkIns);
-
-  if (!historicalPattern) {
-    return "The gap is still unmeasured because ClearPth needs one honest check-in to compare your current state with your desired reality.";
-  }
-
-  if (historicalPattern.averageBeing >= 8.5) {
-    return "Your history shows the gap is narrowing; the work now is protecting the consistency that lets you hold your desired reality.";
-  }
-
-  return getHistoricalGapReason(historicalPattern.weakestPillar);
-}
-
-function getHistoricalGapReason(weakest: PillarName) {
-  if (weakest === "Thinking") {
-    return "The deeper gap is perception: your mind still rehearses the old reality more than it believes your desired reality is available.";
-  }
-
-  if (weakest === "Doing") {
-    return "The deeper gap is consistency: your history shows your actions have not repeated the identity your desired reality requires.";
-  }
-
-  return "The deeper gap is emotional loyalty: your state still returns to what is familiar instead of feeling at home in your desired reality.";
-}
-
-function getHistoricalGapPattern(checkIns: CheckInResult[]) {
-  if (checkIns.length === 0) return null;
-
-  const totals = checkIns.reduce(
-    (current, checkIn) => ({
-      thinking: current.thinking + checkIn.thinkingScore,
-      doing: current.doing + checkIn.willingScore,
-      feeling: current.feeling + checkIn.feelingScore,
-      being: current.being + checkIn.beingScore,
-    }),
-    { thinking: 0, doing: 0, feeling: 0, being: 0 },
-  );
-
-  const count = checkIns.length;
-  const averages = [
-    { pillar: "Thinking" as const, score: totals.thinking / count },
-    { pillar: "Doing" as const, score: totals.doing / count },
-    { pillar: "Feeling" as const, score: totals.feeling / count },
-  ];
-
-  return {
-    averageBeing: totals.being / count,
-    weakestPillar: averages.sort((a, b) => a.score - b.score)[0].pillar,
-  };
 }
 
 function buildStreakStats(
@@ -433,33 +384,6 @@ function buildStreakStats(
   };
 }
 
-function HomeMiniLink({
-  href,
-  icon,
-  label,
-  body,
-}: {
-  href: string;
-  icon: ReactNode;
-  label: string;
-  body: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="rounded-[1.15rem] border border-border/42 bg-card/20 p-3.5 transition hover:-translate-y-0.5 hover:border-primary/28 hover:bg-card/34"
-    >
-      <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-        <span className="text-primary">{icon}</span>
-        {label}
-      </span>
-      <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-        {body}
-      </span>
-    </Link>
-  );
-}
-
 function getFirstName(user: AccountUser | null) {
   const name =
     user?.user_metadata?.full_name?.trim() ||
@@ -468,29 +392,4 @@ function getFirstName(user: AccountUser | null) {
     "there";
 
   return name.split(/\s+/)[0];
-}
-
-function buildHomeMessage(state: HomeState) {
-  if (!primaryManifestation(state.profile))
-    return "Choose what you want to create next.";
-
-  if (!state.latestCheckIn) {
-    return "A few honest minutes for the life you want.";
-  }
-
-  if (!state.todaysCheckIn) {
-    return "A fresh day. Start with where you are now.";
-  }
-
-  if (!state.todaysJournal?.content.trim()) {
-    return state.todaysCheckIn.readAt
-      ? "Give today's reflection a voice."
-      : "Your reflection is ready.";
-  }
-
-  if (!state.hasMeditatedToday) {
-    return "Your daily path is complete. Tune in whenever you need.";
-  }
-
-  return "Your daily path is complete.";
 }

@@ -94,9 +94,7 @@ export function GuideChat() {
   const messages = activeConversation?.messages ?? [];
   const lastMessage = messages[messages.length - 1];
   const shouldShowSuggestions =
-    !isSending &&
-    messages.length > 1 &&
-    lastMessage?.role === "assistant";
+    !isSending && messages.length > 1 && lastMessage?.role === "assistant";
   const shouldShowEntryPaths =
     !isSending && messages.length === 1 && lastMessage?.role === "assistant";
   const patternLabel = getPatternLabel(activeConversation);
@@ -239,7 +237,11 @@ export function GuideChat() {
           {messages.length > 1 ? (
             <button
               type="button"
-              onClick={() => setInput("Continue from what we were working through last time.")}
+              onClick={() =>
+                setInput(
+                  "Continue from what we were working through last time.",
+                )
+              }
               className="mt-4 rounded-full border border-primary/14 bg-card/24 px-4 py-2 text-left text-xs leading-5 text-foreground/78 transition hover:border-primary/30 hover:bg-card/40"
             >
               Continue from last time
@@ -297,7 +299,7 @@ export function GuideChat() {
             </div>
           ))}
           {isSending ? (
-              <div className="max-w-[92%] rounded-full border border-white/[0.07] bg-card/34 px-4 py-3 text-sm text-muted-foreground sm:max-w-[82%]">
+            <div className="max-w-[92%] rounded-full border border-white/[0.07] bg-card/34 px-4 py-3 text-sm text-muted-foreground sm:max-w-[82%]">
               Thinking with you...
             </div>
           ) : null}
@@ -342,7 +344,7 @@ export function GuideChat() {
           onSubmit={sendMessage}
         >
           <Textarea
-            className="min-h-16 rounded-[1.5rem] border-white/[0.1] !bg-transparent text-[16px] leading-6 text-foreground shadow-[inset_0_1px_0_rgba(244,239,228,0.05),0_16px_44px_rgba(0,0,0,0.22)] backdrop-blur-xl placeholder:text-foreground/38 focus-visible:bg-card/10 md:min-h-20 md:rounded-2xl"
+            className="min-h-16 rounded-[1.5rem] border-input !bg-transparent text-[16px] leading-6 text-foreground shadow-[inset_0_1px_0_hsl(var(--foreground)/0.05),0_16px_44px_rgba(0,0,0,0.22)] backdrop-blur-xl placeholder:text-muted-foreground/85 focus-visible:bg-card/10 md:min-h-20 md:rounded-2xl"
             value={input}
             onChange={(event) => setInput(event.target.value)}
             placeholder="What do you want to understand?"
@@ -437,10 +439,12 @@ function getSuggestionsForConversation(conversation: GuideConversation) {
   return fallbackSuggestedPrompts;
 }
 
-function getFirstName(user: {
-  email?: string;
-  user_metadata?: { full_name?: string; name?: string };
-} | null) {
+function getFirstName(
+  user: {
+    email?: string;
+    user_metadata?: { full_name?: string; name?: string };
+  } | null,
+) {
   const name =
     user?.user_metadata?.full_name?.trim() ||
     user?.user_metadata?.name?.trim() ||
@@ -501,11 +505,7 @@ function buildLocalSuggestions(reply: string) {
   const lowerReply = reply.toLowerCase();
 
   if (lowerReply.includes("value") || lowerReply.includes("worth")) {
-    return [
-      "Name the root.",
-      "What would self-respect do?",
-      "Go deeper.",
-    ];
+    return ["Name the root.", "What would self-respect do?", "Go deeper."];
   }
 
   if (lowerReply.includes("action") || lowerReply.includes("avoid")) {

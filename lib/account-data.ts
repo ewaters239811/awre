@@ -140,6 +140,7 @@ export async function saveCheckInToAccount(checkIn: CheckInResult) {
     readAt: checkIn.readAt ?? local?.readAt,
     aiQuote: checkIn.aiQuote ?? local?.aiQuote,
     aiAlignment: checkIn.aiAlignment ?? local?.aiAlignment,
+    aiHomeGap: checkIn.aiHomeGap ?? local?.aiHomeGap,
   };
 
   const supabase = createSupabaseBrowserClient();

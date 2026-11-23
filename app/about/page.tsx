@@ -12,7 +12,7 @@ const model = [
     body: "Your feelings influence how possible, safe, or believable your desired life feels today.",
   },
   {
-    title: "Doing shows what you are practicing",
+    title: "Acting shows what you are practicing",
     body: "Your actions, habits, delays, and choices show whether your day is proving or contradicting what you want.",
   },
   {
@@ -27,7 +27,7 @@ export default function AboutPage() {
       <section className="mx-auto max-w-4xl">
         <p className="clearpth-page-kicker">How ClearPth Works</p>
         <h1 className="clearpth-page-title">
-          Want + Think + Feel + Do
+          Want + Think + Feel + Act
         </h1>
         <p className="mt-6 text-lg leading-8 text-muted-foreground">
           ClearPth is a self-reflection app. It helps you see what you want,

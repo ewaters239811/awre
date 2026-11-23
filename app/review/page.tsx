@@ -2,19 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { CalendarDays, CheckCircle2, NotebookPen, Target } from "lucide-react";
-import { AlignmentResult } from "@/components/alignment-result";
+import { CalendarDays, CheckCircle2 } from "lucide-react";
 import { DailyFlow } from "@/components/daily-flow";
-import { ManifestationFocus } from "@/components/manifestation-focus";
-import { useManifestations } from "@/lib/use-manifestations";
-import { profileForCheckIn } from "@/lib/manifestations";
-import { TeachingQuote } from "@/components/teaching-quote";
+import { TodayReading } from "@/components/today-reading";
 import { Button } from "@/components/ui/button";
+import { useManifestations } from "@/lib/use-manifestations";
 import {
   saveCheckInToAccount,
   saveJournalEntryToAccount,
 } from "@/lib/account-data";
-import { buildAiReadingSignature } from "@/lib/ai-reading-signature";
+import { buildCheckInReading } from "@/lib/check-in-reading";
 import {
   CHECK_INS_CHANGED_EVENT,
   getCheckInDateKey,
@@ -24,28 +21,34 @@ import {
 import {
   createEmptyJournalEntry,
   getJournalEntries,
+  getAllJournalEntries,
+  JOURNAL_CHANGED_EVENT,
   saveJournalEntry,
 } from "@/lib/journal-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
+import { markTodayRead } from "@/lib/daily-path";
 import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
-import type {
-  CheckInResult,
-  JournalEntry,
-  OnboardingProfile,
-  PillarName,
-} from "@/lib/types";
+import {
+  hasMeditationCompletionForDate,
+  MEDITATION_COMPLETED_EVENT,
+} from "@/lib/meditation-storage";
+import type { CheckInResult, JournalEntry } from "@/lib/types";
 
 type AiStatus = "idle" | "loading" | "ready" | "unavailable";
 
 export default function ReviewPage() {
   const { primary } = useManifestations();
-  const [actionError, setActionError] = useState("");
   const [checkIns, setCheckIns] = useState<CheckInResult[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
-  const [onboardingProfile, setOnboardingProfile] =
-    useState<OnboardingProfile | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  const [meditated, setMeditated] = useState(false);
   const [aiStatus, setAiStatus] = useState<AiStatus>("idle");
+  const [retry, setRetry] = useState(0);
+  const [readError, setReadError] = useState("");
+  const [savingRead, setSavingRead] = useState(false);
+  const [actionError, setActionError] = useState("");
+  const [savingAction, setSavingAction] = useState(false);
   const requestedAiFor = useRef<string | null>(null);
   const checkInTodayKey = useCurrentCheckInDateKey();
   const calendarTodayKey = useCurrentDateKey();
@@ -54,35 +57,38 @@ export default function ReviewPage() {
     const refresh = () => {
       setCheckIns(getCheckIns());
       setJournalEntries(getJournalEntries());
-      setOnboardingProfile(getOnboardingProfile());
+      setMeditated(hasMeditationCompletionForDate(calendarTodayKey));
+      setLoaded(true);
     };
     queueMicrotask(refresh);
     window.addEventListener(CHECK_INS_CHANGED_EVENT, refresh);
-    return () => window.removeEventListener(CHECK_INS_CHANGED_EVENT, refresh);
-  }, [primary?.id]);
+    window.addEventListener(JOURNAL_CHANGED_EVENT, refresh);
+    window.addEventListener(MEDITATION_COMPLETED_EVENT, refresh);
+    return () => {
+      window.removeEventListener(CHECK_INS_CHANGED_EVENT, refresh);
+      window.removeEventListener(JOURNAL_CHANGED_EVENT, refresh);
+      window.removeEventListener(MEDITATION_COMPLETED_EVENT, refresh);
+    };
+  }, [primary?.id, calendarTodayKey]);
 
-  const todayCheckIns = checkIns.filter(
-    (item) => getCheckInDateKey(item) === checkInTodayKey,
-  );
-  const latestTodayCheckIn = todayCheckIns[0] ?? null;
+  const latestTodayCheckIn =
+    checkIns.find((item) => getCheckInDateKey(item) === checkInTodayKey) ??
+    null;
   const todayJournal = journalEntries.find(
     (entry) => entry.date === calendarTodayKey,
-  );
-  const report = buildTodayReport(
-    latestTodayCheckIn,
-    todayJournal,
-    onboardingProfile,
   );
   const alignedAction =
     todayJournal?.alignedAction?.trim() ||
     latestTodayCheckIn?.aiAlignment?.actionStep ||
-    latestTodayCheckIn?.prescription.actionStep ||
-    report.correctionDetail;
+    (aiStatus === "unavailable"
+      ? latestTodayCheckIn?.prescription.actionStep
+      : undefined);
   const actionCompleted = Boolean(todayJournal?.alignedActionCompletedAt);
 
   const toggleAlignedAction = async () => {
-    if (!latestTodayCheckIn) return;
-
+    if (!latestTodayCheckIn || savingAction || !alignedAction) return;
+    setSavingAction(true);
+    setActionError("");
     const existing = todayJournal ?? createEmptyJournalEntry(calendarTodayKey);
     const nextEntry: JournalEntry = {
       ...existing,
@@ -93,72 +99,80 @@ export default function ReviewPage() {
         : new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-
     try {
       await saveJournalEntryToAccount(nextEntry);
       saveJournalEntry(nextEntry);
       setJournalEntries(getJournalEntries());
     } catch {
       setActionError("Could not save your action. Please try again.");
+    } finally {
+      setSavingAction(false);
+    }
+  };
+
+  const markRead = async () => {
+    if (!latestTodayCheckIn || savingRead) return;
+    setReadError("");
+    setSavingRead(true);
+    try {
+      await markTodayRead();
+    } catch {
+      setReadError("Could not save. Please try again.");
+    } finally {
+      setSavingRead(false);
     }
   };
 
   useEffect(() => {
-    if (!latestTodayCheckIn) {
-      return;
-    }
-
-    const onboardingProfile = profileForCheckIn(
-      getOnboardingProfile(),
+    if (!latestTodayCheckIn) return;
+    const reading = buildCheckInReading(
       latestTodayCheckIn,
+      getOnboardingProfile(),
+      getAllJournalEntries(),
     );
-    const recentJournalEntries = getJournalEntries().slice(0, 8);
-    const contextSignature = buildAiReadingSignature({
-      result: latestTodayCheckIn,
-      onboardingProfile,
-      journalEntries: recentJournalEntries,
-    });
+    const contextSignature = reading.signature;
     const shouldGenerate =
       !latestTodayCheckIn.aiAlignment ||
       Boolean(
         latestTodayCheckIn.aiContextSignature &&
           latestTodayCheckIn.aiContextSignature !== contextSignature,
       );
-    const requestKey = `${latestTodayCheckIn.id}:${contextSignature}`;
-
-    if (!shouldGenerate || requestedAiFor.current === requestKey) {
+    const requestKey = `${latestTodayCheckIn.id}:${contextSignature}:${retry}`;
+    if (
+      (!shouldGenerate && retry === 0) ||
+      requestedAiFor.current === requestKey
+    ) {
       setAiStatus(latestTodayCheckIn.aiAlignment ? "ready" : "unavailable");
       return;
     }
-
     requestedAiFor.current = requestKey;
     setAiStatus("loading");
-
     const controller = new AbortController();
     fetch("/api/personalize", {
       signal: controller.signal,
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        result: latestTodayCheckIn,
-        onboardingProfile,
-        recentJournalEntries: recentJournalEntries.map((entry) => ({
-          date: entry.date,
-          content: entry.content,
-        })),
-      }),
+      body: JSON.stringify(reading.request),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) throw new Error("Reading unavailable");
+        return response.json();
+      })
       .then(
         (payload: {
           enabled?: boolean;
           data?: CheckInResult["aiAlignment"];
         }) => {
-          if (!payload.enabled || !payload.data) {
+          if (controller.signal.aborted) return;
+          if (
+            !payload.enabled ||
+            !payload.data ||
+            typeof payload.data.summary !== "string" ||
+            !payload.data.summary.trim()
+          ) {
             setAiStatus("unavailable");
             return;
           }
-
           const updated: CheckInResult = {
             ...latestTodayCheckIn,
             aiAlignment: payload.data,
@@ -171,6 +185,7 @@ export default function ReviewPage() {
           setCheckIns((current) =>
             current.map((item) => (item.id === updated.id ? updated : item)),
           );
+          setRetry(0);
           setAiStatus("ready");
         },
       )
@@ -181,7 +196,7 @@ export default function ReviewPage() {
       controller.abort();
       requestedAiFor.current = null;
     };
-  }, [latestTodayCheckIn]);
+  }, [latestTodayCheckIn, retry]);
 
   return (
     <main className="clearpth-page-shell">
@@ -201,330 +216,74 @@ export default function ReviewPage() {
           </div>
         </div>
       </section>
-
       <section className="mx-auto mt-7 max-w-6xl">
         <DailyFlow
           checkedIn={Boolean(latestTodayCheckIn)}
           readToday={Boolean(latestTodayCheckIn?.readAt)}
-          journaled={Boolean(todayJournal?.content.trim())}
+          meditated={meditated}
         />
       </section>
-
-      <section className="mx-auto mt-6 max-w-6xl overflow-hidden rounded-[1.35rem] border border-border/42 bg-card/20 md:mt-7 md:rounded-md">
-        <div className="grid grid-cols-2 md:grid-cols-4">
-          <ReviewStat
-            label="Score"
-            value={latestTodayCheckIn?.beingScore.toFixed(1) ?? "-"}
-          />
-          <ReviewStat label="Check-ins" value={String(todayCheckIns.length)} />
-          <ReviewStat
-            label="Journal"
-            value={todayJournal?.content.trim() ? "Done" : "Open"}
-          />
-          <ReviewStat label="Signal" value={report.signalLabel} />
-        </div>
-      </section>
-
       <div className="mx-auto max-w-6xl">
-        <ManifestationFocus compact />
-      </div>
-      <section className="mx-auto mt-6 grid max-w-6xl gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-        <article className="rounded-[1.35rem] border border-primary/20 bg-primary/8 p-5 md:rounded-md md:p-6">
-          <div className="flex items-center gap-3">
-            <Target className="h-5 w-5 text-primary" aria-hidden />
-            <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-              Who You Are Becoming
-            </p>
-          </div>
-          <p className="mt-3 font-serif text-2xl font-semibold leading-tight md:text-3xl">
-            {primary?.identity ||
-              "The person who lives this reality, one choice at a time."}
-          </p>
-          {onboardingProfile?.desiredState.trim() ? (
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              State to practice:{" "}
-              {primary?.identity || onboardingProfile.desiredState.trim()}
-            </p>
-          ) : null}
-        </article>
-
-        <article className="rounded-[1.35rem] border border-border/42 bg-card/22 p-5 md:rounded-md md:p-6">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-            The Gap Today
-          </p>
-          <p className="mt-3 font-serif text-2xl font-semibold leading-tight md:text-3xl">
-            {report.gapTitle}
-          </p>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground md:text-base md:leading-7">
-            {report.gapDetail}
-          </p>
-        </article>
-      </section>
-
-      {!latestTodayCheckIn ? (
-        <section className="mx-auto mt-9 max-w-6xl rounded-[1.35rem] border border-border/50 bg-card/24 p-5 md:rounded-md md:p-8">
-          <p className="text-xs uppercase tracking-[0.24em] text-primary">
-            No check-in today
-          </p>
-          <h2 className="mt-3 font-serif text-3xl font-semibold md:text-4xl">
-            You have not checked in today.
-          </h2>
-          <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
-            Complete one check-in to see the gap between today&apos;s state and
-            your desired reality.
-          </p>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Button asChild>
-              <Link href="/check-in">Begin Check In</Link>
-            </Button>
-            <Button asChild variant="secondary">
-              <Link href="/ritual">Open Journal</Link>
-            </Button>
-          </div>
-        </section>
-      ) : (
-        <>
-          <section className="mx-auto mt-9 grid max-w-6xl gap-5 lg:grid-cols-[1.05fr_0.95fr]">
-            <article className="rounded-[1.35rem] border border-foreground/12 bg-card/48 p-5 md:rounded-md md:p-7">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden />
-                <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                  Alignment Signal
-                </p>
-              </div>
-              <h2 className="mt-3 font-serif text-3xl font-semibold leading-tight md:mt-4 md:text-4xl">
-                {report.primaryTitle}
-              </h2>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground md:mt-4 md:text-base md:leading-7">
-                {report.primaryDetail}
-              </p>
-            </article>
-
-            <article className="rounded-[1.35rem] border border-border/42 bg-card/22 p-5 md:rounded-md md:p-7">
-              <div className="flex items-center gap-3">
-                <Target className="h-5 w-5 text-primary" aria-hidden />
-                <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                  Aligned Action
-                </p>
-              </div>
-              <p className="mt-3 font-serif text-2xl font-semibold leading-tight md:mt-4 md:text-3xl">
-                {report.correctionTitle}
-              </p>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground md:mt-4 md:text-base md:leading-7">
-                {report.correctionDetail}
-              </p>
-            </article>
-          </section>
-
-          <section className="mx-auto mt-6 max-w-6xl rounded-[1.35rem] border border-primary/18 bg-primary/8 p-5 md:rounded-md md:p-6">
-            <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-              <div>
-                <div className="flex items-center gap-3">
-                  <Target className="h-5 w-5 text-primary" aria-hidden />
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                    Today&apos;s Aligned Action
+        <TodayReading
+          result={latestTodayCheckIn}
+          loaded={loaded}
+          status={aiStatus}
+          onRetry={() => setRetry((value) => value + 1)}
+          onRead={markRead}
+          savingRead={savingRead}
+          error={readError}
+        />
+        {latestTodayCheckIn ? (
+          <details className="border-t border-border/40 pt-2">
+            <summary className="cursor-pointer py-3 text-sm text-muted-foreground">
+              More from today
+            </summary>
+            <div className="py-5">
+              {alignedAction ? (
+                <div className="max-w-3xl">
+                  <h2 className="text-sm font-medium">Your next step</h2>
+                  <p className="mt-3 text-sm leading-7 text-muted-foreground">
+                    {alignedAction}
                   </p>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="mt-4"
+                    disabled={savingAction}
+                    onClick={toggleAlignedAction}
+                  >
+                    <CheckCircle2 className="h-4 w-4" aria-hidden />
+                    {savingAction
+                      ? "Saving..."
+                      : actionCompleted
+                        ? "Completed"
+                        : "Mark Complete"}
+                  </Button>
+                  {actionError ? (
+                    <p role="alert" className="mt-3 text-sm text-primary">
+                      {actionError}
+                    </p>
+                  ) : null}
                 </div>
-                <p className="mt-3 max-w-3xl font-serif text-2xl font-semibold leading-tight text-foreground md:text-3xl">
-                  {alignedAction}
-                </p>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  This is the action that makes the desired reality more real
-                  today.
-                </p>
+              ) : null}
+              <div className="mt-6 flex flex-wrap gap-x-6 gap-y-4 text-sm text-primary">
+                <Link
+                  href={`/results?id=${latestTodayCheckIn.id}`}
+                  className="underline underline-offset-4"
+                >
+                  Full reading
+                </Link>
+                <Link
+                  href="/check-in#journal"
+                  className="underline underline-offset-4"
+                >
+                  Add a reflection
+                </Link>
               </div>
-              <Button
-                type="button"
-                variant={actionCompleted ? "secondary" : "default"}
-                className="w-full shrink-0 md:w-auto"
-                onClick={toggleAlignedAction}
-              >
-                <CheckCircle2 className="h-4 w-4" aria-hidden />
-                {actionCompleted ? "Completed" : "Mark Complete"}
-              </Button>
             </div>
-            {actionError ? (
-              <p role="alert" className="mt-3 text-sm text-primary">
-                {actionError}
-              </p>
-            ) : null}
-            <Button
-              asChild
-              className="mt-4 w-full md:w-auto"
-              variant="secondary"
-            >
-              <Link href="/tune-in">Open Meditation</Link>
-            </Button>
-          </section>
-
-          <section className="mt-8">
-            <AlignmentResult
-              result={latestTodayCheckIn}
-              aiStatus={latestTodayCheckIn.aiAlignment ? "ready" : aiStatus}
-            />
-          </section>
-        </>
-      )}
-
-      <section className="mx-auto mt-9 max-w-6xl rounded-[1.35rem] border border-border/42 bg-card/22 md:rounded-md">
-        <div className="border-b border-border/60 px-5 py-4">
-          <div className="flex items-center gap-3">
-            <NotebookPen className="h-5 w-5 text-primary" aria-hidden />
-            <p className="text-xs uppercase tracking-[0.24em] text-primary">
-              Journal
-            </p>
-          </div>
-        </div>
-        <div className="px-5 py-4">
-          <p className="text-sm leading-7 text-muted-foreground">
-            What did today show you about the gap, and what feels clearer now?
-          </p>
-          <Button asChild className="mt-4" variant="secondary">
-            <Link href="/ritual">Open Journal</Link>
-          </Button>
-        </div>
-      </section>
-
-      {todayJournal?.content.trim() ? (
-        <section className="mx-auto mt-6 max-w-6xl rounded-[1.35rem] border border-border/42 bg-card/22 md:rounded-md">
-          <div className="border-b border-border/60 px-5 py-4">
-            <div className="flex items-center gap-3">
-              <NotebookPen className="h-5 w-5 text-primary" aria-hidden />
-              <p className="text-xs uppercase tracking-[0.24em] text-primary">
-                Today&apos;s Journal
-              </p>
-            </div>
-          </div>
-          <article className="px-5 py-4">
-            <p className="text-sm leading-7 text-muted-foreground">
-              {todayJournal.content}
-            </p>
-          </article>
-        </section>
-      ) : null}
-
-      <TeachingQuote />
+          </details>
+        ) : null}
+      </div>
     </main>
   );
-}
-
-function ReviewStat({ label, value }: { label: string; value: string }) {
-  return (
-    <article className="min-w-0 border-border/42 p-4 odd:border-r [&:nth-child(-n+2)]:border-b md:border-b-0 md:border-r md:p-5 md:last:border-r-0">
-      <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground md:text-xs md:tracking-[0.22em]">
-        {label}
-      </p>
-      <p className="mt-2 break-words font-serif text-[1.65rem] font-semibold leading-tight text-foreground md:mt-3 md:text-4xl">
-        {value}
-      </p>
-    </article>
-  );
-}
-
-function buildTodayReport(
-  checkIn: CheckInResult | null,
-  journal: JournalEntry | undefined,
-  profile: OnboardingProfile | null,
-) {
-  const desiredReality = getDesiredRealityLine(profile).toLowerCase();
-  const desiredState = profile?.desiredState.trim();
-
-  if (!checkIn) {
-    return {
-      signalLabel: "Unmeasured",
-      primaryTitle: "No check-in yet",
-      primaryDetail: "Check in first, then today can be reviewed.",
-      gapTitle: "Check in to see the gap.",
-      gapDetail: `ClearPth needs one check-in to compare today with ${desiredReality}.`,
-      correctionTitle: "Check in",
-      correctionDetail:
-        "Score your thoughts, actions, and emotions, then name one clear step.",
-    };
-  }
-
-  const journalSignal = journal?.content.trim()
-    ? "Your journal adds more context to today's score."
-    : "A journal entry would make today's review clearer.";
-  const weakest = checkIn.weakestPillar;
-  const strongest = checkIn.strongestPillar;
-
-  if (checkIn.beingScore < 6) {
-    return {
-      signalLabel: "Needs focus",
-      primaryTitle: `${weakest} is creating the most distance today.`,
-      primaryDetail: `${strongest} is supporting you, and ${weakest} is where your current state is furthest from your desired reality. ${journalSignal}`,
-      gapTitle: `${weakest} is the main gap.`,
-      gapDetail: buildGapDetail(weakest, desiredReality, desiredState),
-      correctionTitle: getCorrectionTitle(weakest),
-      correctionDetail: getCorrectionDetail(weakest),
-    };
-  }
-
-  if (checkIn.beingScore >= 8) {
-    return {
-      signalLabel: "Clear",
-      primaryTitle: `${strongest} is carrying your alignment today.`,
-      primaryDetail: `Protect what made this score possible. Keep the day simple and repeat the state that is working. ${journalSignal}`,
-      gapTitle: "The gap is narrow today.",
-      gapDetail: `You are close to ${desiredReality}. Protect the state that made this possible instead of scattering it.`,
-      correctionTitle: `Protect what is working`,
-      correctionDetail:
-        "Choose one action that preserves today's clarity instead of spending it on distraction.",
-    };
-  }
-
-  return {
-    signalLabel: "Workable",
-    primaryTitle: `${weakest} is asking for one adjustment.`,
-    primaryDetail: `${strongest} is giving you enough stability to bring ${weakest} closer to your desired reality. ${journalSignal}`,
-    gapTitle: `${weakest} is the next adjustment.`,
-    gapDetail: buildGapDetail(weakest, desiredReality, desiredState),
-    correctionTitle: getCorrectionTitle(weakest),
-    correctionDetail: getCorrectionDetail(weakest),
-  };
-}
-
-function getCorrectionTitle(pillar: PillarName) {
-  const titles: Record<PillarName, string> = {
-    Thinking: "Clean the interpretation",
-    Doing: "Take the first visible step",
-    Feeling: "Regulate before deciding",
-  };
-
-  return titles[pillar];
-}
-
-function getCorrectionDetail(pillar: PillarName) {
-  const details: Record<PillarName, string> = {
-    Thinking:
-      "Replace the dominant story with one cleaner sentence, then act from that sentence for the next hour.",
-    Doing:
-      "Choose the smallest useful action and complete it before seeking more certainty.",
-    Feeling:
-      "Let the emotion be present without giving it command. Breathe slowly, soften the body, and move from the state you are practicing.",
-  };
-
-  return details[pillar];
-}
-
-function getDesiredRealityLine(profile: OnboardingProfile | null) {
-  return profile?.primaryGoal.trim() || "the life you want";
-}
-
-function buildGapDetail(
-  pillar: PillarName,
-  desiredReality: string,
-  desiredState: string | undefined,
-) {
-  const statePhrase = desiredState
-    ? ` The state to practice is ${desiredState}.`
-    : "";
-
-  const details: Record<PillarName, string> = {
-    Thinking: `Your thoughts need to line up more cleanly with ${desiredReality}.${statePhrase}`,
-    Doing: `Your actions need to show more evidence of ${desiredReality}.${statePhrase}`,
-    Feeling: `Your emotions need more contact with the feeling of ${desiredReality}.${statePhrase}`,
-  };
-
-  return details[pillar];
 }

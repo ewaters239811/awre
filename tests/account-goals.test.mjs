@@ -133,22 +133,17 @@ test("account migration, goal saving, sign-out and reload preserve remote goals 
     });
     await account.saveOnboardingProfileToAccount(next);
     onboarding.saveOnboardingProfile(next);
-    const checkIn = alignment.buildResult({
-      thinkingScore: 7,
-      willingScore: 8,
-      feelingScore: 9,
-      dominantThought: "",
-      avoidedAction: "",
-      currentFeeling: "",
-      highestBeingChoice: "",
-      manifestationId: goal.id,
-      desiredReality: goal.outcome,
-    });
-    await account.saveCheckInToAccount(checkIn);
-    await account.saveJournalEntryToAccount({
-      ...journal.createEmptyJournalEntry("2026-10-19"),
+    const sessions = load("lib/check-in-session.ts");
+    const session = sessions.createCheckInSession({
+      scores: { thinkingScore: 7, willingScore: 8, feelingScore: 9 },
       content: "Career entry",
+      goal,
+      innerFoundation: next.manifestations.innerFoundation,
+      journalDate: "2026-10-19",
+      existingJournal: null,
     });
+    const checkIn = session.result;
+    await sessions.saveCheckInSession(session);
     await account.signOutOfAccount();
     assert.equal(onboarding.getOnboardingProfile(), null);
     assert.deepEqual(alignment.getAllCheckIns(), []);
@@ -161,6 +156,9 @@ test("account migration, goal saving, sign-out and reload preserve remote goals 
       "Completed a portfolio",
     );
     assert.equal(alignment.getCheckIns().length, 1);
+    assert.equal(alignment.getCheckIns()[0].checkInJournal, "Career entry");
+    assert.equal(alignment.getCheckIns()[0].journalEntryId, journal.getJournalEntries()[0].id);
+    assert.equal(alignment.getCheckIns()[0].desiredReality, goal.outcome);
     assert.equal(journal.getJournalEntries()[0].content, "Career entry");
     assert.equal(
       alignment.getCheckIns(first.manifestations.legacyGoalId)[0].id,

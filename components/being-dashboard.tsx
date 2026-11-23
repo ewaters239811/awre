@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { BarChart3, CalendarDays, Compass, Gauge } from "lucide-react";
+import { BarChart3, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HistoryCalendar } from "@/components/history-calendar";
 import { getCheckInDateKey, getCheckIns } from "@/lib/alignment";
 import { buildBeingDashboardData } from "@/lib/being-analysis";
 import { displayPillarName } from "@/lib/pillars";
 import { ManifestationFocus } from "@/components/manifestation-focus";
-import { ManifestationProgress } from "@/components/manifestation-progress";
 import { useManifestations } from "@/lib/use-manifestations";
 import type { CheckInResult, PillarName } from "@/lib/types";
 
@@ -18,6 +17,7 @@ type PatternSummary = {
   reason: string;
   focusPillar: PillarName | null;
   nextMove: string;
+  nextDetail: string;
 };
 
 export function BeingDashboard() {
@@ -26,12 +26,14 @@ export function BeingDashboard() {
   const [selectedCheckIn, setSelectedCheckIn] = useState<CheckInResult | null>(
     null,
   );
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     queueMicrotask(() => {
       const savedCheckIns = getCheckIns();
       setCheckIns(savedCheckIns);
       setSelectedCheckIn(savedCheckIns[0] ?? null);
+      setLoaded(true);
     });
   }, [primary?.id]);
 
@@ -55,13 +57,19 @@ export function BeingDashboard() {
         </p>
       </section>
 
-      <div className="mx-auto max-w-5xl"><ManifestationFocus compact /></div>
-      <ManifestationProgress />
-      {checkIns.length === 0 ? (
-        <section className="aura-glass mx-auto mt-9 max-w-5xl rounded-[1.35rem] p-5 md:rounded-lg md:p-6">
-          <h2 className="font-serif text-3xl font-semibold">
-            No pattern yet.
-          </h2>
+      <div className="mx-auto max-w-5xl">
+        <ManifestationFocus compact />
+      </div>
+      {!loaded ? (
+        <div
+          role="status"
+          className="mx-auto max-w-5xl py-10 text-sm text-muted-foreground"
+        >
+          Loading your patterns...
+        </div>
+      ) : checkIns.length === 0 ? (
+        <section className="mx-auto mt-9 max-w-5xl border-b border-border/45 pb-8">
+          <h2 className="font-serif text-3xl font-semibold">No pattern yet.</h2>
           <p className="mt-3 max-w-2xl text-muted-foreground">
             Complete a check-in to begin seeing what repeats.
           </p>
@@ -69,104 +77,55 @@ export function BeingDashboard() {
             <Button asChild>
               <Link href="/check-in">Begin Check In</Link>
             </Button>
-            <Button asChild variant="secondary">
-              <Link href="/ritual">Open Journal</Link>
-            </Button>
           </div>
         </section>
       ) : (
         <>
-          <section className="aura-glass mx-auto mt-9 max-w-5xl rounded-[1.35rem] p-5 md:rounded-lg md:p-7">
-            <div className="grid gap-7 lg:grid-cols-[1fr_220px] lg:items-start">
-              <div>
-                <div className="flex items-center gap-3">
-                  <Compass className="h-5 w-5 text-primary" aria-hidden />
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                    Your Gap Pattern
-                  </p>
-                </div>
-                <h2 className="mt-4 font-serif text-3xl font-semibold leading-tight md:text-5xl">
-                  {pattern.title}
-                </h2>
-                <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
-                  {pattern.reason}
-                </p>
-              </div>
-
-              <div className="rounded-[1.3rem] border border-border/65 bg-card/40 p-4 text-center md:rounded-md">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                  Alignment Score
-                </p>
-                <p className="mt-3 font-serif text-6xl font-semibold leading-none text-primary">
-                  {dashboard.latestScore?.toFixed(1) ?? "-"}
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">out of 10</p>
-              </div>
-            </div>
-
-            <div className="mt-7 grid gap-3 md:grid-cols-3">
-              <PatternStat
-                label="Focus"
-                value={
-                  pattern.focusPillar
-                    ? displayPillarName(pattern.focusPillar)
-                    : "Unmeasured"
-                }
-                detail="The area most often creating distance."
-              />
-              <PatternStat
-                label="Average"
-                value={
-                  dashboard.averageScore === null
-                    ? "Unmeasured"
-                    : `${dashboard.averageScore.toFixed(1)} / 10`
-                }
-                detail="Your average alignment across check-ins."
-              />
-              <PatternStat
-                label="Next Move"
-                value={pattern.nextMove}
-                detail="Keep it simple enough to repeat."
-              />
-            </div>
+          <section className="mx-auto mt-8 grid max-w-5xl gap-8 border-b border-border/45 pb-8 md:grid-cols-2 md:gap-12 md:pb-10">
+            <section aria-labelledby="gap-cause-heading" className="min-w-0">
+              <h2
+                id="gap-cause-heading"
+                className="text-sm font-medium text-primary"
+              >
+                What&apos;s creating the gap
+              </h2>
+              <p className="mt-4 break-words font-serif text-2xl font-semibold leading-snug">
+                {pattern.title}
+              </p>
+              <p className="mt-3 text-[15px] leading-7 text-muted-foreground">
+                {pattern.reason}
+              </p>
+            </section>
+            <section aria-labelledby="gap-help-heading" className="min-w-0">
+              <h2
+                id="gap-help-heading"
+                className="text-sm font-medium text-primary"
+              >
+                What can help close the gap
+              </h2>
+              <p className="mt-4 break-words font-serif text-2xl font-semibold leading-snug">
+                {pattern.nextMove}
+              </p>
+              <p className="mt-3 text-[15px] leading-7 text-muted-foreground">
+                {pattern.nextDetail}
+              </p>
+            </section>
           </section>
 
-          <section className="mx-auto mt-8 grid max-w-5xl gap-5 lg:grid-cols-[0.72fr_1.28fr]">
-            <section className="rounded-[1.35rem] border border-border/42 bg-card/20 p-5 md:aura-glass md:rounded-lg md:p-6">
-              <div className="flex items-center gap-3">
-                <Gauge className="h-5 w-5 text-primary" aria-hidden />
-                <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                  Pillars
-                </p>
-              </div>
-              <div className="mt-6 grid gap-4">
-                <PillarBar
-                  label="Thinking"
-                  value={dashboard.pillarAverages.Thinking}
-                  active={pattern.focusPillar === "Thinking"}
-                />
-                <PillarBar
-                  label="Doing"
-                  value={dashboard.pillarAverages.Doing}
-                  active={pattern.focusPillar === "Doing"}
-                />
-                <PillarBar
-                  label="Feeling"
-                  value={dashboard.pillarAverages.Feeling}
-                  active={pattern.focusPillar === "Feeling"}
-                />
-              </div>
-            </section>
-
-            <section className="rounded-[1.35rem] border border-border/42 bg-card/20 p-5 md:aura-glass md:rounded-lg md:p-6">
-              <div className="flex items-center gap-3">
-                <BarChart3 className="h-5 w-5 text-primary" aria-hidden />
-                <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-                  Alignment Over Time
-                </p>
-              </div>
-              <ScoreTrendChart timeline={dashboard.timeline} />
-            </section>
+          <section
+            className="mx-auto mt-8 max-w-5xl border-b border-border/45 pb-8 md:mt-10 md:pb-10"
+            aria-labelledby="alignment-trend-heading"
+          >
+            <div className="flex items-center gap-3">
+              <BarChart3 className="h-5 w-5 text-primary" aria-hidden />
+              <h2
+                id="alignment-trend-heading"
+                className="font-serif text-2xl font-semibold"
+              >
+                Alignment Trend
+              </h2>
+            </div>
+            <ScoreTrendChart timeline={dashboard.timeline} />
           </section>
 
           <section className="mx-auto mt-9 max-w-5xl">
@@ -179,9 +138,6 @@ export function BeingDashboard() {
                   Recorded Days
                 </h2>
               </div>
-              <p className="text-sm text-muted-foreground">
-                The calendar is here when you want the details.
-              </p>
             </div>
             <HistoryCalendar
               items={checkIns}
@@ -193,28 +149,6 @@ export function BeingDashboard() {
         </>
       )}
     </main>
-  );
-}
-
-function PatternStat({
-  label,
-  value,
-  detail,
-}: {
-  label: string;
-  value: string;
-  detail: string;
-}) {
-  return (
-    <article className="rounded-2xl border border-border/65 bg-card/35 p-4 md:rounded-md">
-      <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground md:text-xs md:tracking-[0.2em]">
-        {label}
-      </p>
-      <p className="mt-2 text-lg font-medium leading-snug text-foreground">
-        {value}
-      </p>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{detail}</p>
-    </article>
   );
 }
 
@@ -246,12 +180,9 @@ function SelectedPatternDay({ item }: { item: CheckInResult | null }) {
       <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-6 lg:grid-cols-5">
         <MiniStat label="Score" value={item.beingScore.toFixed(1)} />
         <MiniStat label="Thinking" value={String(item.thinkingScore)} />
-        <MiniStat label="Willing" value={String(item.willingScore)} />
+        <MiniStat label="Acting" value={String(item.willingScore)} />
         <MiniStat label="Feeling" value={String(item.feelingScore)} />
-        <MiniStat
-          label="Focus"
-          value={displayPillarName(item.weakestPillar)}
-        />
+        <MiniStat label="Focus" value={displayPillarName(item.weakestPillar)} />
       </div>
     </section>
   );
@@ -270,35 +201,6 @@ function MiniStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function PillarBar({
-  label,
-  value,
-  active,
-}: {
-  label: PillarName;
-  value: number;
-  active: boolean;
-}) {
-  return (
-    <div
-      className={
-        active ? "rounded-md border border-primary/20 bg-primary/8 p-3" : ""
-      }
-    >
-      <div className="flex justify-between gap-3 text-sm">
-        <span className="text-muted-foreground">{displayPillarName(label)}</span>
-        <span className="text-primary">{value.toFixed(1)}</span>
-      </div>
-      <div className="mt-2 h-2 overflow-hidden rounded-md bg-black/30">
-        <div
-          className="h-full rounded-md bg-primary"
-          style={{ width: `${Math.min(value * 10, 100)}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
 function buildPatternSummary(
   checkIns: CheckInResult[],
   dashboard: ReturnType<typeof buildBeingDashboardData>,
@@ -310,28 +212,57 @@ function buildPatternSummary(
         "Complete a few check-ins so ClearPth can show what keeps creating distance.",
       focusPillar: null,
       nextMove: "Check in",
+      nextDetail:
+        "Rate your current alignment and write about your day to give the pattern context.",
     };
   }
 
   const focusPillar = dashboard.weakestPillar;
+  const averages = Object.values(dashboard.pillarAverages);
+  if (Math.min(...averages) >= 8)
+    return {
+      title: "Your ratings show strong inner alignment.",
+      reason:
+        "Your thoughts, feelings, and actions are all rated highly across your check-ins.",
+      focusPillar: null,
+      nextMove: "Keep what is working.",
+      nextDetail:
+        "Repeat the choices that support your clarity and follow-through rather than looking for a problem to fix.",
+    };
+  if (Math.max(...averages) - Math.min(...averages) < 0.2)
+    return {
+      title: "No single area stands apart yet.",
+      reason:
+        "Your ratings are close across thoughts, feelings, and actions; they do not point to one clear gap.",
+      focusPillar: null,
+      nextMove: "Notice what changes your alignment.",
+      nextDetail:
+        "Use your next check-in and journal to notice which situations help you feel clear and act with intention.",
+    };
   const byPillar: Record<PillarName, Omit<PatternSummary, "focusPillar">> = {
     Thinking: {
-      title: "Your thoughts are creating the gap.",
+      title: "Thinking is your lowest-rated area.",
       reason:
-        "Your check-ins show that perception most often pulls you away from your desired reality.",
+        "Across your check-ins, your thoughts tend to feel less aligned with your desired reality than your feelings and actions.",
       nextMove: "Name one truer thought",
+      nextDetail:
+        "Notice a thought that gets in your way, check it against the facts, and choose a more useful perspective.",
     },
     Doing: {
-      title: "Your follow-through is creating the gap.",
+      title: "Acting is your lowest-rated area.",
       reason:
-        "Your check-ins show that action most often lags behind the identity your desired reality requires.",
+        "Your choices and actions tend to be rated lower than your thoughts and feelings in relation to your desired reality.",
       nextMove: "Finish one visible action",
+      nextDetail:
+        "Choose one small step toward your desired reality that you can finish today, even if your mood changes.",
     },
     Feeling: {
-      title: "Your emotions are creating the gap.",
+      title: "Feeling is your lowest-rated area.",
       reason:
-        "Your check-ins show that emotion most often pulls you back toward what feels familiar.",
+        "Your emotional state tends to feel less aligned with the person you are becoming than your thoughts and actions.",
       nextMove: "Practice the state now",
+      nextDetail:
+        "Take a brief pause, name what you feel, and give yourself room to settle before choosing what to do.",
     },
   };
 
@@ -361,8 +292,7 @@ function ScoreTrendChart({
     <div className="mt-6">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-medium text-foreground">Score Trend</p>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {timeline.length} recorded day{timeline.length === 1 ? "" : "s"}
           </p>
         </div>
@@ -432,28 +362,32 @@ function ScoreTrendChart({
                 className="fill-background stroke-primary"
                 strokeWidth="3"
               />
-              <text
-                x={point.x}
-                y={point.y - 12}
-                textAnchor="middle"
-                className="fill-foreground text-[12px]"
-              >
-                {point.score.toFixed(1)}
-              </text>
+              {showChartLabel(index, chart.points.length) ? (
+                <text
+                  x={point.x}
+                  y={point.y - 12}
+                  textAnchor="middle"
+                  className="fill-foreground text-[12px]"
+                >
+                  {point.score.toFixed(1)}
+                </text>
+              ) : null}
             </g>
           ))}
 
-          {chart.points.map((point, index) => (
-            <text
-              key={`${point.date}-${index}-label`}
-              x={point.x}
-              y="264"
-              textAnchor="middle"
-              className="fill-muted-foreground text-[11px]"
-            >
-              {formatShortDate(point.date)}
-            </text>
-          ))}
+          {chart.points.map((point, index) =>
+            showChartLabel(index, chart.points.length) ? (
+              <text
+                key={`${point.date}-${index}-label`}
+                x={point.x}
+                y="264"
+                textAnchor="middle"
+                className="fill-muted-foreground text-[11px]"
+              >
+                {formatShortDate(point.date)}
+              </text>
+            ) : null,
+          )}
         </svg>
       </div>
     </div>
@@ -468,27 +402,33 @@ function MobileScoreTrend({
   const recent = timeline.slice(-7).reverse();
 
   return (
-    <div className="grid gap-3 lg:hidden">
+    <div className="divide-y divide-border/40 lg:hidden">
       {recent.map((point, index) => (
         <div
           key={`${point.date}-${index}`}
-          className="rounded-md border border-border/70 bg-background/35 p-3"
+          className="grid min-w-0 grid-cols-[5.5rem_minmax(0,1fr)_2.5rem] items-center gap-3 py-3"
         >
-          <div className="flex items-center justify-between gap-3 text-sm">
-            <span className="text-muted-foreground">{point.date}</span>
-            <span className="font-serif text-2xl font-semibold">
-              {point.score.toFixed(1)}
-            </span>
-          </div>
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+          <span className="text-xs text-muted-foreground">{point.date}</span>
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full bg-primary"
               style={{ width: `${Math.min(point.score * 10, 100)}%` }}
             />
           </div>
+          <span className="text-right text-sm font-medium tabular-nums">
+            {point.score.toFixed(1)}
+          </span>
         </div>
       ))}
     </div>
+  );
+}
+
+function showChartLabel(index: number, length: number) {
+  return (
+    index === 0 ||
+    index === length - 1 ||
+    index % Math.max(1, Math.ceil(length / 6)) === 0
   );
 }
 

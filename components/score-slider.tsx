@@ -2,35 +2,60 @@
 
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
+import { useId } from "react";
 
 export function ScoreSlider({
   label,
+  description,
   value,
   onChange,
+  disabled,
 }: {
   label: string;
+  description?: string;
   value: number;
   onChange: (value: number) => void;
+  disabled?: boolean;
 }) {
+  const id = useId();
   return (
-    <div className="group space-y-3 rounded-[1.1rem] border border-border/35 bg-background/18 px-3.5 py-4 transition hover:border-primary/24 hover:bg-card/28 sm:px-4 sm:py-5">
+    <div className="space-y-3">
       <div className="flex items-start justify-between gap-4">
-        <Label className="max-w-[78%] leading-6">{label}</Label>
-        <span className="flex h-11 min-w-11 items-center justify-center rounded-2xl border border-primary/30 bg-[linear-gradient(135deg,#f4efe4,#a6bb9a)] px-3 text-lg font-semibold leading-none text-background shadow-[0_8px_20px_rgba(0,0,0,0.24)] transition group-hover:scale-105">
+        <div className="min-w-0">
+          <Label htmlFor={id} className="text-base leading-6">
+            {label}
+          </Label>
+          {description ? (
+            <p
+              id={`${id}-help`}
+              className="mt-1 text-sm leading-6 text-muted-foreground"
+            >
+              {description}
+            </p>
+          ) : null}
+        </div>
+        <span
+          aria-hidden
+          className="shrink-0 pt-0.5 text-lg font-medium tabular-nums text-primary"
+        >
           {value}
+          <span className="text-xs text-muted-foreground"> / 10</span>
         </span>
       </div>
       <Slider
+        id={id}
         value={[value]}
         min={1}
         max={10}
         step={1}
+        disabled={disabled}
         onValueChange={(next) => onChange(next[0])}
         aria-label={label}
+        aria-describedby={description ? `${id}-help` : undefined}
       />
       <div className="flex justify-between text-xs text-muted-foreground">
-        <span>Far off</span>
-        <span>Close</span>
+        <span>Less aligned</span>
+        <span>Fully aligned</span>
       </div>
     </div>
   );

@@ -1,387 +1,294 @@
 "use client";
 
-import { FormEvent, type ReactNode, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Brain, Flame, Heart, Sparkles } from "lucide-react";
+import { AlertTriangle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { JournalInput } from "@/components/journal-input";
+import { SavedCheckInJournal } from "@/components/saved-check-in-journal";
 import { ScoreSlider } from "@/components/score-slider";
-import { DailyFlow } from "@/components/daily-flow";
-import { ManifestationFocus } from "@/components/manifestation-focus";
 import { useManifestations } from "@/lib/use-manifestations";
-import { getCurrentAccount, saveCheckInToAccount } from "@/lib/account-data";
+import { getCurrentAccount } from "@/lib/account-data";
+import { CHECK_INS_CHANGED_EVENT, getCheckInForDate } from "@/lib/alignment";
 import {
-  buildResult,
-  CHECK_INS_CHANGED_EVENT,
-  getCheckInForDate,
-  saveCheckIn,
-} from "@/lib/alignment";
+  createCheckInSession,
+  saveCheckInSession,
+  type CheckInSession,
+} from "@/lib/check-in-session";
+import { getJournalEntryForDate } from "@/lib/journal-storage";
+import { toDateKey } from "@/lib/date-key";
 import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
-import type { CheckInDraft, CheckInResult } from "@/lib/types";
+import type { CheckInResult } from "@/lib/types";
 
-const initialDraft: CheckInDraft = {
-  thinkingScore: 5,
-  willingScore: 5,
-  feelingScore: 5,
-  dominantThought: "",
-  avoidedAction: "",
-  currentFeeling: "",
-  highestBeingChoice: "",
-};
-
+const initialScores = { thinkingScore: 5, willingScore: 5, feelingScore: 5 };
 const crisisPattern =
   /\b(suicide|self[-\s]?harm|kill myself|end my life|can't go on|severe depression|crisis)\b/i;
 
 export default function CheckInPage() {
   const router = useRouter();
-  const { primary, profile, state: manifestationState } = useManifestations();
+  const { primary, state: manifestationState } = useManifestations();
   const todayKey = useCurrentCheckInDateKey();
-  const [draft, setDraft] = useState<CheckInDraft>(initialDraft);
+  const [scores, setScores] = useState(initialScores);
+  const [journal, setJournal] = useState("");
   const [error, setError] = useState("");
   const [supportMessage, setSupportMessage] = useState(false);
   const [todaysCheckIn, setTodaysCheckIn] = useState<CheckInResult | null>(
     null,
   );
-  const [showDeeperQuestions, setShowDeeperQuestions] = useState(false);
   const [saving, setSaving] = useState(false);
+  const submitting = useRef(false);
+  const pendingSession = useRef<{
+    key: string;
+    session: CheckInSession;
+  } | null>(null);
 
   useEffect(() => {
-    const refreshTodaysCheckIn = () => {
-      setTodaysCheckIn(getCheckInForDate(todayKey));
-    };
-
-    queueMicrotask(refreshTodaysCheckIn);
-    window.addEventListener(CHECK_INS_CHANGED_EVENT, refreshTodaysCheckIn);
-    window.addEventListener("focus", refreshTodaysCheckIn);
-    document.addEventListener("visibilitychange", refreshTodaysCheckIn);
-
+    const refresh = () =>
+      setTodaysCheckIn(getCheckInForDate(todayKey, primary?.id));
+    queueMicrotask(refresh);
+    window.addEventListener(CHECK_INS_CHANGED_EVENT, refresh);
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
     return () => {
-      window.removeEventListener(CHECK_INS_CHANGED_EVENT, refreshTodaysCheckIn);
-      window.removeEventListener("focus", refreshTodaysCheckIn);
-      document.removeEventListener("visibilitychange", refreshTodaysCheckIn);
+      window.removeEventListener(CHECK_INS_CHANGED_EVENT, refresh);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
     };
   }, [todayKey, primary?.id]);
 
   useEffect(() => {
-    queueMicrotask(() => setDraft(initialDraft));
-  }, [primary?.id]);
-
-  const updateField = <K extends keyof CheckInDraft>(
-    field: K,
-    value: CheckInDraft[K],
-  ) => setDraft((current) => ({ ...current, [field]: value }));
+    queueMicrotask(() => {
+      setScores(initialScores);
+      setJournal("");
+      setError("");
+      setSupportMessage(false);
+      pendingSession.current = null;
+    });
+  }, [primary?.id, todayKey]);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitting.current || !primary) return;
     setError("");
-    if (saving) return;
-    if (!primary) {
-      setError("Choose a desired reality before checking in.");
-      return;
-    }
-
-    const combinedText = [
-      draft.dominantThought,
-      draft.avoidedAction,
-      draft.currentFeeling,
-      draft.highestBeingChoice,
-    ].join(" ");
-
-    if (crisisPattern.test(combinedText)) {
+    setSupportMessage(false);
+    if (crisisPattern.test(journal)) {
       setSupportMessage(true);
       return;
     }
-
+    submitting.current = true;
     setSaving(true);
     try {
-      const existing = getCheckInForDate(todayKey);
+      const existing = getCheckInForDate(todayKey, primary.id);
       if (existing) {
         setTodaysCheckIn(existing);
         router.push("/review");
         return;
       }
-
-      const result = buildResult({
-        ...draft,
-        manifestationId: primary.id,
-        desiredReality: primary.outcome,
-        innerFoundation: manifestationState?.innerFoundation,
-      });
       const account = await getCurrentAccount();
-      if (!account) {
-        setError("Sign in or create an account to save your check-in.");
-        return;
+      if (!account) throw new Error("Please sign in to save your check-in.");
+      const journalDate = toDateKey(new Date());
+      const key = JSON.stringify([
+        account.id,
+        primary.id,
+        primary.outcome,
+        manifestationState?.innerFoundation,
+        todayKey,
+        journalDate,
+        scores,
+        journal.trim(),
+      ]);
+      if (pendingSession.current?.key !== key) {
+        pendingSession.current = {
+          key,
+          session: createCheckInSession({
+            scores,
+            content: journal,
+            goal: primary,
+            innerFoundation: manifestationState?.innerFoundation,
+            journalDate,
+            existingJournal: getJournalEntryForDate(journalDate, primary.id),
+          }),
+        };
       }
-      await saveCheckInToAccount(result);
-      saveCheckIn(result);
-      setTodaysCheckIn(result);
+      const session = pendingSession.current.session;
+      await saveCheckInSession(session);
+      setJournal("");
+      setTodaysCheckIn(session.result);
       router.push("/review");
-    } catch {
-      setError("Something interrupted the check-in. Please try again.");
+    } catch (cause) {
+      setError(
+        cause instanceof Error &&
+          cause.message === "Please sign in to save your check-in."
+          ? cause.message
+          : "Your check-in couldn't be completed. Your writing is still here; please try again.",
+      );
     } finally {
+      submitting.current = false;
       setSaving(false);
     }
   };
 
   return (
     <main className="clearpth-page-shell">
-      <div className="mx-auto max-w-4xl">
-        <p className="clearpth-page-kicker">Check In</p>
-        <h1 className="clearpth-page-title">
-          Where Are You With What You Want?
-        </h1>
-        <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base md:leading-7">
-          Reflect on how your thoughts, feelings, and actions align with your
-          desired reality. This is a personal reflection, not a scientific
-          measurement.
-        </p>
-        <div className="mt-6 md:mt-7">
-          <DailyFlow
-            checkedIn={Boolean(todaysCheckIn)}
-            readToday={Boolean(todaysCheckIn?.readAt)}
-            journaled={false}
-          />
-        </div>
-
-        <ManifestationFocus compact />
-        {!profile ? (
-          <section className="clearpth-soft-card clearpth-panel-pad mt-6 md:mt-7">
-            <p className="text-xs uppercase tracking-[0.24em] text-primary">
-              First Question
+      <div className="mx-auto max-w-2xl">
+        <header>
+          <h1 className="font-serif text-3xl font-semibold leading-tight sm:text-4xl">
+            Check In
+          </h1>
+          <p className="mt-3 text-[15px] leading-7 text-muted-foreground">
+            Rate your alignment. Write about your day.
+          </p>
+        </header>
+        {primary ? (
+          <div className="mt-7 border-b border-border/45 pb-7">
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-xs text-muted-foreground">
+                Your desired reality
+              </p>
+              <Link
+                href="/manifestations"
+                className="inline-flex min-h-10 items-center text-sm text-primary underline-offset-4 hover:underline"
+              >
+                Change focus
+              </Link>
+            </div>
+            <p className="mt-1 break-words text-base leading-7 text-foreground/90">
+              {primary.outcome}
             </p>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Start with one plain answer: what do you want? ClearPth will use
-              that to make every check-in more specific.
+          </div>
+        ) : (
+          <section className="my-8 border-y border-border/45 py-7">
+            <p className="text-sm leading-7 text-muted-foreground">
+              Choose what you want to work toward before checking in.
             </p>
             <Button asChild className="mt-4">
-              <Link href="/onboarding">Answer What You Want</Link>
+              <Link href="/manifestations">Your Desired Reality</Link>
             </Button>
           </section>
-        ) : null}
-
+        )}
         {todaysCheckIn ? (
-          <section className="aura-glass mt-9 rounded-[1.35rem] p-5 md:rounded-lg md:p-7">
-            <p className="text-xs uppercase tracking-[0.24em] text-primary">
-              Today&apos;s Check In Is Complete
-            </p>
-            <h2 className="mt-3 font-serif text-3xl font-semibold">
-              You already checked in today.
+          <section className="py-9">
+            <h2 className="font-serif text-2xl font-semibold">
+              You checked in today.
             </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Today&apos;s score is {todaysCheckIn.beingScore.toFixed(1)}
-              /10. Review the gap, write what you notice, or return tomorrow for
-              a fresh measure.
+            <p className="mt-3 text-sm leading-7 text-muted-foreground">
+              Your alignment is {todaysCheckIn.beingScore.toFixed(1)}/10. You
+              can add to your journal anytime.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Button asChild>
-                <Link href={`/results?id=${todaysCheckIn.id}`}>
-                  View Today&apos;s Result
+                <Link href="/review">
+                  View Today&apos;s Result{" "}
+                  <ArrowRight className="h-4 w-4" aria-hidden />
                 </Link>
               </Button>
-              <Button asChild variant="secondary">
-                <Link href="/review">Open Today</Link>
-              </Button>
-              <Button asChild variant="secondary">
-                <Link href="/ritual">Add Journal</Link>
-              </Button>
+            </div>
+            <div className="mt-8">
+              <SavedCheckInJournal
+                key={todaysCheckIn.id}
+                result={todaysCheckIn}
+              />
             </div>
           </section>
-        ) : (
-          <form
-            className="mt-8 space-y-6 md:mt-9 md:space-y-7"
-            onSubmit={submit}
-          >
-            <CheckInGate
-              eyebrow="Gate 01"
-              title="Current Alignment"
-              description="Rate how much today matches the life you are moving toward."
-              icon={<Brain className="h-5 w-5" aria-hidden />}
+        ) : primary ? (
+          <form className="mt-8" onSubmit={submit}>
+            <fieldset
+              disabled={saving}
+              className="min-w-0 space-y-9 disabled:opacity-70"
             >
-              <ScoreSlider
-                label="Thinking: How aligned are your thoughts with your desired reality today?"
-                value={draft.thinkingScore}
-                onChange={(value) => updateField("thinkingScore", value)}
-              />
-              <ScoreSlider
-                label="Willing: How consistently are your choices and actions moving you toward your desired reality?"
-                value={draft.willingScore}
-                onChange={(value) => updateField("willingScore", value)}
-              />
-              <ScoreSlider
-                label="Feeling: How closely does your emotional state reflect the person you are becoming?"
-                value={draft.feelingScore}
-                onChange={(value) => updateField("feelingScore", value)}
-              />
-              <TextAreaField
-                label="What feels true about where you are today?"
-                helper="Write one honest sentence about your current state, your desired reality, or the space between them."
-                placeholder="Example: I know what I want, but today I feel distracted and unsure what step actually matters."
-                value={draft.dominantThought}
-                onChange={(value) => updateField("dominantThought", value)}
-              />
-            </CheckInGate>
-
-            {!showDeeperQuestions ? (
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setShowDeeperQuestions(true)}
-              >
-                Add More Detail
-              </Button>
-            ) : (
-              <>
-                <CheckInGate
-                  eyebrow="Optional"
-                  title="What Is The Gap?"
-                  description="Name the action, delay, or pressure creating distance today."
-                  icon={<Flame className="h-5 w-5" aria-hidden />}
+              <section aria-labelledby="alignment-heading">
+                <h2
+                  id="alignment-heading"
+                  className="font-serif text-2xl font-semibold"
                 >
-                  <TextAreaField
-                    label="What action would make your desired reality more real today?"
-                    value={draft.avoidedAction}
-                    onChange={(value) => updateField("avoidedAction", value)}
-                  />
-                </CheckInGate>
-
-                <CheckInGate
-                  eyebrow="Optional"
-                  title="Feeling"
-                  description="Name the emotion shaping your current state."
-                  icon={<Heart className="h-5 w-5" aria-hidden />}
-                >
-                  <TextAreaField
-                    label="What feeling is shaping your state right now?"
-                    value={draft.currentFeeling}
-                    onChange={(value) => updateField("currentFeeling", value)}
-                  />
-                </CheckInGate>
-
-                <CheckInGate
-                  eyebrow="Optional"
-                  title="Aligned Action"
-                  description="Name one choice that belongs to the version of you who can hold what you want."
-                  icon={<Sparkles className="h-5 w-5" aria-hidden />}
-                >
-                  <TextAreaField
-                    label="What would the aligned version of you do today?"
-                    value={draft.highestBeingChoice}
+                  Current Alignment
+                </h2>
+                <div className="mt-6 space-y-7">
+                  <ScoreSlider
+                    label="Thinking"
+                    disabled={saving}
+                    description="How aligned are your thoughts with your desired reality today?"
+                    value={scores.thinkingScore}
                     onChange={(value) =>
-                      updateField("highestBeingChoice", value)
+                      setScores((current) => ({
+                        ...current,
+                        thinkingScore: value,
+                      }))
                     }
-                    rows={5}
                   />
-                </CheckInGate>
-              </>
-            )}
-
-            {supportMessage ? (
-              <div className="rounded-md border border-primary/35 bg-primary/10 p-4 text-sm leading-6 text-foreground">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="mt-1 h-5 w-5 shrink-0 text-primary" />
+                  <ScoreSlider
+                    label="Feeling"
+                    disabled={saving}
+                    description="How closely do your emotions reflect the person you are becoming?"
+                    value={scores.feelingScore}
+                    onChange={(value) =>
+                      setScores((current) => ({
+                        ...current,
+                        feelingScore: value,
+                      }))
+                    }
+                  />
+                  <ScoreSlider
+                    label="Acting"
+                    disabled={saving}
+                    description="How consistently are your choices and actions moving you toward your desired reality?"
+                    value={scores.willingScore}
+                    onChange={(value) =>
+                      setScores((current) => ({
+                        ...current,
+                        willingScore: value,
+                      }))
+                    }
+                  />
+                </div>
+              </section>
+              <JournalInput
+                key={primary.id}
+                value={journal}
+                onChange={setJournal}
+                disabled={saving}
+              />
+              {supportMessage ? (
+                <div
+                  role="alert"
+                  className="flex items-start gap-3 rounded-md border border-primary/35 bg-primary/10 p-4 text-sm leading-6"
+                >
+                  <AlertTriangle
+                    className="mt-1 h-5 w-5 shrink-0 text-primary"
+                    aria-hidden
+                  />
                   <p>
                     ClearPth is a self-reflection tool, not crisis support. If
                     you may hurt yourself or feel in immediate danger, please
-                    call emergency services now, contact a trusted person, or in
-                    the U.S. call or text 988 for the Suicide & Crisis Lifeline.
+                    call emergency services now or contact a trusted person.
                   </p>
                 </div>
+              ) : null}
+              {error ? (
+                <p role="alert" className="text-sm leading-6 text-primary">
+                  {error}
+                </p>
+              ) : null}
+              <div>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full"
+                  disabled={saving || !journal.trim()}
+                >
+                  {saving ? "Saving..." : "See My Alignment"}
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </Button>
+                <p className="mt-4 text-center text-xs leading-6 text-muted-foreground">
+                  A personal reflection, not a measure of your worth or a
+                  guarantee of results.
+                </p>
               </div>
-            ) : null}
-
-            {error ? <p className="text-sm text-primary">{error}</p> : null}
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs leading-5 text-muted-foreground sm:text-sm">
-                Sign in to save your check-in to your profile.
-              </p>
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full sm:w-auto"
-                disabled={saving || !primary}
-              >
-                {saving ? "Saving..." : "Reveal My Alignment"}
-              </Button>
-            </div>
+            </fieldset>
           </form>
-        )}
+        ) : null}
       </div>
     </main>
-  );
-}
-
-function CheckInGate({
-  eyebrow,
-  title,
-  description,
-  icon,
-  children,
-}: {
-  eyebrow: string;
-  title: string;
-  description: string;
-  icon: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <section className="aura-glass rounded-[1.35rem] p-5 md:rounded-lg md:p-6">
-      <div className="grid gap-6 md:grid-cols-[0.7fr_1.3fr] md:items-start md:gap-7">
-        <div>
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-primary/24 bg-[linear-gradient(135deg,rgba(166,187,154,0.2),rgba(209,185,126,0.08))] text-primary shadow-[0_8px_18px_rgba(0,0,0,0.18)] md:h-10 md:w-10 md:rounded-md">
-              {icon}
-            </span>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-primary md:text-xs md:tracking-[0.24em]">
-              {eyebrow}
-            </p>
-          </div>
-          <h2 className="mt-3 font-serif text-[1.7rem] font-semibold leading-tight md:mt-4 md:text-3xl">
-            {title}
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground md:mt-3">
-            {description}
-          </p>
-        </div>
-        <div className="space-y-5 md:rounded-lg md:border md:border-border/42 md:bg-card/28 md:p-5">
-          {children}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function TextAreaField({
-  label,
-  helper,
-  placeholder,
-  value,
-  onChange,
-  rows = 4,
-}: {
-  label: string;
-  helper?: string;
-  placeholder?: string;
-  value: string;
-  onChange: (value: string) => void;
-  rows?: number;
-}) {
-  return (
-    <div className="space-y-2.5">
-      <Label>{label}</Label>
-      {helper ? (
-        <p className="text-xs leading-5 text-muted-foreground sm:text-sm sm:leading-6">
-          {helper}
-        </p>
-      ) : null}
-      <Textarea
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        rows={rows}
-      />
-    </div>
   );
 }

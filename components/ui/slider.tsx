@@ -11,15 +11,20 @@ const Slider = React.forwardRef<
   <SliderPrimitive.Root
     ref={ref}
     className={cn(
-      "relative flex w-full touch-none select-none items-center",
+      "relative flex min-h-11 w-full touch-none select-none items-center",
       className,
     )}
     {...props}
   >
     <SliderPrimitive.Track className="relative h-2.5 w-full grow overflow-hidden rounded-full bg-muted/80 shadow-inner">
-      <SliderPrimitive.Range className="absolute h-full bg-[linear-gradient(90deg,#a6bb9a,#f4efe4,#d1b97e)]" />
+      <SliderPrimitive.Range className="absolute h-full bg-primary" />
     </SliderPrimitive.Track>
-    <SliderPrimitive.Thumb className="block h-6 w-6 rounded-full border border-primary/70 bg-foreground shadow-[0_0_0_5px_rgba(166,187,154,0.14),0_10px_22px_rgba(0,0,0,0.28)] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-[state=dragging]:scale-110" />
+    <SliderPrimitive.Thumb
+      aria-label={props["aria-label"]}
+      aria-labelledby={props["aria-labelledby"]}
+      aria-describedby={props["aria-describedby"]}
+      className="block h-6 w-6 rounded-full border border-primary/70 bg-foreground shadow-[0_0_0_5px_hsl(var(--primary)/0.14),0_10px_22px_rgba(0,0,0,0.28)] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-[state=dragging]:scale-110"
+    />
   </SliderPrimitive.Root>
 ));
 Slider.displayName = SliderPrimitive.Root.displayName;

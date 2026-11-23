@@ -6,16 +6,15 @@ import { useEffect, useRef, useState } from "react";
 import { AlignmentResult } from "@/components/alignment-result";
 import { Button } from "@/components/ui/button";
 import { saveCheckInToAccount } from "@/lib/account-data";
-import { buildAiReadingSignature } from "@/lib/ai-reading-signature";
+import { buildCheckInReading } from "@/lib/check-in-reading";
 import {
   getCheckInById,
   getLatestCheckIn,
   updateCheckIn,
 } from "@/lib/alignment";
-import { getJournalEntries } from "@/lib/journal-storage";
+import { getAllJournalEntries } from "@/lib/journal-storage";
 import { getOnboardingProfile } from "@/lib/onboarding-storage";
 import type { CheckInResult } from "@/lib/types";
-import { profileForCheckIn } from "@/lib/manifestations";
 
 type AiStatus = "idle" | "loading" | "ready" | "unavailable";
 
@@ -41,13 +40,12 @@ export function ResultsContent() {
       return;
     }
 
-    const onboardingProfile = profileForCheckIn(getOnboardingProfile(), result);
-    const recentJournalEntries = getJournalEntries(result.manifestationId).slice(0, 8);
-    const contextSignature = buildAiReadingSignature({
+    const reading = buildCheckInReading(
       result,
-      onboardingProfile,
-      journalEntries: recentJournalEntries,
-    });
+      getOnboardingProfile(),
+      getAllJournalEntries(),
+    );
+    const contextSignature = reading.signature;
     const shouldGenerate =
       !result.aiAlignment ||
       Boolean(
@@ -67,14 +65,7 @@ export function ResultsContent() {
     fetch("/api/personalize", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        result,
-        onboardingProfile,
-        recentJournalEntries: recentJournalEntries.map((entry) => ({
-          date: entry.date,
-          content: entry.content,
-        })),
-      }),
+      body: JSON.stringify(reading.request),
     })
       .then((response) => response.json())
       .then(

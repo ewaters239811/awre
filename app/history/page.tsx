@@ -155,7 +155,7 @@ function SelectedDayCard({ item }: { item: CheckInResult | null }) {
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <MiniStat label="Score" value={item.beingScore.toFixed(1)} />
         <MiniStat label="Thinking" value={String(item.thinkingScore)} />
-        <MiniStat label="Doing" value={String(item.willingScore)} />
+        <MiniStat label="Acting" value={String(item.willingScore)} />
         <MiniStat label="Feeling" value={String(item.feelingScore)} />
         <MiniStat label="Growth edge" value={displayPillarName(item.weakestPillar)} />
       </div>
@@ -229,7 +229,7 @@ function RecentEntries({ items }: { items: CheckInResult[] }) {
               <tr>
                 <th className="px-4 py-3 font-medium">Date</th>
                 <th className="px-4 py-3 font-medium">Thinking</th>
-                <th className="px-4 py-3 font-medium">Doing</th>
+                <th className="px-4 py-3 font-medium">Acting</th>
                 <th className="px-4 py-3 font-medium">Feeling</th>
                 <th className="px-4 py-3 font-medium">Score</th>
                 <th className="px-4 py-3 font-medium">State</th>

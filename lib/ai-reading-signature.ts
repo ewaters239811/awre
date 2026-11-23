@@ -1,4 +1,8 @@
-import type { CheckInResult, JournalEntry, OnboardingProfile } from "@/lib/types";
+import type {
+  CheckInResult,
+  JournalEntry,
+  OnboardingProfile,
+} from "@/lib/types";
 
 export function buildAiReadingSignature({
   result,
@@ -23,13 +27,12 @@ export function buildAiReadingSignature({
     result.avoidedAction.trim(),
     result.currentFeeling.trim(),
     result.highestBeingChoice.trim(),
+    ...(result.checkInJournal ? [result.checkInJournal.trim()] : []),
   ].join("|");
 
   const journalSignal = journalEntries
     .slice(0, 8)
-    .map((entry) =>
-      [entry.id, entry.date, entry.content.trim()].join("|"),
-    )
+    .map((entry) => [entry.id, entry.date, entry.content.trim()].join("|"))
     .join("::");
 
   const profileSignal = onboardingProfile

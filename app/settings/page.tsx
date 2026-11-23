@@ -16,6 +16,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { JournalHistory } from "@/components/journal-history";
 import {
   getCurrentAccount,
   saveOnboardingProfileToAccount,
@@ -71,7 +72,7 @@ export default function SettingsPage() {
       getCurrentAccount()
         .then((account) => {
           setUser(account);
-          setName(account ? getAccountName(account) ?? "" : "");
+          setName(account ? (getAccountName(account) ?? "") : "");
 
           if (!account) return;
 
@@ -240,7 +241,11 @@ export default function SettingsPage() {
               Your Desired Reality
             </p>
           </div>
-          <Button asChild variant="secondary" className="mt-5"><Link href="/manifestations">Manage goals &amp; Inner Foundation</Link></Button>
+          <Button asChild variant="secondary" className="mt-5">
+            <Link href="/manifestations">
+              Manage goals &amp; Inner Foundation
+            </Link>
+          </Button>
           <form className="mt-5 space-y-4" onSubmit={saveDesiredReality}>
             <SettingsField
               label="What do you want?"
@@ -363,8 +368,14 @@ export default function SettingsPage() {
             ClearPth adds push notifications.
           </p>
           <div className="mt-5 grid gap-3">
-            <ReminderRow title="Morning check-in" detail="Start the day clear." />
-            <ReminderRow title="Evening journal" detail="Close the day honestly." />
+            <ReminderRow
+              title="Morning check-in"
+              detail="Start the day clear."
+            />
+            <ReminderRow
+              title="Evening journal"
+              detail="Close the day honestly."
+            />
           </div>
         </article>
       </section>
@@ -388,6 +399,7 @@ export default function SettingsPage() {
               <Link href="/history">History Archive</Link>
             </Button>
           </div>
+          <JournalHistory />
         </article>
 
         <article className="aura-glass rounded-lg p-5 md:p-6">

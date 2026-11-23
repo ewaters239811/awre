@@ -17,6 +17,7 @@ export function createLoader(stubs = {}) {
       compilerOptions: {
         module: ts.ModuleKind.CommonJS,
         target: ts.ScriptTarget.ES2020,
+        jsx: ts.JsxEmit.ReactJSX,
       },
     }).outputText;
     const loaded = { exports: {} };
@@ -25,7 +26,9 @@ export function createLoader(stubs = {}) {
       id in stubs
         ? stubs[id]
         : id.startsWith("@/")
-          ? load(`${id.slice(2)}.ts`)
+          ? load(
+              `${id.slice(2)}.${fs.existsSync(path.resolve(directory, "..", `${id.slice(2)}.ts`)) ? "ts" : "tsx"}`,
+            )
           : requireNative(id);
     new Function("require", "module", "exports", source)(
       resolve,

@@ -4,6 +4,8 @@ export type CheckInDraft = {
   manifestationId?: string;
   desiredReality?: string;
   innerFoundation?: string;
+  checkInJournal?: string;
+  journalEntryId?: string;
   thinkingScore: number;
   willingScore: number;
   feelingScore: number;
@@ -21,6 +23,7 @@ export type AlignmentPrescription = {
 };
 
 export type AiAlignment = AlignmentPrescription & {
+  dailyGap?: string;
   summary: string;
 };
 
@@ -33,6 +36,7 @@ export type AiMeditation = {
 };
 
 export type CheckInResult = CheckInDraft & {
+  aiHomeGap?: { signature: string; statement: string; generatedAt: string };
   readAt?: string;
   id: string;
   createdAt: string;

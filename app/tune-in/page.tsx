@@ -96,6 +96,7 @@ export default function TuneInPage() {
       checkIn.avoidedAction,
       checkIn.currentFeeling,
       checkIn.highestBeingChoice,
+      ...(checkIn.checkInJournal ? [checkIn.checkInJournal] : []),
     ].join("|");
   }, [checkIn]);
 
@@ -373,7 +374,7 @@ export default function TuneInPage() {
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <button
               type="button"
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-primary/16 bg-card/24 px-6 text-sm font-medium text-muted-foreground shadow-[inset_0_1px_0_rgba(244,239,228,0.06)] backdrop-blur-xl transition hover:border-primary/30 hover:bg-card/38 hover:text-foreground disabled:pointer-events-none disabled:opacity-35"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-primary/16 bg-card/24 px-6 text-sm font-medium text-muted-foreground shadow-[inset_0_1px_0_hsl(var(--foreground)/0.06)] backdrop-blur-xl transition hover:border-primary/30 hover:bg-card/38 hover:text-foreground disabled:pointer-events-none disabled:opacity-35"
               disabled={!audioPlaying}
               onClick={stopMeditationAudio}
             >
@@ -382,7 +383,7 @@ export default function TuneInPage() {
             </button>
             <button
               type="button"
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-primary/16 bg-card/24 px-6 text-sm font-medium text-muted-foreground shadow-[inset_0_1px_0_rgba(244,239,228,0.06)] backdrop-blur-xl transition hover:border-primary/30 hover:bg-card/38 hover:text-foreground"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-primary/16 bg-card/24 px-6 text-sm font-medium text-muted-foreground shadow-[inset_0_1px_0_hsl(var(--foreground)/0.06)] backdrop-blur-xl transition hover:border-primary/30 hover:bg-card/38 hover:text-foreground"
               onClick={resetSession}
             >
               <RefreshCw className="h-4 w-4" aria-hidden />

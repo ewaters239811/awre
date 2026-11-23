@@ -6,6 +6,19 @@ const load = createLoader();
 const { getSafeRedirectPath, isPasswordRecoveryHash } = load("lib/auth-redirect.ts");
 const { toDateKey, toCheckInDateKey } = load("lib/date-key.ts");
 const { buildResult, getStateLabel, saveCheckIn, getCheckIns } = load("lib/alignment.ts");
+const { displayPillarName, normalizePillarName } = load("lib/pillars.ts");
+
+test("Acting is displayed for current and legacy action pillars without changing stored scores", () => {
+  for (const name of ["Doing", "Willing", "Acting"]) {
+    assert.equal(displayPillarName(name), "Acting");
+    assert.equal(normalizePillarName(name), "Doing");
+  }
+  const result = buildResult({ thinkingScore: 6, willingScore: 9, feelingScore: 6, dominantThought: "", avoidedAction: "", currentFeeling: "", highestBeingChoice: "" });
+  assert.equal(result.willingScore, 9);
+  assert.equal(result.strongestPillar, "Doing");
+  assert.equal(displayPillarName(result.strongestPillar), "Acting");
+  assert.equal(result.beingScore, 7);
+});
 
 test("auth redirects stay on this site even after URL normalization", () => {
   const origin = "https://www.clearpth.io";

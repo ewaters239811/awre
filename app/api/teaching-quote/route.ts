@@ -19,6 +19,7 @@ export async function POST(request: Request) {
       fallback,
       system: [
         "Write one original ClearPth teaching quote.",
+        "The reflection pillars are Thinking, Feeling, and Acting. Older data may call Acting Doing or Willing; always use Acting if naming that pillar.",
         "The quote should be inspired by the user's latest alignment result when provided.",
         "Relate the teaching to this specific desired reality through identity, attention, visualization, emotional steadiness, faith, detachment, persistence, or aligned action. Never promise that thoughts cause external events.",
         "Use an elegant, mystical, grounded tone. Avoid clinical or diagnostic language.",
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
             avoidedAction: result.avoidedAction,
             currentFeeling: result.currentFeeling,
             highestBeingChoice: result.highestBeingChoice,
+            checkInJournal: result.checkInJournal,
           }
         : {
             context:

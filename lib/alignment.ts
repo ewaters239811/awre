@@ -120,6 +120,7 @@ export function updateCheckIn(updated: CheckInResult) {
           readAt: updated.readAt ?? item.readAt,
           aiQuote: updated.aiQuote ?? item.aiQuote,
           aiAlignment: updated.aiAlignment ?? item.aiAlignment,
+          aiHomeGap: updated.aiHomeGap ?? item.aiHomeGap,
         }
       : item,
   );
@@ -170,6 +171,18 @@ function buildPrescription(
   draft: CheckInDraft,
   weakestPillar: PillarName,
 ): CheckInResult["prescription"] {
+  if (draft.checkInJournal) {
+    return {
+      thoughtCorrection:
+        "Notice which thoughts support your desired reality and which deserve a second look.",
+      actionStep:
+        "Choose one small, realistic action that supports what you want.",
+      embodimentPractice:
+        "Take a few comfortable breaths and notice how you feel without needing to change it.",
+      identityAffirmation:
+        "I can reflect honestly and choose how I move forward.",
+    };
+  }
   const highestChoice =
     draft.highestBeingChoice.trim() || "one clear, honorable move";
 

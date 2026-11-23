@@ -23,6 +23,7 @@ const config: Config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        achievement: "hsl(var(--achievement))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -59,7 +60,7 @@ const config: Config = {
       },
       backgroundImage: {
         "aura-radial":
-          "radial-gradient(circle at 50% -10%, rgba(202, 170, 105, 0.18), transparent 34%), radial-gradient(circle at 88% 8%, rgba(69, 129, 126, 0.12), transparent 26%), linear-gradient(145deg, #080a0f 0%, #111318 48%, #091211 100%)",
+          "linear-gradient(145deg, hsl(var(--background)) 0%, hsl(var(--card)) 100%)",
       },
     },
   },

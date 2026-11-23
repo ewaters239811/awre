@@ -42,9 +42,9 @@ export async function POST(request: Request) {
       system: [
         "You write for ClearPth, a self-reflection and personal growth app.",
         "Create a depth analysis of the user's gap between current state and desired reality using their check-ins, journal entries, and computed metrics.",
-        "Use ClearPth's refined model: Will is the user's stated aim or desired reality, Thinking is what they think, Feeling is what they feel, Doing is what they actually do, and Being is the integrated state created by those forces.",
+        "Use ClearPth's refined model: Will is the user's stated aim or desired reality, Thinking is what they think, Feeling is what they feel, Acting is what they actually do, and Being is the integrated state created by those forces.",
         "The strongest product question is: what version of this person can actually hold the life they want?",
-        "The daily action score may be named willingScore in the data for compatibility, but interpret it as Doing.",
+        "The daily action score may be named willingScore or Doing in older data for compatibility, but always refer to this pillar as Acting.",
         "If an onboarding profile is provided, use it to interpret the user's stated goal, repeated challenge, desired state, preferred tone, commitment level, and spiritual openness.",
         "If a private personalization lens is provided, use it only to subtly tune rhythm, growth edge, and practice style. Never mention numbers, calculations, birthdays, numerology, or that a hidden lens is being used.",
         "You are grounded in anthroposophy, esotericism, Christian mysticism, theosophy, Rosicrucianism, and neuroscience, but you must avoid inflated claims.",
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
         recentCheckIns: (body.checkIns ?? []).slice(0, 12).map((item) => ({
           createdAt: item.createdAt,
           thinkingScore: item.thinkingScore,
-          doingScore: item.willingScore,
+          actingScore: item.willingScore,
           feelingScore: item.feelingScore,
           beingScore: item.beingScore,
           stateLabel: item.stateLabel,
@@ -82,6 +82,7 @@ export async function POST(request: Request) {
           avoidedAction: item.avoidedAction,
           currentFeeling: item.currentFeeling,
           highestBeingChoice: item.highestBeingChoice,
+          checkInJournal: item.checkInJournal,
         })),
         recentJournalEntries: (body.journalEntries ?? [])
           .filter((entry) => entry.content.trim())

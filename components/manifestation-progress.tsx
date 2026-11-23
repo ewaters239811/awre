@@ -123,7 +123,7 @@ export function ManifestationProgress({ goalId }: { goalId?: string }) {
             <span className="text-sm text-muted-foreground">/ 10 average</span>
           </p>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Your self-reported thoughts, feelings, and willing.
+            How your thoughts, feelings, and actions align.
           </p>
         </div>
         <div>
@@ -244,7 +244,7 @@ export function ManifestationProgress({ goalId }: { goalId?: string }) {
                 {item.text}
                 {item.completedAt && item.kind === "milestone" ? (
                   <Check
-                    className="ml-2 inline h-4 w-4 text-primary"
+                    className="ml-2 inline h-4 w-4 text-achievement"
                     aria-label="Completed"
                   />
                 ) : null}
