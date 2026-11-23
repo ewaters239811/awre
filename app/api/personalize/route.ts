@@ -7,6 +7,13 @@ import type {
   OnboardingProfile,
 } from "@/lib/types";
 import { profileForCheckIn } from "@/lib/manifestations";
+import {
+  checkInWisdomTexts,
+  cleanDeeperPerspective,
+  selectWisdomPrinciples,
+  wisdomBriefs,
+  WISDOM_GUIDANCE,
+} from "@/lib/wisdom";
 
 type PersonalizeRequest =
   | CheckInResult
@@ -45,6 +52,9 @@ export async function POST(request: Request) {
       result ?? {},
     );
     const personalizationLens = buildPersonalizationLens(onboardingProfile);
+    const recentWriting = recentJournalEntries
+      .filter((entry) => typeof entry?.content === "string" && entry.content.trim())
+      .slice(0, 8);
 
     if (!result) {
       return NextResponse.json(
@@ -53,8 +63,14 @@ export async function POST(request: Request) {
       );
     }
 
+    const principles = selectWisdomPrinciples([
+      journalForCheckIn?.content,
+      ...checkInWisdomTexts(result),
+      ...recentWriting.map((entry) => entry.content),
+    ]);
     const ai = await createJsonWithOpenAI<AiAlignment>({
       fallback,
+      maxOutputTokens: 1100,
       system: [
         "You write for ClearPth, a self-reflection and personal growth app.",
         "ClearPth is not medical, therapy, diagnostic, or crisis support.",
@@ -73,7 +89,7 @@ export async function POST(request: Request) {
         "Do not quote journal entries at length. Distill them into the current check-in reading.",
         "Use Jungian psychology lightly as a lens for integration, shadow, persona, projection, and self-recognition without sounding academic.",
         "Frame manifestation as becoming emotionally independent from outer confirmation: the user practices the state they seek before reality visibly changes.",
-        "If the user's desire is external, translate it into the inner feeling or identity it represents, then give a practical action from that state.",
+        "When useful, explore what inner feeling or identity an external desire represents, rather than assuming you know. Material needs and practical changes are legitimate; do not reduce them to a mindset exercise.",
         "Use plain language first: current state, desired reality, gap, aligned action, and the person they are becoming.",
         "Do not make the result sound like mood tracking. Make it feel like an alignment reading for becoming the person who can live the desired reality.",
         "Do not imply blame for difficult circumstances. Keep the focus on agency, emotional charge, and the next honest inner correction.",
@@ -81,7 +97,10 @@ export async function POST(request: Request) {
         "Only use gendered language if the user explicitly states their gender or asks you to reflect it.",
         "Do not use markdown formatting, bold text, headings, bullets, or numbered lists inside JSON values.",
         "Do not mention diagnoses, treatment, symptoms, disorders, or guarantees.",
-        "Return only valid JSON with keys: dailyGap, summary, thoughtCorrection, actionStep, embodimentPractice, identityAffirmation.",
+        WISDOM_GUIDANCE,
+        "Let one supplied wisdomBrief deepen the interpretation only when the writing supports it. Do not add more words to dailyGap or summary to explain the tradition.",
+        "Return only valid JSON with keys: dailyGap, summary, thoughtCorrection, actionStep, embodimentPractice, identityAffirmation, deeperPerspective.",
+        "deeperPerspective is optional: return null when no wisdomBrief fits. Otherwise return an object with principleId (one of the supplied ids), reflection (25 to 45 words, at most two sentences connecting that principle to the user's writing), question (one gentle question of at most 25 words), and practice (one optional, concrete exercise of at most 35 words). Do not invent a source, quote, personal fact, or root cause. This perspective is offered for consideration, not as a verdict.",
         "dailyGap is one clear sentence of 12 to 20 words, never more than 22 words. Name the most meaningful tension supported by today's journal and ratings, not merely the lowest-scoring pillar. If no gap is evident, acknowledge what is aligned without inventing a problem. This is today's picture, not a claim about the user's whole life or the cause of external circumstances.",
         "summary explains what may be happening internally in one natural paragraph of 50 to 80 words, at most three sentences. Connect the user's thoughts, feelings, and actions with their own writing. Offer a useful insight rather than repeating the ratings, retelling their journal, or repeating dailyGap. Do not start with meta-commentary such as Your check-in shows or In ClearPth terms.",
         "Keep thoughtCorrection, actionStep, embodimentPractice, and identityAffirmation to one concise sentence each.",
@@ -106,13 +125,20 @@ export async function POST(request: Request) {
           onboardingProfile?.manifestations?.innerFoundation,
         onboardingProfile,
         personalizationLens,
-        recentJournalEntries: recentJournalEntries
-          .filter((entry) => entry.content.trim())
-          .slice(0, 8),
+        recentJournalEntries: recentWriting,
+        wisdomBriefs: wisdomBriefs(principles),
       },
     });
 
-    return NextResponse.json(ai);
+    return NextResponse.json({
+      ...ai,
+      data: {
+        ...ai.data,
+        deeperPerspective: ai.enabled
+          ? cleanDeeperPerspective(ai.data.deeperPerspective, principles) ?? null
+          : undefined,
+      },
+    });
   } catch {
     return NextResponse.json(
       { enabled: false, data: fallback, error: "AI personalization failed." },

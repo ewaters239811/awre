@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Check, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DeeperReflection } from "@/components/deeper-reflection";
 import { getTodayReading } from "@/lib/today-reading";
 import type { CheckInResult } from "@/lib/types";
 
@@ -100,6 +101,7 @@ export function TodayReading({
             are still saved.
           </p>
         )}
+        {reading && result ? <DeeperReflection key={result.id} result={result} /> : null}
         {reading ? (
           <div className="mt-6 flex flex-wrap items-center gap-4">
             <Button

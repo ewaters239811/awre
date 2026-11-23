@@ -7,6 +7,12 @@ import type {
   OnboardingProfile,
 } from "@/lib/types";
 import { profileForCheckIn } from "@/lib/manifestations";
+import {
+  checkInWisdomTexts,
+  selectWisdomPrinciples,
+  wisdomBriefs,
+  WISDOM_GUIDANCE,
+} from "@/lib/wisdom";
 
 type MeditationRequest = {
   result?: CheckInResult;
@@ -40,6 +46,7 @@ export async function POST(request: Request) {
       result,
     );
     const personalizationLens = buildPersonalizationLens(onboardingProfile);
+    const principles = selectWisdomPrinciples(checkInWisdomTexts(result), 1);
     const response = await createJsonWithOpenAI<AiMeditation>({
       fallback,
       maxOutputTokens: 950,
@@ -60,7 +67,7 @@ export async function POST(request: Request) {
         "Do not pack the session with too many ideas.",
         "Use a grounded, premium, intimate, calm tone.",
         "The meditation should create clarity, spaciousness, and inner recognition. It should help the user feel the state that belongs to the life they want. It should not feel like homework or a productivity exercise.",
-        "Use the user's weakest pillar as the repair focus and strongest pillar as support.",
+        "Use the writing to choose a gentle focus, with the ratings as context. The weakest pillar does not prove a deficit; strong alignment can be supported without inventing something to repair.",
         "Use Will, Thinking, Feeling, Acting, and Being as subtle internal structure, but do not make the meditation sound like a lecture.",
         "In ClearPth, Will is the user's aim, Acting is the user's actions, and Being is the integrated state. Older data may name this pillar Doing or willingScore; use Acting when naming it.",
         "If the user wants an outer result, guide them into the state, feeling, or identity beneath it without using the word manifestation.",
@@ -68,6 +75,9 @@ export async function POST(request: Request) {
         "Avoid overemphasizing next steps, tasks, proof, or immediate action. A gentle clarity cue is enough.",
         "The closingPrompt should ask what feels clearer, what is now obvious, or what the user notices, not what task they will do.",
         "Do not make medical, therapeutic, diagnostic, or guaranteed claims.",
+        WISDOM_GUIDANCE,
+        "If a supplied wisdomBrief fits, use just one of its practices as an experience, not an explanation. Invite noticing rather than commanding a feeling. Do not recite the source, teach doctrine, or imply the practice controls outcomes. If no brief fits, stay with simple presence.",
+        "Preserve generous silence and the existing pause cues. Never fill those spaces with extra teaching, affirmations, or tasks. Eyes may be open or closed; breathing can remain natural, and any exercise can be skipped.",
         "Use gender-neutral language by default.",
         "Do not use markdown formatting, bullets, numbering, headings, or labels inside JSON values.",
         "Return only valid JSON with keys: title, intention, durationSeconds, script, closingPrompt.",
@@ -92,6 +102,7 @@ export async function POST(request: Request) {
           onboardingProfile?.manifestations?.innerFoundation,
         onboardingProfile,
         personalizationLens,
+        wisdomBriefs: wisdomBriefs(principles),
       },
     });
 

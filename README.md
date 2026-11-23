@@ -245,3 +245,44 @@ The schema in `supabase/schema.sql` creates:
 - `onboarding_profiles`
 
 Each table uses row-level security so users can only access their own records.
+
+## Wisdom Layer
+
+`lib/wisdom.ts` contains 16 original ClearPth reflection briefs across Desire,
+Identity, Detachment, and Stillness. Each includes a source, its historical or
+religious context, an original principle, a question, and a modest practice.
+These are adaptations, not quotations or scientific evidence. The initial
+sources are kept distinct:
+
+- [Epictetus, The Enchiridion](https://classics.mit.edu/Epictetus/epicench.html), sections 1, 2, 4, 8, and 33.
+- [Teresa of Avila, Interior Castle](https://ccel.org/ccel/teresa/castle2/castle2.v.ii.html), First Mansions, chapter 2.
+- [Rudolf Steiner, Knowledge of Higher Worlds](https://rsarchive.org/Books/GA010/English/RSPC1947/GA010_c01.html), chapter 1, especially Inner Tranquility.
+- [Contemplative Prayer](https://www.vatican.va/content/catechism/en/part_four/section_one/chapter_three/article_1/iii_contemplative_prayer.html), paragraphs 2713 and 2716-2717.
+- [Corpus Hermeticum I, translated excerpts and context](https://cswr.hds.harvard.edu/news/2026/02/13/corpus-hermeticum-i), the opening inquiry; translation by Matthew Andrews.
+
+A deterministic phrase matcher selects at most two candidate briefs from the
+user's writing, never from a low rating alone. It is deliberately small and
+conservative, not a semantic search engine. A match is a possible lens, not
+evidence of a hidden motive. Crisis and abuse language bypass this library.
+No source pages are fetched at runtime, no new API or dependency is needed,
+and the existing AI service may decline an unsuitable perspective.
+
+- Home keeps its single concise gap note; matching briefs only inform new notes.
+- Today offers a closed **Go deeper** disclosure only when a principle fits, with no source credits, tradition labels, or outbound reading links.
+- Talk uses only the supplied conversation and its existing chat memory to select briefs, not journals, check-ins, or saved goals.
+- Tune In uses one relevant practice without changing audio generation, pauses, playback controls, or saved-session signatures.
+
+New alignment responses can include an optional `deeperPerspective` JSON object.
+The server accepts only a selected principle ID and bounded plain-text fields.
+References stay in the internal library and this documentation; source URLs
+are not sent to the model. Routine guidance stays inside ClearPth without
+citations or reading links. Direct questions about origins should be answered
+honestly in plain language, without links. These presentation rules do not
+restrict recommending human help or emergency services. An explicit
+`null` means no deeper reflection. Existing saved readings and their cache
+signatures are unchanged. When an older reading has no such field, Today can
+offer a matching original brief without regenerating or resaving the reading.
+Opening the disclosure itself performs no request and changes no data.
+The new field fits the existing Supabase JSON payload; no schema migration is
+required. Spiritual guidance must not promise external outcomes, blame hardship
+on a person's state, or replace practical safety or professional support.

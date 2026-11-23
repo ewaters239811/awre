@@ -22,9 +22,17 @@ export type AlignmentPrescription = {
   identityAffirmation: string;
 };
 
+export type DeeperPerspective = {
+  principleId: string;
+  reflection: string;
+  question: string;
+  practice: string;
+};
+
 export type AiAlignment = AlignmentPrescription & {
   dailyGap?: string;
   summary: string;
+  deeperPerspective?: DeeperPerspective | null;
 };
 
 export type AiMeditation = {

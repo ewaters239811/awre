@@ -152,6 +152,18 @@ test("account migration, goal saving, sign-out and reload preserve remote goals 
     };
     await account.saveCheckInToAccount({ ...checkIn, aiHomeGap });
     alignment.updateCheckIn({ ...checkIn, aiHomeGap });
+    const aiAlignment = {
+      ...checkIn.prescription,
+      summary: "A saved reflection that must not be rewritten on reload.",
+      deeperPerspective: {
+        principleId: "identity-in-practice",
+        reflection: "A small, repeatable choice can give your intention an ordinary form today.",
+        question: "What small choice would express the person you want to become?",
+        practice: "Choose one modest action that feels realistic today.",
+      },
+    };
+    await account.saveCheckInToAccount({ ...checkIn, aiHomeGap, aiAlignment });
+    alignment.updateCheckIn({ ...checkIn, aiHomeGap, aiAlignment });
     await account.signOutOfAccount();
     assert.equal(onboarding.getOnboardingProfile(), null);
     assert.deepEqual(alignment.getAllCheckIns(), []);
@@ -168,6 +180,7 @@ test("account migration, goal saving, sign-out and reload preserve remote goals 
     assert.equal(alignment.getCheckIns()[0].journalEntryId, journal.getJournalEntries()[0].id);
     assert.equal(alignment.getCheckIns()[0].desiredReality, goal.outcome);
     assert.deepEqual(alignment.getCheckIns()[0].aiHomeGap, aiHomeGap);
+    assert.deepEqual(alignment.getCheckIns()[0].aiAlignment, aiAlignment);
     assert.equal(journal.getJournalEntries()[0].content, "Career entry");
     assert.equal(
       alignment.getCheckIns(first.manifestations.legacyGoalId)[0].id,
