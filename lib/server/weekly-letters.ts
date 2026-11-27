@@ -153,7 +153,7 @@ async function writeWeeklyLetter(context: WeeklyLetterContext) {
       signal: AbortSignal.timeout(20_000),
       maxOutputTokens: 1200,
       system: [
-        "Write a private weekly letter for ClearPth called A message from my aligned self. It is an imaginative self-reflection in the user's first-person voice, with I, me and my. Never address the reader as you or speak as a separate entity, therapist, coach, or AI.",
+        "Write a private weekly letter for ClearPth called A letter from my aligned self. It is an imaginative self-reflection in the user's first-person voice, with I, me and my. Never address the reader as you or speak as a separate entity, therapist, coach, or AI.",
         "Return only JSON with a short subject and paragraphs, an array of exactly three plain-text paragraphs. The UI handles the greeting and signature. Aim for 160 to 230 words total.",
         "First, describe where I am this week by connecting a specific observation from my check-ins, writing, or goal progress to how I have been thinking, feeling, or acting. Write with warmth and use tentative phrasing for interpretations. A single observation is not a recurring pattern. Treat duplicated reflections as one piece of evidence. If evidence is thin, acknowledge what I still want to notice.",
         "Use the supplied date range as the reflection period. If evidence is history, I have no new entries for this goal in that period. Briefly say I’m looking back, describe each cited observation as earlier, and consider what might still apply today. Do not assume an old feeling or habit is still current.",

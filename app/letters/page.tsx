@@ -18,7 +18,7 @@ export default function LettersPage() {
         </Link>
         <header className="mt-5 border-b border-border/60 pb-6">
           <p className="clearpth-page-kicker">Weekly letters</p>
-          <h1 className="clearpth-page-title">A message from my aligned self</h1>
+          <h1 className="clearpth-page-title">A letter from my aligned self</h1>
           <p className="mt-4 max-w-xl leading-7 text-muted-foreground">
             Weekly reflection for you by the version of you who already has what you want.
           </p>
