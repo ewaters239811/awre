@@ -147,7 +147,7 @@ export function AlignmentResult({
         </Button>
         <Button asChild variant="secondary">
           <Link href="/dashboard">
-            View Gap
+            View Patterns
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </Button>

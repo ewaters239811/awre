@@ -22,7 +22,7 @@ const links = [
   { href: "/check-in", label: "Check In" },
   { href: "/review", label: "Today" },
   { href: "/tune-in", label: "Tune In" },
-  { href: "/dashboard", label: "Gap" },
+  { href: "/dashboard", label: "Patterns" },
   { href: "/guide", label: "Talk" },
 ];
 
@@ -32,7 +32,7 @@ const mobileLinks = [
   { href: "/review", label: "Today", icon: Compass },
   { href: "/tune-in", label: "Tune", icon: Headphones },
   { href: "/guide", label: "Talk", icon: MessageCircle },
-  { href: "/dashboard", label: "Gap", icon: BarChart3 },
+  { href: "/dashboard", label: "Patterns", icon: BarChart3 },
 ];
 
 export function Navigation() {

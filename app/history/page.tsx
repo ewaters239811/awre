@@ -48,13 +48,13 @@ export default function HistoryPage() {
           <p className="clearpth-page-kicker">Your Record</p>
           <h1 className="clearpth-page-title">Every Day You Measured</h1>
           <p className="mt-4 max-w-2xl text-muted-foreground">
-            Your archive of check-ins, organized by day. Use this page to
-            inspect what happened; use Progress to understand what it means.
+            Your archive of check-ins, organized by day. Visit Patterns to see
+            what repeats.
           </p>
         </div>
         <Button asChild variant="secondary">
           <Link href="/dashboard">
-            View Progress
+            View Patterns
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </Button>

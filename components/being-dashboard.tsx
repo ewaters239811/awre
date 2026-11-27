@@ -49,11 +49,9 @@ export function BeingDashboard() {
   return (
     <main className="clearpth-page-shell">
       <section className="mx-auto max-w-5xl">
-        <p className="clearpth-page-kicker">Pattern</p>
-        <h1 className="clearpth-page-title">What Keeps Creating The Gap?</h1>
+        <h1 className="clearpth-page-title">Patterns</h1>
         <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground md:text-base">
-          See the repeated gap between your current state and your desired
-          reality.
+          See what repeats across your check-ins.
         </p>
       </section>
 

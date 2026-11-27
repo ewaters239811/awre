@@ -393,7 +393,7 @@ export default function SettingsPage() {
           </p>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
             <Button asChild variant="secondary">
-              <Link href="/dashboard">View Progress</Link>
+              <Link href="/dashboard">View Patterns</Link>
             </Button>
             <Button asChild variant="secondary">
               <Link href="/history">History Archive</Link>

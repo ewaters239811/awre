@@ -56,10 +56,11 @@ function render(items, loaded = true) {
   return renderToStaticMarkup(React.createElement(BeingDashboard));
 }
 
-test("Gap keeps cause, help, trend, history, and selected-day details without real-world progress or duplicate summaries", () => {
+test("Patterns keeps cause, help, trend, history, and selected-day details without real-world progress or duplicate summaries", () => {
   const items = checkIns(5);
   const before = structuredClone(items);
   const markup = render(items);
+  assert.match(markup, /<h1[^>]*>Patterns<\/h1>/);
   const sections = [
     "What&#x27;s creating the gap",
     "What can help close the gap",
