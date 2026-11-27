@@ -1,12 +1,11 @@
 "use client";
 
-import { FormEvent, useEffect, useState, useSyncExternalStore } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Bell,
   Database,
-  Headphones,
   Info,
   LogOut,
   Save,
@@ -25,11 +24,6 @@ import {
   updateAccountName,
 } from "@/lib/account-data";
 import { getAllCheckIns } from "@/lib/alignment";
-import {
-  getAmbientSoundEnabled,
-  setAmbientSoundEnabled,
-  subscribeAmbientSound,
-} from "@/lib/ambient-sound";
 import { getAllJournalEntries } from "@/lib/journal-storage";
 import {
   createEmptyOnboardingProfile,
@@ -54,11 +48,6 @@ export default function SettingsPage() {
   const [name, setName] = useState("");
   const [profile, setProfile] = useState<OnboardingProfile>(() =>
     createEmptyOnboardingProfile(),
-  );
-  const ambientSound = useSyncExternalStore(
-    subscribeAmbientSound,
-    getAmbientSoundEnabled,
-    () => true,
   );
   const [profileMessage, setProfileMessage] = useState("");
   const [desireMessage, setDesireMessage] = useState("");
@@ -304,59 +293,7 @@ export default function SettingsPage() {
         />
       </section>
 
-      <section className="mx-auto mt-8 grid max-w-5xl gap-5 lg:grid-cols-2">
-        <article className="aura-glass rounded-lg p-5 md:p-6">
-          <div className="flex items-center gap-3">
-            <Headphones className="h-5 w-5 text-primary" aria-hidden />
-            <p className="text-xs uppercase tracking-[0.24em] text-primary">
-              Meditation
-            </p>
-          </div>
-          <p className="mt-4 text-sm leading-6 text-muted-foreground">
-            Keep the app calm while you move through check-ins, journaling, and
-            meditation.
-          </p>
-          <div className="mt-5 rounded-md border border-border/60 bg-card/35 p-4">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="font-medium">Ambient sound</p>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  Soft ocean waves and an occasional singing bowl while ClearPth is open.
-                </p>
-              </div>
-              <div className="grid grid-cols-2 rounded-full border border-border bg-background/55 p-1">
-                <button
-                  type="button"
-                  className={`rounded-full px-4 py-2 text-sm transition ${
-                    ambientSound
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground"
-                  }`}
-                  aria-pressed={ambientSound}
-                  onClick={() => setAmbientSoundEnabled(true)}
-                >
-                  On
-                </button>
-                <button
-                  type="button"
-                  className={`rounded-full px-4 py-2 text-sm transition ${
-                    !ambientSound
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground"
-                  }`}
-                  aria-pressed={!ambientSound}
-                  onClick={() => setAmbientSoundEnabled(false)}
-                >
-                  Off
-                </button>
-              </div>
-            </div>
-          </div>
-          <p className="mt-4 text-sm leading-6 text-muted-foreground">
-            Guided meditations are set to a slower, spacious pace.
-          </p>
-        </article>
-
+      <section className="mx-auto mt-8 max-w-5xl">
         <article className="aura-glass rounded-lg p-5 md:p-6">
           <div className="flex items-center gap-3">
             <Bell className="h-5 w-5 text-primary" aria-hidden />

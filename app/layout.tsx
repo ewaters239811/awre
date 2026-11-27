@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AmbientNoise } from "@/components/ambient-noise";
 import { AccountSync } from "@/components/account-sync";
 import { Navigation } from "@/components/navigation";
 import { PasswordRecoveryRedirect } from "@/components/password-recovery-redirect";
@@ -31,7 +30,6 @@ export default function RootLayout({
         {children}
         <AccountSync />
         <PasswordRecoveryRedirect />
-        <AmbientNoise />
       </body>
     </html>
   );
