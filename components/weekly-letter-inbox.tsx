@@ -109,14 +109,7 @@ export function WeeklyLetterInbox() {
   if (!letters.length) {
     return (
       <div className="mt-6 rounded-2xl border border-border/65 bg-card/55 p-6">
-        <Mail className="mb-4 h-6 w-6 text-primary" aria-hidden />
-        <h2 className="font-serif text-2xl">No weekly letters yet</h2>
-        <p className="mt-2 leading-7 text-muted-foreground">
-          Your weekly letters appear here on Sundays once you’ve chosen an active desired reality.
-        </p>
-        <Link href="/manifestations" className="mt-4 inline-flex min-h-11 items-center text-primary underline underline-offset-4">
-          View my desired reality
-        </Link>
+        <h2 className="font-serif text-2xl">No weekly letters</h2>
       </div>
     );
   }
