@@ -20,7 +20,8 @@ export function createWeeklyLetterClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
     .replace(/\/(rest|auth)\/v1\/?$/i, "")
     .replace(/\/+$/, "");
-  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = (process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)
+    ?.replace(/\s/g, "");
   if (!url || !key) return null;
   const headers = new Headers({ apikey: key });
   if (!key.startsWith("sb_secret_")) headers.set("Authorization", `Bearer ${key}`);

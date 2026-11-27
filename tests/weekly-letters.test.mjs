@@ -235,15 +235,44 @@ test("delivery queries earlier account history only when the active goal has an 
   }
 });
 
+test("the worker strips copied whitespace from a Supabase server key", () => {
+  const previousUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const previousKey = process.env.SUPABASE_SECRET_KEY;
+  const { createWeeklyLetterClient } = load("lib/server/weekly-letters.ts");
+  try {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.test";
+    process.env.SUPABASE_SECRET_KEY = " sb_secret_test\n_worker_key ";
+    const client = createWeeklyLetterClient();
+    assert.equal(client.headers.get("apikey"), "sb_secret_test_worker_key");
+    assert.equal(client.headers.get("Authorization"), null);
+  } finally {
+    if (previousUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    else process.env.NEXT_PUBLIC_SUPABASE_URL = previousUrl;
+    if (previousKey === undefined) delete process.env.SUPABASE_SECRET_KEY;
+    else process.env.SUPABASE_SECRET_KEY = previousKey;
+  }
+});
+
 test("only the configured bearer token can run a Sunday delivery", async () => {
   const previous = process.env.WEEKLY_LETTERS_CRON_SECRET;
   process.env.WEEKLY_LETTERS_CRON_SECRET = "test-secret";
   const runs = [];
+  const checks = [];
+  const worker = {
+    from: (table) => ({
+      select: (columns, options) => ({
+        limit: async (limit) => {
+          checks.push({ table, columns, options, limit });
+          return { error: null };
+        },
+      }),
+    }),
+  };
   let scheduledEdition = null;
   const { POST } = createLoader({
     "@/lib/weekly-letters": { getWeeklyLetterEdition: () => scheduledEdition },
     "@/lib/server/weekly-letters": {
-      createWeeklyLetterClient: () => "worker",
+      createWeeklyLetterClient: () => worker,
       dispatchWeeklyLetters: (client, edition) => {
         runs.push([client, edition]);
         return { delivered: 2, failed: 0 };
@@ -257,14 +286,17 @@ test("only the configured bearer token can run a Sunday delivery", async () => {
     });
     assert.equal((await POST(request())).status, 401);
     assert.equal((await POST(request("Bearer fake-secret"))).status, 401);
+    assert.equal(checks.length, 0);
     const offSchedule = await POST(request("Bearer test-secret"));
     assert.deepEqual(await offSchedule.json(), { delivered: 0, failed: 0 });
     assert.equal(runs.length, 0);
+    assert.deepEqual(checks, [{ table: "weekly_letters", columns: "week_of", options: { head: true }, limit: 0 }]);
     scheduledEdition = edition;
     const result = await POST(request("Bearer test-secret"));
     assert.equal(result.status, 200);
     assert.deepEqual(await result.json(), { delivered: 2, failed: 0 });
-    assert.deepEqual(runs, [["worker", edition]]);
+    assert.deepEqual(runs, [[worker, edition]]);
+    assert.equal(checks.length, 1);
   } finally {
     if (previous === undefined) delete process.env.WEEKLY_LETTERS_CRON_SECRET;
     else process.env.WEEKLY_LETTERS_CRON_SECRET = previous;
