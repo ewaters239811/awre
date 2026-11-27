@@ -109,7 +109,7 @@ export function WeeklyLetterInbox() {
   if (!letters.length) {
     return (
       <div className="mt-6 rounded-2xl border border-border/65 bg-card/55 p-6">
-        <h2 className="font-serif text-2xl">No weekly letters</h2>
+        <h2 className="font-serif text-2xl">No messages</h2>
       </div>
     );
   }
