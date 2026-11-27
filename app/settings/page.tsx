@@ -321,7 +321,7 @@ export default function SettingsPage() {
               <div>
                 <p className="font-medium">Ambient sound</p>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  A soft 432 Hz tone while ClearPth is open.
+                  Soft ocean waves and an occasional singing bowl while ClearPth is open.
                 </p>
               </div>
               <div className="grid grid-cols-2 rounded-full border border-border bg-background/55 p-1">

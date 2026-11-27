@@ -8,41 +8,56 @@ import {
   setAmbientSoundEnabled,
   subscribeAmbientSound,
 } from "@/lib/ambient-sound";
+import { getMeditationLoop } from "@/lib/meditation-loop";
 
 type PlaybackState = "ready" | "playing" | "muted" | "unavailable";
-type Tone = {
+type AmbientPlayback = {
   context: AudioContext;
-  oscillator: OscillatorNode;
-  gain: GainNode;
+  source: AudioBufferSourceNode;
+  output: GainNode;
 };
 
+function createMeditationSound(context: AudioContext): AmbientPlayback {
+  const output = context.createGain();
+  output.gain.value = 0;
+  output.connect(context.destination);
+
+  const source = context.createBufferSource();
+  source.buffer = getMeditationLoop(context);
+  source.loop = true;
+  source.connect(output);
+  const now = context.currentTime;
+  output.gain.setTargetAtTime(0.1, now, 0.45);
+  source.start(now);
+  return { context, source, output };
+}
+
 export function AmbientNoise() {
-  const tone = useRef<Tone | null>(null);
+  const sound = useRef<AmbientPlayback | null>(null);
   const [playback, setPlayback] = useState<PlaybackState>("ready");
 
-  const stopTone = useCallback((fade = false) => {
-    const current = tone.current;
+  const stopSound = useCallback((fade = false) => {
+    const current = sound.current;
     if (!current) return;
-    tone.current = null;
+    sound.current = null;
     current.context.onstatechange = null;
     const close = () => { void current.context.close().catch(() => undefined); };
 
     if (fade && current.context.state === "running") {
       const now = current.context.currentTime;
-      current.gain.gain.cancelScheduledValues(now);
-      current.gain.gain.setTargetAtTime(0, now, 0.025);
-      current.oscillator.onended = close;
-      current.oscillator.stop(now + 0.15);
+      current.output.gain.setTargetAtTime(0, now, 0.025);
+      current.source.onended = close;
+      current.source.stop(now + 0.15);
     } else {
       close();
     }
   }, []);
 
-  const startTone = useCallback((resume: boolean) => {
+  const startSound = useCallback((resume: boolean) => {
     if (!getAmbientSoundEnabled()) return;
 
     try {
-      if (!tone.current) {
+      if (!sound.current) {
         const AudioContextConstructor = window.AudioContext ??
           (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
         if (!AudioContextConstructor) {
@@ -51,43 +66,39 @@ export function AmbientNoise() {
         }
 
         const context = new AudioContextConstructor();
-        const gain = context.createGain();
-        const oscillator = context.createOscillator();
-        tone.current = { context, oscillator, gain };
-        oscillator.type = "sine";
-        oscillator.frequency.value = 432;
-        gain.gain.setValueAtTime(0, context.currentTime);
-        gain.gain.linearRampToValueAtTime(0.025, context.currentTime + 2);
-        oscillator.connect(gain);
-        gain.connect(context.destination);
+        try {
+          sound.current = createMeditationSound(context);
+        } catch (error) {
+          void context.close().catch(() => undefined);
+          throw error;
+        }
         context.onstatechange = () => {
-          if (tone.current?.context === context) {
+          if (sound.current?.context === context) {
             setPlayback(context.state === "running" ? "playing" : "ready");
           }
         };
-        oscillator.start();
       }
 
-      const { context } = tone.current;
+      const { context } = sound.current;
       setPlayback(context.state === "running" ? "playing" : "ready");
       if (resume && context.state !== "running") {
         void context.resume().catch(() => {
-          if (tone.current?.context === context) setPlayback("ready");
+          if (sound.current?.context === context) setPlayback("ready");
         });
       }
     } catch {
-      stopTone();
+      stopSound();
       setPlayback("unavailable");
     }
-  }, [stopTone]);
+  }, [stopSound]);
 
   useEffect(() => {
     let active = true;
     const updatePreference = (resume: boolean) => {
       if (getAmbientSoundEnabled()) {
-        startTone(resume);
+        startSound(resume);
       } else {
-        stopTone(true);
+        stopSound(true);
         setPlayback("muted");
       }
     };
@@ -95,9 +106,9 @@ export function AmbientNoise() {
     queueMicrotask(() => {
       if (active) updatePreference(false);
     });
-    const unlock = () => startTone(true);
+    const unlock = () => startSound(true);
     const resumeOnReturn = () => {
-      if (!document.hidden && tone.current) startTone(true);
+      if (!document.hidden && sound.current) startSound(true);
     };
     const unsubscribe = subscribeAmbientSound(() => updatePreference(true));
     window.addEventListener("click", unlock);
@@ -112,14 +123,14 @@ export function AmbientNoise() {
       window.removeEventListener("keydown", unlock);
       document.removeEventListener("visibilitychange", resumeOnReturn);
       window.removeEventListener("pageshow", resumeOnReturn);
-      stopTone();
+      stopSound();
     };
-  }, [startTone, stopTone]);
+  }, [startSound, stopSound]);
 
   const playing = playback === "playing";
   const label = playback === "unavailable"
-    ? "432 Hz ambient sound unavailable"
-    : playing ? "Mute 432 Hz ambient sound" : "Play 432 Hz ambient sound";
+    ? "Meditation sound unavailable"
+    : playing ? "Mute meditation sound" : "Play meditation sound";
   const Icon = playing ? Volume2 : VolumeX;
 
   return (
