@@ -46,7 +46,7 @@ export function WeeklyLetterLink() {
       {letterCount > 0 && (
         <span
           aria-hidden
-          className="inline-flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full bg-achievement/15 px-2 text-sm font-semibold tabular-nums text-achievement"
+          className="inline-flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full bg-muted px-2 text-sm font-medium tabular-nums text-muted-foreground"
         >
           {letterCount}
         </span>

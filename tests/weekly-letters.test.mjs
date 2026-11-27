@@ -81,6 +81,78 @@ test("Home shows the full inbox count and refreshes it as letters arrive", async
   }
 });
 
+test("the inbox presents the newest letter first and leaves older letters collapsed and unread", { timeout: 5000 }, async () => {
+  const latest = {
+    week_of: "2026-11-22",
+    subject: "The newest subject",
+    paragraphs: ["This is the newest letter."],
+    read_at: null,
+  };
+  const past = {
+    ...latest,
+    week_of: "2026-11-15",
+    subject: "The earlier subject",
+    paragraphs: ["This is a past letter."],
+  };
+  const updates = [];
+  const client = new PostgrestClient("https://example.test/rest/v1", {
+    fetch: async (input, options) => {
+      if (options.method === "GET") return Response.json([latest, past]);
+      assert.equal(options.method, "PATCH");
+      const { searchParams } = new URL(input);
+      assert.equal(searchParams.get("read_at"), "is.null");
+      updates.push(searchParams.get("week_of"));
+      return new Response(null, { status: 204 });
+    },
+  });
+  const state = [];
+  let cursor = 0;
+  let initialize;
+  let newestMarked;
+  const readSaved = new Promise((resolve) => { newestMarked = resolve; });
+  const { WeeklyLetterInbox } = createLoader({
+    react: {
+      ...React,
+      useCallback: (callback) => callback,
+      useEffect: (effect) => { initialize = effect; },
+      useState: (initial) => {
+        const index = cursor++;
+        if (!(index in state)) state[index] = initial;
+        return [state[index], (update) => {
+          state[index] = typeof update === "function" ? update(state[index]) : update;
+          if (index === 0 && state[index][0]?.read_at) newestMarked();
+        }];
+      },
+    },
+    "@/lib/account-data": { getCurrentAccount: async () => ({ id: "account" }) },
+    "@/lib/supabase/client": { createSupabaseBrowserClient: () => client },
+  })("components/weekly-letter-inbox.tsx");
+  const render = () => {
+    cursor = 0;
+    return renderToStaticMarkup(WeeklyLetterInbox());
+  };
+
+  assert.match(render(), /Loading letters/);
+  const cleanup = initialize();
+  try {
+    await readSaved;
+    assert.deepEqual(updates, [`eq.${latest.week_of}`]);
+    const html = render();
+    const archiveStart = html.indexOf("<details");
+    const newest = html.slice(0, archiveStart);
+    const archive = html.slice(archiveStart);
+    assert.match(newest, /<article>.*<time.*The newest subject.*This is the newest letter\.<\/p>/);
+    assert.doesNotMatch(newest, /Unread|The earlier subject/);
+    assert.match(archive, /Past letters.*Unread.*The earlier subject.*This is a past letter\./);
+    assert.doesNotMatch(archive, /<details[^>]*\sopen(?:=""|\s|>)/);
+
+    state[0] = [];
+    assert.match(render(), /^<p[^>]*>No letters<\/p>$/);
+  } finally {
+    cleanup();
+  }
+});
+
 test("delivery runs only on Sundays from noon UTC and reflects on the preceding seven days", () => {
   assert.equal(getWeeklyLetterEdition(new Date("2026-11-21T23:59:59Z")), null);
   assert.equal(getWeeklyLetterEdition(new Date("2026-11-22T11:59:59Z")), null);
