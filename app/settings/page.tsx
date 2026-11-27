@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -25,6 +25,11 @@ import {
   updateAccountName,
 } from "@/lib/account-data";
 import { getAllCheckIns } from "@/lib/alignment";
+import {
+  getAmbientSoundEnabled,
+  setAmbientSoundEnabled,
+  subscribeAmbientSound,
+} from "@/lib/ambient-sound";
 import { getAllJournalEntries } from "@/lib/journal-storage";
 import {
   createEmptyOnboardingProfile,
@@ -42,8 +47,6 @@ type AccountUser = {
   };
 };
 
-const AMBIENT_SOUND_KEY = "clearpth.ambientNoise.enabled";
-
 export default function SettingsPage() {
   const router = useRouter();
   const [user, setUser] = useState<AccountUser | null>(null);
@@ -52,7 +55,11 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState<OnboardingProfile>(() =>
     createEmptyOnboardingProfile(),
   );
-  const [ambientSound, setAmbientSound] = useState(false);
+  const ambientSound = useSyncExternalStore(
+    subscribeAmbientSound,
+    getAmbientSoundEnabled,
+    () => true,
+  );
   const [profileMessage, setProfileMessage] = useState("");
   const [desireMessage, setDesireMessage] = useState("");
   const [accountMessage, setAccountMessage] = useState("");
@@ -67,8 +74,6 @@ export default function SettingsPage() {
 
   useEffect(() => {
     queueMicrotask(() => {
-      setAmbientSound(localStorage.getItem(AMBIENT_SOUND_KEY) === "true");
-
       getCurrentAccount()
         .then((account) => {
           setUser(account);
@@ -140,11 +145,6 @@ export default function SettingsPage() {
     } finally {
       setSavingDesire(false);
     }
-  };
-
-  const updateAmbientSound = (enabled: boolean) => {
-    setAmbientSound(enabled);
-    localStorage.setItem(AMBIENT_SOUND_KEY, enabled ? "true" : "false");
   };
 
   const signOut = async () => {
@@ -321,8 +321,7 @@ export default function SettingsPage() {
               <div>
                 <p className="font-medium">Ambient sound</p>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  A soft background tone outside the cover, login, and setup
-                  screens.
+                  A soft 432 Hz tone while ClearPth is open.
                 </p>
               </div>
               <div className="grid grid-cols-2 rounded-full border border-border bg-background/55 p-1">
@@ -333,7 +332,8 @@ export default function SettingsPage() {
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground"
                   }`}
-                  onClick={() => updateAmbientSound(true)}
+                  aria-pressed={ambientSound}
+                  onClick={() => setAmbientSoundEnabled(true)}
                 >
                   On
                 </button>
@@ -344,7 +344,8 @@ export default function SettingsPage() {
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground"
                   }`}
-                  onClick={() => updateAmbientSound(false)}
+                  aria-pressed={!ambientSound}
+                  onClick={() => setAmbientSoundEnabled(false)}
                 >
                   Off
                 </button>
