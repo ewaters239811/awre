@@ -26,20 +26,9 @@ export function offsetLetterDate(date: string, days: number) {
 }
 
 export function getWeeklyLetterEdition(now: Date) {
-  const day = now.getUTCDay();
-  if (day === 1 && now.getUTCHours() < 12) return null;
-  const weekOf = offsetLetterDate(now.toISOString().slice(0, 10), -((day + 6) % 7));
+  if (now.getUTCDay() !== 0 || now.getUTCHours() < 12) return null;
+  const weekOf = now.toISOString().slice(0, 10);
   return { weekOf, start: offsetLetterDate(weekOf, -7) };
-}
-
-export function getWeeklyLetterPreviewWindow(now: Date, timeZone: string): WeeklyLetterWindow {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone, year: "numeric", month: "2-digit", day: "2-digit",
-  }).formatToParts(now);
-  const datePart = (type: "year" | "month" | "day") => parts.find((part) => part.type === type)?.value;
-  const today = `${datePart("year")}-${datePart("month")}-${datePart("day")}`;
-  const day = new Date(`${today}T00:00:00Z`).getUTCDay();
-  return { start: offsetLetterDate(today, -((day + 6) % 7)), endExclusive: offsetLetterDate(today, 1) };
 }
 
 export function buildWeeklyLetterContext(

@@ -6,7 +6,7 @@ import { ChevronDown, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getCurrentAccount } from "@/lib/account-data";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { WEEKLY_LETTER_COLUMNS, type LetterContent, type WeeklyLetter } from "@/lib/weekly-letters";
+import { WEEKLY_LETTER_COLUMNS, type WeeklyLetter } from "@/lib/weekly-letters";
 
 const PAGE_SIZE = 12;
 const weekFormat = new Intl.DateTimeFormat(undefined, {
@@ -27,7 +27,6 @@ async function fetchLetters(before?: string) {
     hasMore: (data?.length ?? 0) > PAGE_SIZE,
   };
 }
-
 export function WeeklyLetterInbox() {
   const [letters, setLetters] = useState<WeeklyLetter[]>([]);
   const [hasMore, setHasMore] = useState(false);
@@ -109,25 +108,21 @@ export function WeeklyLetterInbox() {
   }
   if (!letters.length) {
     return (
-      <div className="mt-6 space-y-4">
-        <TestWeeklyLetter />
-        <div className="rounded-2xl border border-border/65 bg-card/55 p-6">
-          <Mail className="mb-4 h-6 w-6 text-primary" aria-hidden />
-          <h2 className="font-serif text-2xl">No weekly letters yet</h2>
-          <p className="mt-2 leading-7 text-muted-foreground">
-            Your delivered letters will appear here.
-          </p>
-          <Link href="/manifestations" className="mt-4 inline-flex min-h-11 items-center text-primary underline underline-offset-4">
-            View my desired reality
-          </Link>
-        </div>
+      <div className="mt-6 rounded-2xl border border-border/65 bg-card/55 p-6">
+        <Mail className="mb-4 h-6 w-6 text-primary" aria-hidden />
+        <h2 className="font-serif text-2xl">No weekly letters yet</h2>
+        <p className="mt-2 leading-7 text-muted-foreground">
+          Your weekly letters appear here on Sundays once you’ve chosen an active desired reality.
+        </p>
+        <Link href="/manifestations" className="mt-4 inline-flex min-h-11 items-center text-primary underline underline-offset-4">
+          View my desired reality
+        </Link>
       </div>
     );
   }
 
   return (
     <section aria-label="Your letters" className="mt-6 space-y-4">
-      <TestWeeklyLetter />
       {letters.map((letter) => (
         <WeeklyLetterCard key={letter.week_of} letter={letter} onOpen={() => void markRead(letter)} />
       ))}
@@ -140,65 +135,6 @@ export function WeeklyLetterInbox() {
     </section>
   );
 }
-
-function TestWeeklyLetter() {
-  const [letter, setLetter] = useState<LetterContent | null>(null);
-  const [generating, setGenerating] = useState(false);
-  const [error, setError] = useState("");
-
-  async function generate() {
-    setGenerating(true);
-    setError("");
-    const failure = "The test letter couldn’t be generated. Try again.";
-    try {
-      const { data: { session } } = await createSupabaseBrowserClient().auth.getSession();
-      if (!session) {
-        setError("Sign in to preview your letter.");
-        return;
-      }
-      const response = await fetch("/api/weekly-letters/preview", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }),
-      });
-      const payload = await response.json();
-      if (!response.ok) {
-        setError(payload.error || failure);
-        return;
-      }
-      setLetter(payload.letter);
-    } catch {
-      setError(failure);
-    } finally {
-      setGenerating(false);
-    }
-  }
-
-  return (
-    <section aria-label="Test a weekly letter" className="space-y-4">
-      <Button type="button" onClick={() => void generate()} disabled={generating}>
-        {generating ? "Writing your test letter…" : letter ? "Generate another test letter" : "Generate test letter"}
-      </Button>
-      {error && <p role="alert" className="text-muted-foreground">{error}</p>}
-      <p role="status" className="sr-only">
-        {generating ? "Writing your test letter." : letter ? "Your test letter is ready." : ""}
-      </p>
-      {letter && (
-        <div className="overflow-hidden rounded-2xl border border-primary/35 bg-card/55">
-          <header className="px-5 py-4 sm:px-8">
-            <p className="text-sm text-primary">Test letter · This week so far</p>
-            <h2 className="mt-1 break-words font-serif text-2xl">{letter.subject}</h2>
-          </header>
-          <WeeklyLetterBody paragraphs={letter.paragraphs} />
-        </div>
-      )}
-    </section>
-  );
-}
-
 export function WeeklyLetterCard({
   letter,
   onOpen,
@@ -224,19 +160,13 @@ export function WeeklyLetterCard({
         </span>
         <ChevronDown className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden />
       </summary>
-      <WeeklyLetterBody paragraphs={letter.paragraphs} />
+      <article className="space-y-5 border-t border-border/60 px-5 py-6 font-serif text-lg leading-relaxed text-foreground sm:px-8 sm:py-8">
+        <p className="text-primary">Dear me,</p>
+        {letter.paragraphs.map((paragraph, index) => (
+          <p key={index} className="whitespace-pre-line break-words">{paragraph}</p>
+        ))}
+        <p className="text-primary">With care,<br />Me</p>
+      </article>
     </details>
-  );
-}
-
-function WeeklyLetterBody({ paragraphs }: { paragraphs: string[] }) {
-  return (
-    <article className="space-y-5 border-t border-border/60 px-5 py-6 font-serif text-lg leading-relaxed text-foreground sm:px-8 sm:py-8">
-      <p className="text-primary">Dear me,</p>
-      {paragraphs.map((paragraph, index) => (
-        <p key={index} className="whitespace-pre-line break-words">{paragraph}</p>
-      ))}
-      <p className="text-primary">With care,<br />Me</p>
-    </article>
   );
 }

@@ -249,20 +249,18 @@ Each table uses row-level security so users can only access their own records.
 ## Weekly Letters
 
 Signed-in users can open their private inbox from **Home → Weekly letters**.
-A new edition is due every Monday at 12:00 UTC. It reflects on the preceding
-Monday through Sunday for the active desired reality. When that week has no new
+A new edition is due every Sunday at 12:00 UTC. It reflects on the preceding
+Sunday through Saturday for the active desired reality. When that week has no new
 records for the goal, the letter draws on its most recent earlier check-ins,
 journal entries, and progress. The letter is written in the user's voice and
 covers where they are, what they are working toward, and one practical step to
 keep going or adjust. Past letters stay in the inbox.
 
-Signed-in users can select **Generate test letter** to preview a letter based
-on the current week. The preview stays on the page and is separate from the
-delivered inbox and its count.
+Follow these steps to enable background delivery.
 
-To enable background delivery on an existing or new deployment:
-
-1. Apply `supabase/migrations/20261127_weekly_letters.sql` to the app database.
+1. Apply the weekly letters migrations in order, starting with
+   `supabase/migrations/20261127_weekly_letters.sql` and then
+   `supabase/migrations/20261128_weekly_letters_sunday.sql`.
 2. Set `SUPABASE_SECRET_KEY` on the hosted Next.js app. An existing
    `SUPABASE_SERVICE_ROLE_KEY` also works. Set `WEEKLY_LETTERS_CRON_SECRET`
    to a separate randomly generated secret. Both belong in server-only variables.
@@ -270,7 +268,8 @@ To enable background delivery on an existing or new deployment:
    the matching delivery secret as `clearpth_weekly_letters_cron_secret`.
 4. Run `supabase/schedules/weekly_letters.sql` in the Supabase SQL Editor.
    Supabase Cron calls the authenticated delivery endpoint every five minutes
-   to drain the current edition and retry incomplete batches. The database
+   on Sundays from 12:00 UTC through 23:55 UTC to finish the edition and retry
+   incomplete batches. The database
    allows one letter per account per edition. The inbox can be used after the
    migration, independently of the scheduler.
 

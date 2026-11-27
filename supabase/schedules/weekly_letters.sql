@@ -6,7 +6,7 @@ create extension if not exists pg_net;
 
 select cron.schedule(
   'clearpth-weekly-letters',
-  '*/5 * * * *',
+  '*/5 12-23 * * 0',
   $job$
   select net.http_post(
     url := rtrim(site.decrypted_secret, '/') || '/api/weekly-letters/deliver',

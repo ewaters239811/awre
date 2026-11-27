@@ -20,7 +20,7 @@ export default function LettersPage() {
           <p className="clearpth-page-kicker">Weekly letters</p>
           <h1 className="clearpth-page-title">Letter from My Unconscious Mind</h1>
           <p className="mt-4 max-w-xl leading-7 text-muted-foreground">
-            A Monday reflection written in your voice, drawing on your check-ins, journal,
+            A Sunday reflection written in your voice, drawing on your check-ins, journal,
             and the reality you’re working toward.
           </p>
         </header>

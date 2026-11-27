@@ -21,12 +21,10 @@ export function createWeeklyLetterClient() {
     .replace(/\/(rest|auth)\/v1\/?$/i, "")
     .replace(/\/+$/, "");
   const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-  return url && key
-    ? new PostgrestClient(`${url}/rest/v1`, {
-        headers: { apikey: key, Authorization: `Bearer ${key}` },
-        schema: "public",
-      })
-    : null;
+  if (!url || !key) return null;
+  const headers = new Headers({ apikey: key });
+  if (!key.startsWith("sb_secret_")) headers.set("Authorization", `Bearer ${key}`);
+  return new PostgrestClient(`${url}/rest/v1`, { headers, schema: "public" });
 }
 
 export async function dispatchWeeklyLetters(client: PostgrestClient, edition: Edition) {
@@ -65,7 +63,7 @@ async function deliverWeeklyLetter(client: PostgrestClient, edition: Edition, cl
   return Boolean(data);
 }
 
-export async function generateWeeklyLetter(
+async function generateWeeklyLetter(
   client: PostgrestClient,
   userId: string,
   window: WeeklyLetterWindow,

@@ -10,12 +10,11 @@ const {
   buildWeeklyLetterContext,
   cleanWeeklyLetter,
   getWeeklyLetterEdition,
-  getWeeklyLetterPreviewWindow,
   writeWeeklyLetterFallback,
 } = load("lib/weekly-letters.ts");
 const { migrateManifestations, withManifestations } = load("lib/manifestations.ts");
 
-const edition = { weekOf: "2026-11-23", start: "2026-11-16" };
+const edition = { weekOf: "2026-11-22", start: "2026-11-15" };
 const window = { start: edition.start, endExclusive: edition.weekOf };
 const profile = {
   primaryGoal: "Share my writing with an audience",
@@ -82,22 +81,16 @@ test("Home shows the full inbox count and refreshes it as letters arrive", async
   }
 });
 
-test("a new edition starts Monday at noon UTC and reflects on the prior calendar week", () => {
-  assert.equal(getWeeklyLetterEdition(new Date("2026-11-23T11:59:59Z")), null);
-  assert.deepEqual(getWeeklyLetterEdition(new Date("2026-11-23T12:00:00Z")), edition);
-  assert.deepEqual(getWeeklyLetterEdition(new Date("2026-11-29T23:59:59Z")), edition);
-  assert.deepEqual(getWeeklyLetterEdition(new Date("2027-01-04T12:00:00Z")), {
-    weekOf: "2027-01-04",
-    start: "2026-12-28",
+test("delivery runs only on Sundays from noon UTC and reflects on the preceding seven days", () => {
+  assert.equal(getWeeklyLetterEdition(new Date("2026-11-21T23:59:59Z")), null);
+  assert.equal(getWeeklyLetterEdition(new Date("2026-11-22T11:59:59Z")), null);
+  assert.deepEqual(getWeeklyLetterEdition(new Date("2026-11-22T12:00:00Z")), edition);
+  assert.deepEqual(getWeeklyLetterEdition(new Date("2026-11-22T23:59:59Z")), edition);
+  assert.equal(getWeeklyLetterEdition(new Date("2026-11-23T12:00:00Z")), null);
+  assert.deepEqual(getWeeklyLetterEdition(new Date("2027-01-03T12:00:00Z")), {
+    weekOf: "2027-01-03",
+    start: "2026-12-27",
   });
-});
-
-test("a test letter includes today in the user's local week before Monday delivery", () => {
-  assert.deepEqual(getWeeklyLetterPreviewWindow(new Date("2026-11-27T20:00:00Z"), "America/New_York"), {
-    start: "2026-11-23",
-    endExclusive: "2026-11-28",
-  });
-  assert.deepEqual(getWeeklyLetterPreviewWindow(new Date("2026-11-23T02:00:00Z"), "America/New_York"), window);
 });
 
 test("evidence is scoped to the completed week and active goal, including older untagged records", () => {
@@ -115,8 +108,8 @@ test("evidence is scoped to the completed week and active goal, including older 
     ],
   });
   const checkIn = {
-    createdAt: "2026-11-23T03:00:00Z",
-    checkInDate: "2026-11-22",
+    createdAt: "2026-11-22T03:00:00Z",
+    checkInDate: "2026-11-21",
     checkInJournal: "I enjoyed sharing a draft.",
     journalEntryId: "journal",
     thinkingScore: 7,
@@ -125,17 +118,17 @@ test("evidence is scoped to the completed week and active goal, including older 
   };
   const journal = {
     id: "journal",
-    date: "2026-11-22",
+    date: "2026-11-21",
     content: "I enjoyed sharing a draft. I would like to do it again.",
   };
   const context = buildWeeklyLetterContext(window, withGoals, [
     checkIn,
-    { ...checkIn, checkInDate: "2026-11-23" },
+    { ...checkIn, checkInDate: edition.weekOf },
     { ...checkIn, manifestationId: other.id },
-    { ...checkIn, checkInDate: "2026-11-16", checkInJournal: undefined, dominantThought: "I was unsure." },
-  ], [journal, { ...journal, date: "2026-11-15" }, { ...journal, manifestationId: other.id }]);
+    { ...checkIn, checkInDate: edition.start, checkInJournal: undefined, dominantThought: "I was unsure." },
+  ], [journal, { ...journal, date: "2026-11-14" }, { ...journal, manifestationId: other.id }]);
   assert.equal(context.desiredReality, profile.primaryGoal);
-  assert.deepEqual(context.period, { from: edition.start, through: "2026-11-22" });
+  assert.deepEqual(context.period, { from: edition.start, through: "2026-11-21" });
   assert.equal(context.evidence, "week");
   assert.deepEqual(context.checkIns.map(({ reflection }) => reflection), ["", "I was unsure."]);
   assert.equal(context.journal.length, 1);
@@ -191,45 +184,6 @@ test("sparse weeks have a first-person letter with an honest next step and malfo
   assert.equal(cleanWeeklyLetter({ ...fallback, subject: 12 }), null);
 });
 
-test("production test letter generation uses the signed-in account", async () => {
-  const previous = process.env.NODE_ENV;
-  const calls = [];
-  const letter = writeWeeklyLetterFallback(buildWeeklyLetterContext(window, profile, [], []));
-  const { POST } = createLoader({
-    "@/lib/server/account": {
-      getAccountPostgrest: async (authorization) => authorization === "Bearer session"
-        ? { client: "account-reader", userId: "current-user" }
-        : null,
-    },
-    "@/lib/server/weekly-letters": {
-      generateWeeklyLetter: async (client, userId, period) => {
-        calls.push([client, userId, period]);
-        return letter;
-      },
-    },
-  })("app/api/weekly-letters/preview/route.ts");
-  const request = (authorization = "") => new Request("https://example.test", {
-    method: "POST",
-    headers: { authorization },
-    body: JSON.stringify({ timeZone: "America/New_York", userId: "ignored" }),
-  });
-  try {
-    process.env.NODE_ENV = "production";
-    assert.equal((await POST(request())).status, 401);
-    assert.equal(calls.length, 0);
-    const response = await POST(request("Bearer session"));
-    assert.equal(response.status, 200);
-    assert.match(response.headers.get("cache-control"), /no-store/);
-    assert.deepEqual(await response.json(), { letter });
-    assert.deepEqual(calls, [[
-      "account-reader", "current-user", getWeeklyLetterPreviewWindow(new Date(), "America/New_York"),
-    ]]);
-  } finally {
-    if (previous === undefined) delete process.env.NODE_ENV;
-    else process.env.NODE_ENV = previous;
-  }
-});
-
 test("delivery queries earlier account history only when the active goal has an empty week", async () => {
   const goalId = migrateManifestations(profile).manifestations.primaryGoalId;
   for (const hasWeek of [false, true]) {
@@ -281,12 +235,13 @@ test("delivery queries earlier account history only when the active goal has an 
   }
 });
 
-test("only the configured bearer token can run a delivery", async () => {
+test("only the configured bearer token can run a Sunday delivery", async () => {
   const previous = process.env.WEEKLY_LETTERS_CRON_SECRET;
   process.env.WEEKLY_LETTERS_CRON_SECRET = "test-secret";
   const runs = [];
+  let scheduledEdition = null;
   const { POST } = createLoader({
-    "@/lib/weekly-letters": { getWeeklyLetterEdition: () => edition },
+    "@/lib/weekly-letters": { getWeeklyLetterEdition: () => scheduledEdition },
     "@/lib/server/weekly-letters": {
       createWeeklyLetterClient: () => "worker",
       dispatchWeeklyLetters: (client, edition) => {
@@ -302,7 +257,10 @@ test("only the configured bearer token can run a delivery", async () => {
     });
     assert.equal((await POST(request())).status, 401);
     assert.equal((await POST(request("Bearer fake-secret"))).status, 401);
+    const offSchedule = await POST(request("Bearer test-secret"));
+    assert.deepEqual(await offSchedule.json(), { delivered: 0, failed: 0 });
     assert.equal(runs.length, 0);
+    scheduledEdition = edition;
     const result = await POST(request("Bearer test-secret"));
     assert.equal(result.status, 200);
     assert.deepEqual(await result.json(), { delivered: 2, failed: 0 });
