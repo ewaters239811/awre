@@ -19,11 +19,13 @@ export async function createJsonWithOpenAI<T>({
   user,
   fallback,
   maxOutputTokens = 700,
+  signal,
 }: {
   system: string;
   user: unknown;
   fallback: T;
   maxOutputTokens?: number;
+  signal?: AbortSignal;
 }): Promise<{ enabled: boolean; data: T }> {
   const apiKey = process.env.OPENAI_API_KEY;
 
@@ -33,6 +35,7 @@ export async function createJsonWithOpenAI<T>({
 
   const response = await fetch(OPENAI_RESPONSES_URL, {
     method: "POST",
+    signal,
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",

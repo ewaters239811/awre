@@ -32,6 +32,7 @@ import { useCurrentCheckInDateKey } from "@/lib/use-current-check-in-date-key";
 import { useCurrentDateKey } from "@/lib/use-current-date-key";
 import { primaryManifestation } from "@/lib/manifestations";
 import { HomeGapNote } from "@/components/home-gap-note";
+import { WeeklyLetterLink } from "@/components/weekly-letter-link";
 import {
   buildHomeAlignmentContext,
   buildHomeScoreInsight,
@@ -317,6 +318,7 @@ export function PersonalHomeHero({
           interactive={false}
         />
       </div>
+      <WeeklyLetterLink />
       <details className="mt-6 border-t border-border/40 pt-3">
         <summary className="cursor-pointer py-3 text-sm text-muted-foreground">
           Your desired reality
